@@ -24,76 +24,6 @@ double abs_d(double a)
 	return a;
 }
 
-int* intdup(int num, ...)
-{
-	BALLOCS_L(int, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (int a = 0; a < num; a++)
-		pret[a] = va_arg(parg, int);
-	va_end(parg);
-	return pret;
-}
-
-_ULL* ULLdup(_ULL num, ...)
-{
-	BALLOCS_L(_ULL, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (_ULL a = 0; a < num; a++)
-		pret[a] = va_arg(parg, _ULL);
-	va_end(parg);
-	return pret;
-}
-
-float* floatdup(_ULL num, ...)
-{
-	BALLOCS_L(float, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (_ULL a = 0; a < num; a++)
-		pret[a] = va_arg(parg, double);
-	va_end(parg);
-	return pret;
-}
-
-int* intdupS(int num, ...)
-{
-	BALLOCS_S(int, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (int a = 0; a < num; a++)
-		pret[a] = va_arg(parg, int);
-	va_end(parg);
-	return pret;
-}
-
-_ULL* ULLdupS(_ULL num, ...)
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//!!! IT HAS PROBLEMS !!!!!!!
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!
-{
-	BALLOCS_S(_ULL, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	_ULL j = 0;
-	for (_ULL a = 0; a < num; a++)
-		pret[a] = va_arg(parg, _ULL);
-	va_end(parg);
-	return pret;
-}
-
-float* floatdupS(_ULL num, ...)
-{
-	BALLOCS_S(float, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (_ULL a = 0; a < num; a++)
-		pret[a] = va_arg(parg, double);
-	va_end(parg);
-	return pret;
-}
-
 int* MyBA_Zeros_AllocD(int* ret, int* shape, int dims,int nowdim)
 {
 	ret = (int*)calloc(shape[nowdim], sizeof(int));
@@ -1312,14 +1242,14 @@ BA_Array BA_Array::Reduc(BA_Array other, bool aNew)
 {
 	if (shapeLen != other.shapeLen)
 	{
-		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
+		MyBA_Err("BA_Array BA_Array::Reduc(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
 		return *this;
 	}
 	for (_ULL i = 0; i < other.shapeLen; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
-			MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): dataShape[i] != other.dataShape[i],return", 1);
+			MyBA_Err("BA_Array BA_Array::Reduc(BA_Array other, bool aNew): dataShape[i] != other.dataShape[i],return", 1);
 			return *this;
 		}
 	}
@@ -1406,14 +1336,14 @@ BA_Array BA_Array::Mul(BA_Array other, bool aNew)
 {
 	if (shapeLen != other.shapeLen)
 	{
-		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
+		MyBA_Err("BA_Array BA_Array::Mul(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
 		return *this;
 	}
 	for (_ULL i = 0; i < other.shapeLen; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
-			MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): dataShape[i] != other.dataShape[i],return", 1);
+			MyBA_Err("BA_Array BA_Array::Mul(BA_Array other, bool aNew): dataShape[i] != other.dataShape[i],return", 1);
 			return *this;
 		}
 	}
@@ -1501,14 +1431,14 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 {
 	if (shapeLen != other.shapeLen)
 	{
-		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
+		MyBA_Err("BA_Array BA_Array::Devide(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
 		return *this;
 	}
 	for (_ULL i = 0; i < other.shapeLen; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
-			MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): dataShape[i] != other.dataShape[i],return", 1);
+			MyBA_Err("BA_Array BA_Array::Devide(BA_Array other, bool aNew): dataShape[i] != other.dataShape[i],return", 1);
 			return *this;
 		}
 	}
@@ -1724,7 +1654,7 @@ BA_Array BA_Array::Devide(_ULL other, bool aNew)
 {
 	if (other == 0)
 	{
-		MyBA_Err("BA_Array BA_Array::Add(_ULL other, bool aNew): other == 0,return *this", 1);
+		MyBA_Err("BA_Array BA_Array::Devide(_ULL other, bool aNew): other == 0,return *this", 1);
 		return *this;
 	}
 	if (type == 'l')
@@ -1889,7 +1819,7 @@ BA_Array BA_Array::Devide(float other, bool aNew)
 {
 	if (other == 0)
 	{
-		MyBA_Err("BA_Array BA_Array::Add(_ULL other, bool aNew): other == 0,return *this", 1);
+		MyBA_Err("BA_Array BA_Array::Devide(float other, bool aNew): other == 0,return *this", 1);
 		return *this;
 	}
 	if (type == 'l')
@@ -1926,6 +1856,37 @@ BA_Array BA_Array::Devide(float other, bool aNew)
 			for (_ULL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) / (other);
 		}
+	}
+	return *this;
+}
+
+BA_Array BA_Array::MatMul(BA_Array other)
+{
+	if (shapeLen != other.shapeLen)
+	{
+		MyBA_Err("BA_Array BA_Array::MatMul(BA_Array other, bool aNew): shapeLen != other.shapeLen,return *this", 1);
+		return *this;
+	}
+	if (shapeLen <= 2 || other.shapeLen <= 2)
+	{
+		MyBA_Err("BA_Array BA_Array::MatMul(BA_Array other, bool aNew): shapeLen <= 2 || other.shapeLen <= 2,return *this", 1);
+		return *this;
+	}
+	if (dataShape[shapeLen-1] != other.dataShape[other.dataLen-2])
+	{
+		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): dataShape[shapeLen-1] != other.dataShape[other.dataLen-2],return *this", 1);
+		return *this;
+	}
+	if (type == 'l' || other.type == 'l')
+	{
+		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): type == 'l' || other.type == 'l' and it is not support now,return *this", 1);
+		return *this;
+	}
+	else//selfType == 'f' && other.type == 'f'
+	{
+		float* pt1 = dataF, * pt2 = other.dataF;
+		for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+			*pt1 = (*pt1) * (*pt2);
 	}
 	return *this;
 }

@@ -1,4 +1,4 @@
-﻿//BASIC_ALL_1_1
+﻿//BASIC_ALL_1_2
 //H
 //Writen By BHM
 //2021年11月18日 23点03分
@@ -14,13 +14,6 @@
 float abs_f(float a);
 double abs_d(double a);
 
-char* mstrdup(const char* p);
-int* intdup(int num, ...);
-_ULL* ULLdup(_ULL num, ...);
-float* floatdup(_ULL num, ...);
-int* intdupS(int num, ...);
-_ULL* ULLdupS(_ULL num, ...);
-float* floatdupS(_ULL num, ...);
 void* MyBA_ZerosD(int* shape, int dims);
 
 class BA_Shape
@@ -73,6 +66,8 @@ public:
 	BA_Array Devide(BA_Array other, bool aNew);
 	BA_Array Devide(_ULL other, bool aNew);
 	BA_Array Devide(float other, bool aNew);
+
+	BA_Array MatMul(BA_Array other);
 
 	BA_Array Eq(float other, bool aNew);
 	BA_Array Ge(float other, bool aNew);

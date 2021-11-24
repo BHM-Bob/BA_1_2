@@ -1,7 +1,7 @@
 ﻿//BASIC_ALL_1_2
 //LIB
 //Writen By BHM
-//2020-10-6 12:51:40 ~
+//2021-11-18
 
 //#define USE_OPENCV
 //#define USE_WINDOWS
@@ -11,6 +11,8 @@
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
 #include"BA_UI.hpp"
+#include"BA_File.hpp"
+#include"BA_String.hpp"
 
 MyBA* pba;
 
@@ -390,6 +392,76 @@ char* mstrdup(const char* p)
 {
 	char* pret = _strdup(p);
 	List_Put(pba->mem, (void*)pret);
+	return pret;
+}
+
+int* intdup(int num, ...)
+{
+	BALLOCS_L(int, pret, num, NULL, );
+	va_list parg;
+	va_start(parg, num);
+	for (int a = 0; a < num; a++)
+		pret[a] = va_arg(parg, int);
+	va_end(parg);
+	return pret;
+}
+
+_ULL* ULLdup(_ULL num, ...)
+{
+	BALLOCS_L(_ULL, pret, num, NULL, );
+	va_list parg;
+	va_start(parg, num);
+	for (_ULL a = 0; a < num; a++)
+		pret[a] = va_arg(parg, _ULL);
+	va_end(parg);
+	return pret;
+}
+
+float* floatdup(_ULL num, ...)
+{
+	BALLOCS_L(float, pret, num, NULL, );
+	va_list parg;
+	va_start(parg, num);
+	for (_ULL a = 0; a < num; a++)
+		pret[a] = va_arg(parg, double);
+	va_end(parg);
+	return pret;
+}
+
+int* intdupS(int num, ...)
+{
+	BALLOCS_S(int, pret, num, NULL, );
+	va_list parg;
+	va_start(parg, num);
+	for (int a = 0; a < num; a++)
+		pret[a] = va_arg(parg, int);
+	va_end(parg);
+	return pret;
+}
+
+_ULL* ULLdupS(_ULL num, ...)
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!!! IT HAS PROBLEMS !!!!!!!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!
+{
+	BALLOCS_S(_ULL, pret, num, NULL, );
+	va_list parg;
+	va_start(parg, num);
+	_ULL j = 0;
+	for (_ULL a = 0; a < num; a++)
+		pret[a] = va_arg(parg, _ULL);
+	va_end(parg);
+	return pret;
+}
+
+float* floatdupS(_ULL num, ...)
+{
+	BALLOCS_S(float, pret, num, NULL, );
+	va_list parg;
+	va_start(parg, num);
+	for (_ULL a = 0; a < num; a++)
+		pret[a] = va_arg(parg, double);
+	va_end(parg);
 	return pret;
 }
 

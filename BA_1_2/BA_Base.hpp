@@ -115,6 +115,14 @@ void PPIs(int n, ...);
 #define LIST_FOR(p,pli) for(void* p = List_Copy(pli); p != NULL; p = List_Copy(pli))
 #define LIST_FORS(type,p,pli) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli))
 
+char* mstrdup(const char* p);
+int* intdup(int num, ...);
+_ULL* ULLdup(_ULL num, ...);
+float* floatdup(_ULL num, ...);
+int* intdupS(int num, ...);
+_ULL* ULLdupS(_ULL num, ...);
+float* floatdupS(_ULL num, ...);
+
 void JDT(_ULL now, _ULL sum);
 
 void gotoxy(int x, int y);
@@ -224,6 +232,7 @@ typedef struct ListDot ListDot;//先进先出
 struct ListDot
 {
 	_ULL idx;//from 0
+	_ULL usage;//for same open use
 	ListDot* pnext;
 	ListDot* ppre;
 	void* pdata;

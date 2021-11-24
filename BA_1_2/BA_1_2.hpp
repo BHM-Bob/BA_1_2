@@ -12,5 +12,7 @@
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
 #include"BA_UI.hpp"
+#include"BA_File.hpp"
+#include"BA_String.hpp"
 
 #endif

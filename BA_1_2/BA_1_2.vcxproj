@@ -143,13 +143,17 @@
   <ItemGroup>
     <ClCompile Include="BA_1_2.cpp" />
     <ClCompile Include="BA_Math.cpp" />
+    <ClCompile Include="BA_String.cpp" />
     <ClCompile Include="BA_UI.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BA_1_2.hpp" />
     <ClInclude Include="BA_Base.hpp" />
+    <ClInclude Include="BA_File.hpp" />
+    <ClInclude Include="BA_File.cpp" />
     <ClInclude Include="BA_Math.hpp" />
+    <ClInclude Include="BA_String.hpp" />
     <ClInclude Include="BA_UI.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
