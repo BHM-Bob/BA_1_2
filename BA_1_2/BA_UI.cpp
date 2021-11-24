@@ -636,6 +636,7 @@ bool SDL_Quit_s(SDL_Window** win, SDL_Renderer** renderer, SDL_Surface** ppSurfa
 	if (renderer != NULL)
 		SDL_DestroyRenderer(*renderer);
 	SDL_DestroyWindow(*win);
+	va_end(parg);
 	return 1;
 }
 //End With a NULL

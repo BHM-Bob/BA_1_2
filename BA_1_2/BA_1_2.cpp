@@ -167,6 +167,7 @@ void* MyBA_Errs(bool instance,...)
 		sumlen += strlen(p);
 		plist->Put(plist, (void*)p);
 	}
+	va_end(parg);
 	sumlen += 5;
 	BALLOCS_L(char, pret, sumlen, NULL, );
 	strcat_s(pret, sumlen, "Err:");
@@ -239,7 +240,7 @@ void MyBA_Free_R(List* pli)
 	}
 	else
 	{
-		PPW("Free_R: pli==NULL,return");
+		PPW("MyBA_Free_R: pli==NULL,return");
 	}
 }
 
@@ -299,6 +300,7 @@ void MyBA_CMD(void)
 			break;
 		case 1:
 			MyBA_CMD_ShowLog();
+			break;
 		default:
 			break;
 		}
@@ -368,6 +370,7 @@ void PPIs(int n, ...)
 	va_start(parg, n);
 	for (int a = 0, b = 0; b < n; printf(" %d ", a), b++)
 		a = va_arg(parg, int);
+	va_end(parg);
 	printf("\n");
 }
 
@@ -524,8 +527,10 @@ char* Num_To_Char(const char* ptype, ...)
 	}
 	else
 	{
+		va_end(parg);
 		return (char*)MyBA_Errs(1,"Num_To_Char: type default with", ptype,"return NULL",NULL);
 	}
+	va_end(parg);
 	return preturn;
 }
 
@@ -757,6 +762,7 @@ bool Frees(char* ptype, ...)
 		}*/
 	else
 	{
+		va_end(parg);
 		MyBA_Errs(1,"Frees:Can't match the type of", ptype,NULL);
 		return 1;
 	}
@@ -780,6 +786,7 @@ char* StringAdd_L(const char* pstr, ...)//end with NULL
 	BALLOCS_L(char,pret, sumlen, NULL,);
 	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
 		strcat_s(pret, sumlen, p);
+	va_end(parg);
 	return pret;
 }
 
@@ -800,6 +807,7 @@ char* StringAdd_S(const char* pstr, ...)//end with NULL
 	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
 		strcat_s(pret, sumlen, p);
 	free(plist);
+	va_end(parg);
 	return pret;
 }
 
@@ -1049,21 +1057,30 @@ List* List_Destroy(List* plist)
 	for (ListDot* pte = plist->pfirst; pte != NULL; pte = pte->pnext)
 		free(pte);
 	free(plist);
-	return plist;
+	plist = NULL;
+	return NULL;
 }
 
 List* List_Init(void)//产生sumthreads个List
 {
-	List* plist = MCALLOC(1, List);
-	plist->sumque = 0;
-	plist->Put = List_Put;
-	plist->Get = List_Get;
-	plist->Copy = List_Copy;
-	plist->ReverseCopy = List_ReverseCopy;
-	plist->Index = List_Index;
-	plist->IndexDot = List_IndexDot;
-	plist->IndexGet = List_IndexGet;
-	return plist;
+	MCALLOCS(List,plist,1);
+	if (plist == NULL)
+	{
+		PPW("List * List_Init(void):plist == NULL,return NULL");
+		return (List*)0x1;
+	}
+	else
+	{
+		plist->sumque = 0;
+		plist->Put = List_Put;
+		plist->Get = List_Get;
+		plist->Copy = List_Copy;
+		plist->ReverseCopy = List_ReverseCopy;
+		plist->Index = List_Index;
+		plist->IndexDot = List_IndexDot;
+		plist->IndexGet = List_IndexGet;
+		return plist;
+	}
 }
 //***********************************************************************************************************************
 
