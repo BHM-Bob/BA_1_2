@@ -8,7 +8,7 @@
 //#define USE_SDL2
 
 #include"BA_Base.hpp"
-#include"BA_math.hpp"
+#include"BA_Math.hpp"
 
 float abs_f(float a)
 {

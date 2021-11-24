@@ -30,6 +30,9 @@
     <ClCompile Include="BA_String.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="BA_File.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BA_1_2.hpp">
@@ -49,9 +52,6 @@
     </ClInclude>
     <ClInclude Include="BA_File.hpp">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="BA_File.cpp">
-      <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

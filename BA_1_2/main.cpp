@@ -9,7 +9,7 @@ int main(int argc, char** argvs)
 {
 	MyBA_Init();
 
-	BA_Array_Test();
+	BA_Dir_Test();
 
 	return MyBA_Quit();
 }

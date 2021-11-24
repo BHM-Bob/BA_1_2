@@ -114,6 +114,7 @@ void PPIs(int n, ...);
 
 #define LIST_FOR(p,pli) for(void* p = List_Copy(pli); p != NULL; p = List_Copy(pli))
 #define LIST_FORS(type,p,pli) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli))
+#define LIST_FORR(type,p,pli,opts) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli),opts)
 
 char* mstrdup(const char* p);
 int* intdup(int num, ...);
@@ -130,10 +131,6 @@ void gotoxy(int x, int y);
 char* StringAdd_L(const char* pstr, ...);//end with NULL
 char* StringAdd_S(const char* pstr, ...);//end with NULL
 
-char* StringWrite(FILE* pf, char* pc);
-
-char* StringRead(FILE* pf);
-
 int GetDayOfMonth(int year, int month);
 
 char* Get_Time_Without_L(void);
@@ -144,10 +141,6 @@ char* Get_Time_S(void);
 
 char* Get_Time_For_File_Name(char char_to_replace_unspport_char);
 
-unsigned long long  Get_File_Size(FILE* pf);
-
-char* ReadTXT(char* path);
-
 char* Num_To_Char(const char* ptype, ...);
 // ... 表示被换的数字变量
 
@@ -157,12 +150,6 @@ char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long*
 //里的Landing_Account调试时,一个极其明显但又不突出,不好找,关键是没调试器,的BUG找了一个多小时,胃疼,胃胀
 
 char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, unsigned long long* psite);
-
-char* Get_File_Type(char* ppath);
-
-bool Check_File_Exist(char* path);
-
-bool Encrypt_File(char* path, char* Passwords);
 
 bool Frees(char* ptype, ...);
 // ... Must end with a NULL
@@ -265,22 +252,6 @@ ListDot* List_IndexDot(List* plist, _ULL index);//Get the index dot,from 0
 void* List_IndexGet(List* plist, _ULL index);
 List* List_Put(List* plist, void* pdata);
 List* List_Destroy(List* plist);
-
-typedef struct TextIni TextIni;
-struct TextIni
-{
-	FILE* pf;
-	List* name;
-	List* data;
-};
-TextIni* TextIni_Create(void);
-TextIni* TextIni_Add(TextIni* p, const char* name, const char* data);
-TextIni* TextIni_Write(TextIni* p, const char* path);
-TextIni* TextIni_Del(TextIni* p, const char* name);
-TextIni* TextIni_Read(const char* path);
-char* TextIni_Query(TextIni* p, const char* name);
-
-void Free_R(List* pli);
 
 //***********************************************************************************************************************
 typedef struct BALog BALog;

@@ -7,7 +7,6 @@
 //#define USE_WINDOWS
 //#define USE_SDL2
 
-#include"BA_1_2.hpp"
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
 #include"BA_UI.hpp"
@@ -510,32 +509,7 @@ char* Get_Time_For_File_Name(char char_to_replace_unspport_char)
 	return p;
 }
 
-unsigned long long  Get_File_Size(FILE* pf)
-{
-	fseek(pf, 0, SEEK_END);
-	unsigned long long n = ftell(pf);
-	fseek(pf, 0, SEEK_SET);
-	return n;
-}
 
-char* ReadTXT(char* path)
-{
-	FILE* pf = NULL;
-	if (fopen_s(&pf, path, "r") == 0)
-	{
-		_ULL size = Get_File_Size(pf);
-		BALLOCS_L(char,pc,size + 1, NULL,);
-		fread(pc, 1, size, pf);
-		fclose(pf);
-		return pc;
-	}
-	else
-	{
-		if (!pf)
-			fclose(pf);
-		return (char*)MyBA_Errs(1,"ReadTXT: Err to open index_file:", path, " ,return NULL", NULL);
-	}
-}
 
 char* Num_To_Char(const char* ptype, ...)
 {
@@ -747,37 +721,9 @@ char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, uns
 	return NULL;
 }
 
-char* Get_File_Type(char* ppath)
-{
-	int i = 0;
-	char* pte = ppath + strlen(ppath) - 1;
-	for (; *pte != '.'; pte--, i++);//*pte=='.'  ,  i = type_len
-	char** ppte = MCALLOC(1, char*);
-	*ppte = MCALLOC(i + 1, char);
-	for (int j = 0; j < i; j++)
-		*(*ppte + j) = (char)tolower(*(pte + 1 + j));
-	return *ppte;
-}
 
-bool Check_File_Exist(char* path)
-{
-	FILE* pf = NULL;
-	if (fopen_s(&pf, path, "rb") == 0)
-	{
-		fclose(pf);
-		return 1;
-	}
-	if (pf == NULL)
-		return 0;
-	else
-		fclose(pf);
-	return 0;
-}
 
-bool Encrypt_File(char* path, char* Passwords)
-{
-	return 1;
-}
+
 
 bool Frees(char* ptype, ...)
 {
@@ -883,31 +829,6 @@ char* StringAdd_S(const char* pstr, ...)//end with NULL
 	return pret;
 }
 
-char* StringWrite(FILE* pf, char* pc)
-{
-	_ULL* plen = MCALLOC(1, _ULL);
-	(*plen) = strlen(pc);
-	fwrite(plen, sizeof(_ULL), 1, pf);
-	fwrite(pc, sizeof(char), *plen, pf);
-	free(plen);
-	return pc;
-}
-
-char* StringRead(FILE* pf)
-{
-	_ULL* plen = MCALLOC(1, _ULL);
-	fread(plen, sizeof(_ULL), 1, pf);
-	if (*plen == 0)
-	{
-		free(plen);
-		return NULL;
-	}
-	char* pc = MCALLOC(*plen + 1, char);
-	fread(pc, sizeof(char), *plen, pf);
-	free(plen);
-	return pc;
-}
-
 int GetDayOfMonth(int year, int month)
 {
 	//month:1~12
@@ -921,82 +842,6 @@ int GetDayOfMonth(int year, int month)
 		a[1] = 29;
 	return a[month - 1];
 }
-
-TextIni* TextIni_Create(void)
-{
-	BALLOCS_L(TextIni, p, 1,  NULL,);
-	p->name = List_Init();
-	p->data = List_Init();
-	return p;
-}
-
-TextIni* TextIni_Add(TextIni* p, const char* name, const char* data)
-{
-	if (p == NULL || p->name == NULL || p->data == NULL)
-		return (TextIni*)MyBA_Err("TextIni_Add: p == NULL || p->name == NULL || p->data == NULL, return NULL", 1);
-	List_Put(p->name, (void*)name);
-	List_Put(p->data, (void*)data);
-	return p;
-}
-
-TextIni* TextIni_Del(TextIni* p, const char* name)
-{
-	if (p == NULL || p->name == NULL || p->data == NULL)
-		return (TextIni*)MyBA_Err("TextIni_Add: p == NULL || p->name == NULL || p->data == NULL, return NULL", 1);
-	_ULL i = 0;
-	for (char* pname = (char*)List_Copy(p->name), *pdata = (char*)List_Copy(p->data); pname != NULL && pdata != NULL; pname = (char*)List_Copy(p->name), pdata = (char*)List_Copy(p->data))
-	{
-		if (strcmp(name, pname) == 0)
-		{
-			List_IndexGet(p->name, i);
-			List_IndexGet(p->data, i);
-		}
-		i++;
-	}
-	return p;
-}
-
-TextIni* TextIni_Write(TextIni* p, const char* path)
-{
-	if (fopen_s(&(p->pf), path, "r") != 0)
-		return (TextIni*)MyBA_Errs(1,"TextIni_Write: get a NULL pf with path: ", path, NULL);
-	fwrite(&(p->name->sumque), sizeof(_ULL), 1, p->pf);
-	for (char* name = (char*)List_Copy(p->name), *data = (char*)List_Copy(p->data); name != NULL && data != NULL; name = (char*)List_Copy(p->name), data = (char*)List_Copy(p->data))
-	{
-		StringWrite(p->pf, name);
-		StringWrite(p->pf, data);
-	}
-	fclose(p->pf);
-	return p;
-}
-
-TextIni* TextIni_Read(const char* path)
-{
-	BALLOCS_L(TextIni, p, 1,  NULL,);
-	BALLOCS_L(_ULL, psum, 1, NULL,);
-	if (fopen_s(&(p->pf), path, "r") != 0)
-		return (TextIni*)MyBA_Errs(1,"TextIni_Write: get a NULL pf with path: ", path, NULL);
-	fread(psum, sizeof(_ULL), 1, p->pf);
-	for (_ULL i = 0; i < (*psum); i++)
-	{
-		List_Put(p->name, StringRead(p->pf));
-		List_Put(p->name, StringRead(p->pf));
-	}
-	fclose(p->pf);
-	free(psum);
-	return p;
-}
-
-char* TextIni_Query(TextIni* p, const char* name)
-{
-	for (char* pname = (char*)List_Copy(p->name), *pdata = (char*)List_Copy(p->data); pname != NULL && pdata != NULL; pname = (char*)List_Copy(p->name), pdata = (char*)List_Copy(p->data))
-	{
-		if (strcmp(name, pname) == 0)
-			return pdata;
-	}
-	return NULL;
-}
-
 //***********************************************************************************************************************
 void* List_Get(List* plist)
 {
