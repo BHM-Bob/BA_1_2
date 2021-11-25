@@ -46,7 +46,8 @@ public:
 
 	BA_Array(BA_Shape _shape, _ULL content);
 	BA_Array(BA_Shape _shape, float content);
-	//way=="rand" item is 0~1
+	//way=="rand" item is 0~1 randomly,
+	//way==type just create the type of array
 	BA_Array(BA_Shape _shape, const char* way);
 
 	BA_Array To(char toType, bool aNew);
@@ -72,7 +73,11 @@ public:
 	BA_Array Eq(float other, bool aNew);
 	BA_Array Ge(float other, bool aNew);
 
+	BA_Array Func(float (*Func)(float* pt),bool aNew);
+
 	BA_Array Sum(void);
+
+	BA_Array Reshape(BA_Shape newShape,bool aNew);
 };
 
 //void* mymax(char* ptype, int sum, ...);//配合atoi等

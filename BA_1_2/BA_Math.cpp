@@ -9,6 +9,7 @@
 
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
+#include"BA_File.hpp"
 
 float abs_f(float a)
 {
@@ -971,7 +972,7 @@ BA_Shape::BA_Shape(_ULL len, int* _shape)
 
 BA_Shape::BA_Shape(int* _shape, _ULL len)
 {
-shapeLen = len;
+	shapeLen = len;
 	shape = BALLOC_L(len, int);
 	if (shape == NULL)
 	{
@@ -1042,6 +1043,7 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 	dataShape = BALLOC_R(_shape.shapeLen, int, mem);
 	shapeLen = _shape.shapeLen;
 	dataL = NULL;
+	dataF = NULL;
 	type = 'f';
 	dataLen = 1;
 	dataSumF = dataSumL = 0;
@@ -1052,12 +1054,22 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 		dataShape[i] = _shape.shape[i];
 	}
 
-	dataF = BALLOC_R(dataLen, float, mem);
 	if (strcmp(way, "rand") == 0)
 	{
+		dataF = BALLOC_R(dataLen, float, mem);
 		float* te = dataF;
 		for (_ULL i = 0; i < dataLen; i++, te++)
 			*te = (float)(rand()%10000) / (float)10000.;
+	}
+	else if (strcmp(way, "l") == 0)
+	{
+		type = 'l';
+		dataL = BALLOC_R(dataLen, _ULL, mem);
+	}
+	else if (strcmp(way, "f") == 0)
+	{
+		type = 'f';
+		dataF = BALLOC_R(dataLen, float, mem);
 	}
 	//else//strcmp(way, "xy") == 0
 	//{
@@ -1877,17 +1889,17 @@ BA_Array BA_Array::MatMul(BA_Array other)
 		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): dataShape[shapeLen-1] != other.dataShape[other.dataLen-2],return *this", 1);
 		return *this;
 	}
-	if (type == 'l' || other.type == 'l')
+	for(_ULL i = 0;i<shapeLen-2;i++)
 	{
-		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): type == 'l' || other.type == 'l' and it is not support now,return *this", 1);
-		return *this;
+		if (dataShape[i] != other.dataShape[i])
+		{
+			MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): uncompatibale shape,return *this", 1);
+			return *this;
+		}
 	}
-	else//selfType == 'f' && other.type == 'f'
-	{
-		float* pt1 = dataF, * pt2 = other.dataF;
-		for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
-			*pt1 = (*pt1) * (*pt2);
-	}
+	float* pt1 = dataF, * pt2 = other.dataF;
+	for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+		*pt1 = (*pt1) * (*pt2);
 	return *this;
 }
 
@@ -1950,6 +1962,33 @@ BA_Array BA_Array::Sum(void)
 	return *this;
 }
 
+BA_Array BA_Array::Reshape(BA_Shape newShape, bool aNew)
+{
+	_ULL newShapeDataLen = 1;
+	for (_ULL i = 0; i < newShape.shapeLen; i++)
+		newShapeDataLen *= newShape.shape[i];
+	if (newShapeDataLen != dataLen)
+	{
+		MyBA_Err("BA_Array BA_Array::Reshape(BA_Shape newShape, bool aNew):uncompatibable shape,return *this", 1);
+	}
+	else
+	{
+		if (aNew)
+		{
+			return BA_Array(newShape, &type);
+		}
+		else
+		{
+			MyBA_Free(dataShape, mem);
+			dataShape = BALLOC_R(newShape.shapeLen, int, mem);
+			shapeLen = newShape.shapeLen;
+			for (_ULL i = 0; i < newShape.shapeLen; i++)
+				dataShape[i] = newShape.shape[i];
+		}
+	}
+	return *this;
+}
+
 BA_Array BA_Array::Ge(float other, bool aNew)
 {
 	if (type == 'l')
@@ -1986,6 +2025,32 @@ BA_Array BA_Array::Ge(float other, bool aNew)
 			for (_ULL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) > (other) ? 1 : 0;
 		}
+	}
+	return *this;
+}
+
+BA_Array BA_Array::Func(float (*Func)(float* pt), bool aNew)
+{
+	if (type == 'f')
+	{
+		if (aNew)
+		{
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
+			float* pt1 = dataF, * pt3 = ret.dataF;
+			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+				*pt3 = Func(pt1);
+			return ret;
+		}
+		else
+		{
+			float* pt1 = dataF;
+			for (_ULL i = 0; i < dataLen; i++, pt1++)
+				*pt1 = Func(pt1);
+		}
+	}
+	else
+	{
+		MyBA_Err("BA_Array BA_Array::Func(float (*Func)(float* pt), bool aNew): unsupport for type = 'l',do nothing", 1);
 	}
 	return *this;
 }

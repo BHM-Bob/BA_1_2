@@ -268,17 +268,17 @@ BA_Dir::BA_Dir(const char* _root)
 BA_Dir::BA_Dir(const char* _root, const char* _type)
 {
 
-    _ULL _rootLen = strlen(root);
+    _ULL _rootLen = strlen(_root);
     dirs = List_Init();
     files = List_Init();
     mem = List_Init();
+    root = BALLOC_R(_rootLen + 1, char, mem);
     if (root == NULL || _type == NULL || _rootLen < 3)
     {
         MyBA_Err("BA_Dir::BA_Dir(const char* root):root == NULL || strlen(root) < 3,do nothing", 1);
     }
     else
     {
-        root = BALLOC_R(_rootLen + 1, char, mem);
         if (root != NULL)
         {
             if (strcpy_s(root, _rootLen + 1, _root) == 0)
