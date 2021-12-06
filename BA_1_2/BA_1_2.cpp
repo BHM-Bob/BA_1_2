@@ -17,7 +17,7 @@ MyBA* pba;
 
 float MyBA_Ver(void)
 {
-	return 1.4000;
+	return 1.4100f;
 	/*
 	* 1.1000:2020年08月15日：MyUI； MyDir(in C)
 	* 1.2000:2021年03月28日：MyBA; ThreadQue  MyTreads; List
@@ -28,6 +28,7 @@ float MyBA_Ver(void)
 	* 1.3200:2021年08月29日: 将QQDH项目转化为SDL_ColorText部件
 	* 1.3300:2021年11月20日: 升级内存管理机制,支持长时内存和快内存的申请与释放
 	* 1.4000:2021年11月25日: 使用C++,增加BA_Array类和BA_Dir类,支持任意形状数组运算,支持文件夹查看
+	* 1.4110:2021年12月06日: 增加BA_String,为内存申请增加内存量计数
 	*/
 }
 
@@ -192,6 +193,8 @@ void* MyBA_CALLOC_S(_ULL count, _ULL size)
 		return NULL;
 	}
 	List_Put(pba->STmem, ret);
+	pba->STmem->plast->usage = size*count;
+	pba->STmem->tik += pba->STmem->plast->usage;
 	return ret;
 }
 
@@ -204,6 +207,8 @@ void* MyBA_CALLOC_L(_ULL count, _ULL size)
 		return NULL;
 	}
 	List_Put(pba->LTmem, ret);
+	pba->LTmem->plast->usage = size* count;
+	pba->LTmem->tik += pba->LTmem->plast->usage;
 	return ret;
 }
 
@@ -216,6 +221,8 @@ void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli)
 		return NULL;
 	}
 	List_Put(pli, ret);
+	pli->plast->usage = size*count;
+	pli->tik += pli->plast->usage;
 	return ret;
 }
 
@@ -878,7 +885,7 @@ MyThread* MyThread_Start(MyThread* pth, int (*pF)(void*), void* pdata)
 	if (thrd_create(pth->pid, pF, pdata) != thrd_success)
 	{
 		pth->state = 4;
-		PPWs(Num_To_Char("llu", pth->numid), "   This thread is in error due to thrd_create");
+		PPWs(Num_To_Char("u", pth->numid), "   This thread is in error due to thrd_create");
 		return NULL;
 	}
 	return pth;
@@ -892,7 +899,7 @@ MyThreadQue* MyThreadQueue_Get(MyThreadQueue* pque)
 		return NULL;
 	}
 	MyThreadQue* pret = NULL;
-	MyThreadQue* pte = NULL; PPT();
+	MyThreadQue* pte = NULL;
 	mtx_lock(pque->pmtx);
 	if (cnd_wait(pque->pcndput, pque->pmtx) != thrd_success)
 		return NULL;
@@ -943,7 +950,7 @@ MyThreadQueue* MyThreadQueue_Init(void* pdata)
 	pque->pcndget = MCALLOC(1, cnd_t);
 	if (!(mtx_init(pque->pmtx, mtx_plain) == thrd_success && cnd_init(pque->pcndput) == thrd_success && cnd_init(pque->pcndget) == thrd_success))
 	{
-		PPW("This queue is in error due tomtx or cnd init");
+		PPW("This queue is in error due to mtx or cnd init");
 		return NULL;
 	}
 	return pque;

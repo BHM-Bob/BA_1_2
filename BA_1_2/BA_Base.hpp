@@ -80,8 +80,9 @@ void PPIs(int n, ...);
 #define PPU(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%llu>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
 #define PPC(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%c>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
 #define PPP(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%p>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
-#define PPS(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%s>,It's size is %llu\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p),strlen(p))
+#define PPSS(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%s>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
 //this str can not contan any ++ opts, because ti will use twice in this define line
+#define PPS(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%s>,It's size is %llu\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p),strlen(p))
 
 #define PPW(p) printf("\nWarning : In %s at line %lu ,<%s>!!!,\n",__func__,__LINE__,(p))
 //Push Warning
@@ -114,6 +115,7 @@ void PPIs(int n, ...);
 
 #define LIST_FOR(p,pli) for(void* p = List_Copy(pli); p != NULL; p = List_Copy(pli))
 #define LIST_FORS(type,p,pli) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli))
+#define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p != NULL; p = (type*)List_Get(pli))
 #define LIST_FORR(type,p,pli,opts) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli),opts)
 
 char* mstrdup(const char* p);

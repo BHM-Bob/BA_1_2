@@ -1061,14 +1061,6 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 		for (_ULL i = 0; i < dataLen; i++, te++)
 			*te = (float)(rand()%10000) / (float)10000.;
 	}
-	else if (strcmp(way, "range") == 0)
-	{
-		float js = 0.;
-		dataF = BALLOC_R(dataLen, float, mem);
-		float* te = dataF;
-		for (_ULL i = 0; i < dataLen; i++, te++,js+=1.0)
-			*te = js;
-	}
 	else if (strcmp(way, "l") == 0)
 	{
 		type = 'l';

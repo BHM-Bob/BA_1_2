@@ -14,5 +14,6 @@
 #include"BA_UI.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
+#include"BA_Test.hpp"
 
 #endif
