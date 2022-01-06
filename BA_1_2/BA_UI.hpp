@@ -12,8 +12,6 @@
 #include"BA_Base.hpp"
 
 int* ProduceRainbowCol(int* col, float* i);// r g b
-
-#ifdef USE_SDL2
 //************************************************************************************************************************
 //*********************************************SDL2*****************************************************************Start
 //*************************************************************************************************************************
@@ -248,14 +246,14 @@ struct MyUI
 	List* otherTex;
 	List* otherTexRe;
 	SDL_Texture* otherTex2[1024];
-	SDL_Rect* otherTexRe[1024];
+	SDL_Rect* otherTexRe2[1024];
 	MyUI* (*pF_Addfont)(MyUI* pui, int order, const char* ppath);
 	MyUI* (*pF_Addbutt)(MyUI* pui, int order, const char* name, int charsize, int charcolor[3], int backcolor[3], int xywh[4], SDL_Surface* back);
 	MyUI* (*pF_Delbutt)(MyUI* pui, int order);
 	MyUI* (*pF_Checkbutt)(MyUI* pui);
 	MyUI* (*pF_Checktitle)(MyUI* pui);
 	MyUI* (*pF_Update)(MyUI* pui, bool rendclear, bool copyTex);
-	bool (*pF_PollQuit)(MyUI* pui);
+	bool (*pF_PollQuit)(MyUI* pui);//do not get quit sig return 0
 	void (*pF_PutErr)(MyUI* pui, char* pc);
 	void (*pF_GetErr)(MyUI* pui);
 };
@@ -272,6 +270,5 @@ bool MyUI_PollQuit(MyUI* pui);
 //***************************************************************************************************************************Struct MyUI ***End
 //************************************************************************************************************************
 //*********************************************SDL2******************************************************************End
-//*************************************************************************************************************************
-#endif // USE_SDL2
+
 #endif

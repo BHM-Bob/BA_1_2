@@ -4,6 +4,7 @@
 //2021年11月18日 23点35分
 
 #include"BA_Base.hpp"
+#include"BA_UI.hpp"
 
 int* ProduceRainbowCol(int* col, float* i)// r g b
 {
@@ -14,7 +15,6 @@ int* ProduceRainbowCol(int* col, float* i)// r g b
 	return col;
 }
 
-#ifdef USE_SDL2
 
 bool SDL_Init_s(void)//ok return 1
 {
@@ -883,6 +883,7 @@ MyUI* MyUI_Update(MyUI* pui, bool rendclear, bool copyTex)
 	return pui;
 }
 
+//do not get quit sig return 0
 bool MyUI_PollQuit(MyUI* pui)
 {
 	pui->pF_Checkbutt(pui);
@@ -893,7 +894,7 @@ bool MyUI_PollQuit(MyUI* pui)
 
 MyUI_ColorSur* MyUI_ColorSur_Init(SDL_Surface* distSur)
 {
-	MCALLOCS(pcs, 1, MyUI_ColorSur, NULL);
+	MCALLOCS(MyUI_ColorSur,pcs, 1);
 	pcs->pre = MCALLOC(1, SDL_Rect);
 	pcs->pre->x = pcs->pre->y = 0;
 	pcs->pre->w = distSur->w;
@@ -994,7 +995,7 @@ MyUI_ColorSur* MyUI_ColorSur_Update(MyUI_ColorSur* pcs)
 MyUI_ColorText* MyUI_ColorText_Init(SDL_Renderer* rend, TTF_Font* font, const char* pc)
 //为什么直接从fontSur中读取像素是失败的？？？？(get 255 0 0 0)
 {
-	MCALLOCS(pct, 1, MyUI_ColorText, NULL);
+	MCALLOCS(MyUI_ColorText,pct, 1);
 	pct->mem = List_Init();
 	pct->font = font;
 	pct->rend = rend;
@@ -1119,7 +1120,7 @@ SDL_Surface* MyUI_ColorText_Get(MyUI_ColorText* pct)
 }
 bool MyUI_ColorText_Destroy(MyUI_ColorText* pct)
 {
-	Free_R(pct->mem);
+	MyBA_Free_R(pct->mem);
 	SDL_FreeSurface(pct->fontSur);
 	SDL_FreeSurface(pct->pSur);
 	free(pct);
@@ -1128,4 +1129,3 @@ bool MyUI_ColorText_Destroy(MyUI_ColorText* pct)
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //*********************************************SDL2*****************************************************************End
-#endif // USE_SDL2

@@ -78,6 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <LibraryWPath>E:\My_Progs\Cpp\%40ExtendLib\SDL2\lib\x64\DLL;$(LibraryWPath)</LibraryWPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -122,6 +123,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2.lib;E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2_image.lib;E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2_mixer.lib;E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2main.lib;E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -144,6 +146,7 @@
     <ClCompile Include="BA_1_2.cpp" />
     <ClCompile Include="BA_File.cpp" />
     <ClCompile Include="BA_Math.cpp" />
+    <ClCompile Include="BA_Plot.cpp" />
     <ClCompile Include="BA_String.cpp" />
     <ClCompile Include="BA_UI.cpp" />
     <ClCompile Include="main.cpp" />
@@ -154,6 +157,7 @@
     <ClInclude Include="BA_Base.hpp" />
     <ClInclude Include="BA_File.hpp" />
     <ClInclude Include="BA_Math.hpp" />
+    <ClInclude Include="BA_Plot.hpp" />
     <ClInclude Include="BA_String.hpp" />
     <ClInclude Include="BA_Test.hpp" />
     <ClInclude Include="BA_UI.hpp" />

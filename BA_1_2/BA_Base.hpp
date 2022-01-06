@@ -28,9 +28,7 @@
 #include<time.h>
 //#include<unistd.h>
 
-#ifdef USE_THREADS
 #include<thread>
-#endif
 
 #ifdef USE_WINDOWS
 
@@ -46,14 +44,14 @@ E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2_mixer.lib
 E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2main.lib
 E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2_ttf.lib
 */
-#ifdef USE_SDL2
+//#ifdef USE_SDL2
 
-#include"../../../Cpp/@ExtendLib/SDL2/include/SDL.h"
-#include"../../../Cpp/@ExtendLib/SDL2/include/SDL_syswm.h"
-#include"../../../Cpp/@ExtendLib/SDL2/include/SDL_image.h"
-#include"../../../Cpp/@ExtendLib/SDL2/include/SDL_ttf.h"
-#include"../../../Cpp/@ExtendLib/SDL2/include/SDL_mixer.h"
-#endif // USE_SDL2
+#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL.h"
+#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL_syswm.h"
+#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL_image.h"
+#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL_ttf.h"
+#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL_mixer.h"
+//#endif // USE_SDL2
 
 /*
 D:\OpenCV\opencv\build\include\opencv2
@@ -151,62 +149,61 @@ bool Frees(char* ptype, ...);
 
 char* GBK_To_UTF8(const char* pc);
 
-#ifdef USE_THREADS
 //***********************************************************************************************************************
-typedef struct MyThread MyThread;
-struct MyThread
-{
-	_ULL sumthreads;
-	_ULL numid;
-	bool flag;
-	bool quit;
-	int (*pF)(void*);
-	void* pdata;
-	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-	thrd_t* pid;
-	mtx_t* pmtx;          // 一个互斥
-	cnd_t* pcndput;       // 两个条件变量
-	cnd_t* pcndget;
-};
-MyThread* MyThread_Init(_ULL sumthreads);//产生sumthreads个MyThread
-MyThread* MyThread_Start(MyThread * pth, int (*pF)(void*), void* pdata);
-MyThread* MyThread_Get(MyThread * pth);
-MyThread* MyThread_Free(MyThread * pth);
-MyThread* MyThread_Destroy(MyThread * pth);
+//typedef struct MyThread MyThread;
+//struct MyThread
+//{
+//	_ULL sumthreads;
+//	_ULL numid;
+//	bool flag;
+//	bool quit;
+//	int (*pF)(void*);
+//	void* pdata;
+//	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
+//	thrd_t* pid;
+//	mtx_t* pmtx;          // 一个互斥
+//	cnd_t* pcndput;       // 两个条件变量
+//	cnd_t* pcndget;
+//};
+//MyThread* MyThread_Init(_ULL sumthreads);//产生sumthreads个MyThread
+//MyThread* MyThread_Start(MyThread * pth, int (*pF)(void*), void* pdata);
+//MyThread* MyThread_Get(MyThread * pth);
+//MyThread* MyThread_Free(MyThread * pth);
+//MyThread* MyThread_Destroy(MyThread * pth);
 //***********************************************************************************************************************
 
 //***********************************************************************************************************************
-typedef struct MyThreadQue MyThreadQue;//先进先出
-struct MyThreadQue
-{
-	MyThreadQue* pnext;
-	MyThreadQue* ppre;
-	int (*pF)(void*);
-	void* pdata;
-	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-};
+//typedef struct MyThreadQue MyThreadQue;//先进先出
+//struct MyThreadQue
+//{
+//	MyThreadQue* pnext;
+//	MyThreadQue* ppre;
+//	int (*pF)(void*);
+//	void* pdata;
+//	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
+//};
+//
+//typedef struct MyThreadQueue MyThreadQueue;//先进先出
+//struct MyThreadQueue
+//{
+//	_ULL sumque;
+//	MyThreadQue* pfirst;
+//	MyThreadQue* plast;
+//	int (*pF)(void*);
+//	MyThreadQueue* (*Put)(MyThreadQueue* pque, void* pdata);
+//	MyThreadQue* (*Get)(MyThreadQueue* pqueue);
+//	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
+//	thrd_t* pid;
+//	mtx_t* pmtx;          // 一个互斥
+//	cnd_t* pcndput;       // 两个条件变量
+//	cnd_t* pcndget;
+//};
+//MyThreadQueue* MyThreadQueue_Init(void* pdata);
+//MyThreadQue* MyThreadQueue_Get(MyThreadQueue * pqueue);
+//MyThreadQueue* MyThreadQueue_Put(MyThreadQueue * pque, void* pdata);
+//MyThreadQueue* MyThreadQueue_Destroy(MyThreadQueue * pque);
+////***********************************************************************************************************************
 
-typedef struct MyThreadQueue MyThreadQueue;//先进先出
-struct MyThreadQueue
-{
-	_ULL sumque;
-	MyThreadQue* pfirst;
-	MyThreadQue* plast;
-	int (*pF)(void*);
-	MyThreadQueue* (*Put)(MyThreadQueue* pque, void* pdata);
-	MyThreadQue* (*Get)(MyThreadQueue* pqueue);
-	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-	thrd_t* pid;
-	mtx_t* pmtx;          // 一个互斥
-	cnd_t* pcndput;       // 两个条件变量
-	cnd_t* pcndget;
-};
-MyThreadQueue* MyThreadQueue_Init(void* pdata);
-MyThreadQue* MyThreadQueue_Get(MyThreadQueue * pqueue);
-MyThreadQueue* MyThreadQueue_Put(MyThreadQueue * pque, void* pdata);
-MyThreadQueue* MyThreadQueue_Destroy(MyThreadQueue * pque);
-//***********************************************************************************************************************
-#endif
 
 
 //***********************************************************************************************************************

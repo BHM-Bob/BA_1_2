@@ -35,55 +35,71 @@ float MyBA_Ver(void)
 void MyBA_Init(void)
 {
 	pba = MCALLOC(1, MyBA);
-	pba->BA_Ver = MyBA_Ver();
-	printf("\nMyBA (Ver: %10.5f; Build: %s %s) start\n", pba->BA_Ver, __DATE__, __TIME__);
+	if (pba == NULL)
+	{
+		PPW("MyBA_Init:MCALLOC==NULL,pba = NULL");
+		PPW("Stop at this moment because pba was not Inited, so it may result in some problems");
+		_SIS_;
+	}
+	else
+	{
+		pba->BA_Ver = MyBA_Ver();
+		printf("\nMyBA (Ver: %10.5f; Build: %s %s) start\n", pba->BA_Ver, __DATE__, __TIME__);
 
-	pba->GUT_t = clock();
-	pba->GUT_state = 0;
-	pba->JDT_t = 0;
+		pba->GUT_t = clock();
+		pba->GUT_state = 0;
+		pba->JDT_t = 0;
 
-	pba->exepath = _getcwd(NULL, 0);//psd->exeinfo.exepath is <G:\PellesC\My Project\VN7\VN7 v1_3\VN7 1_3>,It's size is 42
+		pba->exepath = _getcwd(NULL, 0);//psd->exeinfo.exepath is <G:\PellesC\My Project\VN7\VN7 v1_3\VN7 1_3>,It's size is 42
 
-	pba->mem = List_Init();
-	pba->LTmem = List_Init();
-	pba->STmem = List_Init();
+		pba->mem = List_Init();
+		pba->LTmem = List_Init();
+		pba->STmem = List_Init();
 
 #ifdef USE_SDL2
-	pba->isSDL2 = 1;
+		pba->isSDL2 = 1;
 #endif
 
-	MCALLOCS(BALog,plog, 1);
-	plog->t = clock();
-	plog->pdate = Get_Time_Without_L();
-	plog->pc = _strdup("MyBA Start");
-	pba->pLog = List_Init();
-	pba->pLog->Put(pba->pLog, plog);
+		MCALLOCS(BALog, plog, 1);
+		if (plog == NULL)
+		{
+			PPW("MyBA_Init:plog == NULL,pass");
+		}
+		else
+		{
+			plog->t = clock();
+			plog->pdate = Get_Time_Without_L();
+			plog->pc = _strdup("MyBA Start");
+		}
+		pba->pLog = List_Init();
+		pba->pLog->Put(pba->pLog, plog);
 
-	pba->PutLog = MyBA_PutLog;
-	pba->GUT = MyBA_GetUsedTime;
-	pba->Quit = MyBA_Quit;
+		pba->PutLog = MyBA_PutLog;
+		pba->GUT = MyBA_GetUsedTime;
+		pba->Quit = MyBA_Quit;
 
 #ifdef USE_WINDOWS
-	Sleep(500);
+		Sleep(500);
 #else
 #ifdef USE_OPENCV
-	cv::WaitKey(500);
+		cv::WaitKey(500);
 #endif
-	for (clock_t t = clock(); clock() < t + 500;);
+		for (clock_t t = clock(); clock() < t + 500;);
 #endif
 
-	if (_kbhit() != 0)
-	{
-		switch (_getch())
+		if (_kbhit() != 0)
 		{
-		case 'c':case'C':
-			MyBA_CMD();
-			break;
-		case 's':case'S':
-			MyBA_SafeMode();
-			break;
-		default:
-			break;
+			switch (_getch())
+			{
+			case 'c':case'C':
+				MyBA_CMD();
+				break;
+			case 's':case'S':
+				MyBA_SafeMode();
+				break;
+			default:
+				break;
+			}
 		}
 	}
 	srand(time(NULL));
@@ -251,6 +267,7 @@ void MyBA_Free_R(List* pli)
 	{
 		PPW("MyBA_Free_R: pli==NULL,return");
 	}
+	pli->now = pli->pfirst;
 }
 
 void MyBA_Free(void* p,List* mem)
@@ -289,6 +306,7 @@ void MyBA_FreeInstance(void)
 	{
 		PPW("MyBA_FreeInstance: pba->STmem==NULL,return");
 	}
+	pba->STmem->now = pba->STmem->pfirst;
 }
 
 void MyBA_CMD(void)
@@ -866,97 +884,95 @@ List* List_Init(void)//产生sumthreads个List
 }
 //***********************************************************************************************************************
 
-#ifdef USE_THREADS
 //***********************************************************************************************************************
-MyThread* MyThread_Init(_ULL sumthreads)//产生sumthreads个MyThread
-{
-	MyThread* pth = MCALLOC(sumthreads, MyThread);
-	for (_ULL a = 0; a < sumthreads; a++)
-	{
-		pth[a].flag = 1;
-		pth[a].numid = a;
-		pth[a].sumthreads = sumthreads;
-		pth[a].pmtx = MCALLOC(1, mtx_t);
-	}
-	return pth;
-}
-MyThread* MyThread_Start(MyThread* pth, int (*pF)(void*), void* pdata)
-{
-	if (thrd_create(pth->pid, pF, pdata) != thrd_success)
-	{
-		pth->state = 4;
-		PPWs(Num_To_Char("u", pth->numid), "   This thread is in error due to thrd_create");
-		return NULL;
-	}
-	return pth;
-}
+//MyThread* MyThread_Init(_ULL sumthreads)//产生sumthreads个MyThread
+//{
+//	MyThread* pth = MCALLOC(sumthreads, MyThread);
+//	for (_ULL a = 0; a < sumthreads; a++)
+//	{
+//		pth[a].flag = 1;
+//		pth[a].numid = a;
+//		pth[a].sumthreads = sumthreads;
+//		pth[a].pmtx = MCALLOC(1, mtx_t);
+//	}
+//	return pth;
+//}
+//MyThread* MyThread_Start(MyThread* pth, int (*pF)(void*), void* pdata)
+//{
+//	if (thrd_create(pth->pid, pF, pdata) != thrd_success)
+//	{
+//		pth->state = 4;
+//		PPWs(Num_To_Char("u", pth->numid), "   This thread is in error due to thrd_create");
+//		return NULL;
+//	}
+//	return pth;
+//}
+////***********************************************************************************************************************
+//MyThreadQue* MyThreadQueue_Get(MyThreadQueue* pque)
+//{
+//	if (pque == NULL)
+//	{
+//		PPW("get a NULL que");
+//		return NULL;
+//	}
+//	MyThreadQue* pret = NULL;
+//	MyThreadQue* pte = NULL;
+//	mtx_lock(pque->pmtx);
+//	if (cnd_wait(pque->pcndput, pque->pmtx) != thrd_success)
+//		return NULL;
+//	pret = pque->pfirst;
+//	pte = pque->pfirst->pnext;
+//	pte->ppre = NULL;
+//	pque->pfirst = pte;
+//	--pque->sumque;
+//	mtx_unlock(pque->pmtx);
+//	cnd_signal(pque->pcndget);
+//	return pret;
+//}
+//MyThreadQueue* MyThreadQueue_Put(MyThreadQueue* pque, void* pdata)//TODO递归可一次性加多个data变que
+//{
+//	mtx_lock(pque->pmtx);
+//	if (cnd_wait(pque->pcndget, pque->pmtx) != thrd_success)
+//		return NULL;
+//	MyThreadQue* pte = MCALLOC(1, MyThreadQue);
+//	++pque->sumque;
+//	pte->ppre = pque->plast;
+//	pte->pnext = NULL;
+//	pque->plast->pnext = pte;
+//	pque->plast = pte;
+//	pte->pdata = pdata;
+//	mtx_unlock(pque->pmtx);
+//	cnd_signal(pque->pcndput);
+//	return pque;
+//}
+//MyThreadQueue* MyThreadQueue_Destroy(MyThreadQueue* pque)
+//{
+//	for (MyThreadQue* pte = pque->pfirst; pte != NULL; pte = pte->pnext)
+//		free(pte);
+//	free(pque);
+//	return pque;
+//}
+//MyThreadQueue* MyThreadQueue_Init(void* pdata)
+//{
+//	MyThreadQueue* pque = MCALLOC(1, MyThreadQueue);
+//	pque->sumque = 1;
+//	pque->pfirst = MCALLOC(1, MyThreadQue);
+//	pque->plast = pque->pfirst;
+//	pque->pfirst->pnext = pque->pfirst->ppre = NULL;
+//	pque->pfirst->pdata = pdata;
+//	pque->Put = MyThreadQueue_Put;
+//	pque->Get = MyThreadQueue_Get;
+//	pque->pmtx = MCALLOC(1, mtx_t);
+//	pque->pcndput = MCALLOC(1, cnd_t);
+//	pque->pcndget = MCALLOC(1, cnd_t);
+//	if (!(mtx_init(pque->pmtx, mtx_plain) == thrd_success && cnd_init(pque->pcndput) == thrd_success && cnd_init(pque->pcndget) == thrd_success))
+//	{
+//		PPW("This queue is in error due to mtx or cnd init");
+//		return NULL;
+//	}
+//	return pque;
+//}
 //***********************************************************************************************************************
-MyThreadQue* MyThreadQueue_Get(MyThreadQueue* pque)
-{
-	if (pque == NULL)
-	{
-		PPW("get a NULL que");
-		return NULL;
-	}
-	MyThreadQue* pret = NULL;
-	MyThreadQue* pte = NULL;
-	mtx_lock(pque->pmtx);
-	if (cnd_wait(pque->pcndput, pque->pmtx) != thrd_success)
-		return NULL;
-	pret = pque->pfirst;
-	pte = pque->pfirst->pnext;
-	pte->ppre = NULL;
-	pque->pfirst = pte;
-	--pque->sumque;
-	mtx_unlock(pque->pmtx);
-	cnd_signal(pque->pcndget);
-	return pret;
-}
-MyThreadQueue* MyThreadQueue_Put(MyThreadQueue* pque, void* pdata)//TODO递归可一次性加多个data变que
-{
-	mtx_lock(pque->pmtx);
-	if (cnd_wait(pque->pcndget, pque->pmtx) != thrd_success)
-		return NULL;
-	MyThreadQue* pte = MCALLOC(1, MyThreadQue);
-	++pque->sumque;
-	pte->ppre = pque->plast;
-	pte->pnext = NULL;
-	pque->plast->pnext = pte;
-	pque->plast = pte;
-	pte->pdata = pdata;
-	mtx_unlock(pque->pmtx);
-	cnd_signal(pque->pcndput);
-	return pque;
-}
-MyThreadQueue* MyThreadQueue_Destroy(MyThreadQueue* pque)
-{
-	for (MyThreadQue* pte = pque->pfirst; pte != NULL; pte = pte->pnext)
-		free(pte);
-	free(pque);
-	return pque;
-}
-MyThreadQueue* MyThreadQueue_Init(void* pdata)
-{
-	MyThreadQueue* pque = MCALLOC(1, MyThreadQueue);
-	pque->sumque = 1;
-	pque->pfirst = MCALLOC(1, MyThreadQue);
-	pque->plast = pque->pfirst;
-	pque->pfirst->pnext = pque->pfirst->ppre = NULL;
-	pque->pfirst->pdata = pdata;
-	pque->Put = MyThreadQueue_Put;
-	pque->Get = MyThreadQueue_Get;
-	pque->pmtx = MCALLOC(1, mtx_t);
-	pque->pcndput = MCALLOC(1, cnd_t);
-	pque->pcndget = MCALLOC(1, cnd_t);
-	if (!(mtx_init(pque->pmtx, mtx_plain) == thrd_success && cnd_init(pque->pcndput) == thrd_success && cnd_init(pque->pcndget) == thrd_success))
-	{
-		PPW("This queue is in error due to mtx or cnd init");
-		return NULL;
-	}
-	return pque;
-}
-//***********************************************************************************************************************
-#endif
 
 #ifdef USE_WINDOWS
 char* GBK_To_UTF8(const char* pc)

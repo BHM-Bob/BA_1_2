@@ -238,10 +238,11 @@ BA_String BA_String::Repeat(_ULL times)
 
 BA_String BA_String::Concat(BA_String string)
 {
-	len += string.len;
+	len += string.len+1;
 	char* pct = MCALLOC(len, char);
 	if (pct != NULL)
 	{
+		strcat_s(pct, len, pc);
 		strcat_s(pct, len, string.pc);
 		free(pc);
 		pc = pct;
@@ -255,10 +256,11 @@ BA_String BA_String::Concat(BA_String string)
 
 BA_String BA_String::Concat(const char* _pc)
 {
-	len += strlen(_pc);
+	len += strlen(_pc)+1;
 	char* pct = MCALLOC(len, char);
 	if (pct != NULL)
 	{
+		strcat_s(pct, len, pc);
 		strcat_s(pct, len, _pc);
 		free(pc);
 		pc = pct;

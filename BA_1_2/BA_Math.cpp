@@ -1350,6 +1350,7 @@ BA_Array BA_Array::Reduc(BA_Array other, bool aNew)
 			}
 		}
 	}
+	return *this;
 }
 
 BA_Array BA_Array::Mul(BA_Array other, bool aNew)
@@ -2054,6 +2055,32 @@ BA_Array BA_Array::Func(float (*Func)(float* pt), bool aNew)
 			float* pt1 = dataF;
 			for (_ULL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = Func(pt1);
+		}
+	}
+	else
+	{
+		MyBA_Err("BA_Array BA_Array::Func(float (*Func)(float* pt), bool aNew): unsupport for type = 'l',do nothing", 1);
+	}
+	return *this;
+}
+
+BA_Array BA_Array::Maps(float(*MapFunc)(float* pt, void* p), void* p, bool aNew)
+{
+	if (type == 'f')
+	{
+		if (aNew)
+		{
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
+			float* pt1 = dataF, * pt3 = ret.dataF;
+			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+				*pt3 = MapFunc(pt1,p);
+			return ret;
+		}
+		else
+		{
+			float* pt1 = dataF;
+			for (_ULL i = 0; i < dataLen; i++, pt1++)
+				*pt1 = MapFunc(pt1,p);
 		}
 	}
 	else

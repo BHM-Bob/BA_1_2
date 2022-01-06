@@ -73,7 +73,9 @@ public:
 	BA_Array Eq(float other, bool aNew);
 	BA_Array Ge(float other, bool aNew);
 
-	BA_Array Func(float (*Func)(float* pt),bool aNew);
+	BA_Array Func(float (*Func)(float* pt), bool aNew);
+	BA_Array Maps(float (*MapFunc)(float* pt, void* p), void* p, bool aNew);
+
 
 	BA_Array Sum(void);
 
