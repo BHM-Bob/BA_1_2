@@ -1163,6 +1163,37 @@ BA_Array BA_Array::To(char toType, bool aNew)
 	return *this;
 }
 
+BA_Array BA_Array::Repeat(BA_Shape dims, bool aNew)
+{
+	if (shapeLen != dims.shapeLen)
+	{
+		MyBA_Err("BA_Array BA_Array::Repeat(BA_Shape dims, bool aNew):shapeLen != dims.shapeLen, return *this", 1);
+		return *this;
+	}
+
+	return *this;
+}
+
+BA_Array BA_Array::Concat(BA_Array a, int _dim, bool aNew)
+{
+	if (shapeLen != a.shapeLen || _dim > shapeLen || _dim > a.shapeLen)
+	{
+		MyBA_Err("BA_Array BA_Array::Concat(BA_Array a, bool aNew):shapeLen err, return *this", 1);
+		return *this;
+	}
+
+	for (int dim = 0; dim < shapeLen; dim++)
+	{
+		if (dataShape[dim] != a.dataShape[dim] && dim != _dim)
+		{
+			MyBA_Err("BA_Array BA_Array::Concat(BA_Array a, bool aNew):shape not matching eith other dims, return *this", 1);
+			return *this;
+		}
+	}
+
+	return *this;
+}
+
 BA_Array BA_Array::Add(BA_Array other, bool aNew)
 {
 	if (shapeLen != other.shapeLen)

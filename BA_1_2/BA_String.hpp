@@ -10,6 +10,7 @@
 #define BA_STRING_H
 
 #include"BA_Base.hpp"
+#include"BA_Math.hpp"
 
 class BA_String
 {
@@ -48,5 +49,15 @@ char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long*
 //里的Landing_Account调试时,一个极其明显但又不突出,不好找,关键是没调试器,的BUG找了一个多小时,胃疼,胃胀
 
 char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, unsigned long long* psite);
+
+
+char* BA_Chars(_ULL num);
+char* BA_Chars(_LL num);
+char* BA_Chars(int num);
+char* BA_Chars(float num);
+char* BA_Chars(int num);
+
+char* BA_Chars(BA_Shape s);
+char* BA_Chars(BA_Array a);
 
 #endif

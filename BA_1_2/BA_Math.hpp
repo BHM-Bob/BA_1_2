@@ -52,6 +52,10 @@ public:
 
 	BA_Array To(char toType, bool aNew);
 
+	//as pytorch, dims can be [2,1,4,1]
+	BA_Array Repeat(BA_Shape dims, bool aNew);
+	BA_Array Concat(BA_Array a, int _dim, bool aNew);
+
 	BA_Array Add(BA_Array other, bool aNew);
 	BA_Array Add(_ULL other, bool aNew);
 	BA_Array Add(float other, bool aNew);

@@ -534,3 +534,66 @@ List* BA_String::Find(const char* _pc)
 	}
 	return NULL;
 }
+
+char* BA_Chars(_ULL num)
+{
+	char* preturn = NULL;
+	size_t w = 1;
+	for (_ULL a = 10; num / a != 0; w++, a *= 10);
+	preturn = BALLOC_L(w + 1, char);
+	if (preturn == NULL)
+		MyBA_Err("char* BA_Chars(_ULL num): BALLOC_L(w + 1, char),return NULL",1);
+	else
+		sprintf_s(preturn, w + 1, "%llu", num);
+	return preturn;
+}
+
+char* BA_Chars(_LL num)
+{
+	char* preturn = NULL;
+	size_t w = 1;
+	for (_ULL a = 10; num / a != 0; w++, a *= 10);
+	preturn = BALLOC_L(w + 1, char);
+	if (preturn == NULL)
+		MyBA_Err("char* BA_Chars(_LL num): BALLOC_L(w + 1, char),return NULL",1);
+	else
+		sprintf_s(preturn, w + 1, "%lld", num);
+	return preturn;
+}
+
+
+char* BA_Chars(int num)
+{
+	char* preturn = NULL;
+	size_t w = 1;
+	for (_ULL a = 10; num / a != 0; w++, a *= 10);
+	preturn = BALLOC_L(w + 1, char);
+	if (preturn == NULL)
+		MyBA_Err("char* BA_Chars(int num): BALLOC_L(w + 1, char),return NULL",1);
+	else
+		sprintf_s(preturn, w + 1, "%d", num);
+	return preturn;
+}
+
+char* BA_Chars(float num)
+{
+	char* preturn = NULL;
+	size_t w = 1;
+	for (_ULL a = 10; num / a != 0; w++, a *= 10);
+	preturn = BALLOC_L(w + 1, char);
+	if (preturn == NULL)
+		MyBA_Err("char* BA_Chars(float num): BALLOC_L(w + 1, char),return NULL",1);
+	else
+		sprintf_s(preturn, w + 1, "%e", num);
+	return preturn;
+}
+
+char* BA_Chars(BA_Shape s)
+{
+
+}
+
+char* BA_Chars(BA_Array a)
+{
+
+}

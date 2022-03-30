@@ -89,7 +89,7 @@ void PPIs(int n, ...);
 //Push Warning for a variate string q
 
 /*STOP_IF_SCANF*/
-#define _SIS_ {printf("\nStopping Now,Enter Anykey To Comtinue\nAt %s in line %lu  ",__func__,__LINE__);fflush(stdin);_getch();printf("   Scanfed\n");fflush(stdin);}
+#define _SIS_ {printf("\nStopping Now,Enter Anykey To Comtinue\nAt %s in line %lu  ",__func__,__LINE__);fflush(stdin);int c = _getch();printf("   Scanfed\n");fflush(stdin);}
 
 #define MCALLOC(num,type) (type*)calloc((size_t)(num),sizeof(type))
 #define MCALLOCS(type,ret,num) type* ret = (type*)calloc((size_t)(num),sizeof(type))

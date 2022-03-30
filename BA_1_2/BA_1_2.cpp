@@ -143,7 +143,8 @@ bool MyBA_WriteLog(bool isquit)
 	else
 	{
 		pba->PutLog(_strdup("Unable to open mba.log file"));
-		fclose(pf);
+		if(pf != NULL)
+			fclose(pf);
 		return 0;
 	}
 	for (BALog* p = (BALog*)(List_Copy(pba->pLog)); p != NULL; p = (BALog*)(List_Copy(pba->pLog)))
@@ -159,9 +160,10 @@ bool MyBA_WriteLog(bool isquit)
 
 void* MyBA_Err(const char* pc, bool instance)
 {
-	if (pba == NULL && instance == 1)
+	if (pba == NULL)
 	{
 		PPW(pc);
+		return NULL;
 	}
 	else
 	{
@@ -607,7 +609,6 @@ char* Num_To_Char(const char* ptype, ...)
 	return preturn;
 }
 
-
 bool Frees(char* ptype, ...)
 {
 	va_list parg;
@@ -833,22 +834,36 @@ List* List_Put(List* plist, void* pdata)
 	if (plist->sumque == 1)
 	{
 		plist->pfirst = MCALLOC(1, ListDot);
-		plist->plast = plist->pfirst;
-		plist->pfirst->pnext = plist->pfirst->ppre = NULL;
-		plist->pfirst->pdata = pdata;
-		plist->pfirst->idx = plist->sumque - 1;
-		plist->reverse_now = plist->now = plist->pfirst;
+		if (plist->pfirst == NULL)
+		{
+			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+		}
+		else
+		{
+			plist->plast = plist->pfirst;
+			plist->pfirst->pnext = plist->pfirst->ppre = NULL;
+			plist->pfirst->pdata = pdata;
+			plist->pfirst->idx = plist->sumque - 1;
+			plist->reverse_now = plist->now = plist->pfirst;
+		}
 		return plist;
 	}
 	ListDot* pte = MCALLOC(1, ListDot);
-	pte->ppre = plist->plast;
-	pte->pnext = NULL;
-	plist->plast->pnext = pte;
-	plist->plast = pte;
-	if (plist->reverse_now == plist->plast->ppre)
-		plist->reverse_now = plist->plast;
-	pte->pdata = pdata;
-	pte->idx = plist->sumque - 1;
+	if (pte == NULL)
+	{
+		MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+	}
+	else
+	{
+		pte->ppre = plist->plast;
+		pte->pnext = NULL;
+		plist->plast->pnext = pte;
+		plist->plast = pte;
+		if (plist->reverse_now == plist->plast->ppre)
+			plist->reverse_now = plist->plast;
+		pte->pdata = pdata;
+		pte->idx = plist->sumque - 1;
+	}
 	return plist;
 }
 

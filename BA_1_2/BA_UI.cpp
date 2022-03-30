@@ -194,7 +194,6 @@ void SDL_printf(char* pc, SDL_Renderer* prenderer, bool Prensent_Now, int x, int
 	if (pc == NULL || strlen(pc) == 0)
 	{
 		PPW("pc==NULL || strlen(pc)==0");
-		PPS(pc);
 		return;
 	}
 	SDL_Color color = { R,G,B };
