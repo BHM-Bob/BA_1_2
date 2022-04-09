@@ -19,7 +19,7 @@ unsigned long long  Get_File_Size(FILE* pf)
 	return n;
 }
 
-char* ReadTXT(char* path)
+char* ReadTXT(const char* path)
 {
 	FILE* pf = NULL;
 	if (fopen_s(&pf, path, "r") == 0)

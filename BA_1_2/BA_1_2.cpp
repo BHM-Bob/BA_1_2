@@ -434,12 +434,23 @@ int* intdup(int num, ...)
 	return pret;
 }
 
+_LL* lldup(int num, ...)
+{
+	BALLOCS_L(_LL, pret, num, NULL, );
+	va_list parg;
+	va_start(parg, num);
+	for (int a = 0; a < num; a++)
+		pret[a] = va_arg(parg, _LL);
+	va_end(parg);
+	return pret;
+}
+
 _ULL* ULLdup(_ULL num, ...)
 {
 	BALLOCS_L(_ULL, pret, num, NULL, );
 	va_list parg;
 	va_start(parg, num);
-	for (_ULL a = 0; a < num; a++)
+	for (int a = 0; a < num; a++)
 		pret[a] = va_arg(parg, _ULL);
 	va_end(parg);
 	return pret;

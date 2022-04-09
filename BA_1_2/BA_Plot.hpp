@@ -1,7 +1,7 @@
-//BASIC_ALL_1_2
+ï»¿//BASIC_ALL_1_2
 //H
 //Writen By BHM
-//2021Äê11ÔÂ20ÈÕ
+//2021å¹´11æœˆ20æ—¥
 //#define USE_OPENCV
 //#define USE_WINDOWS
 
@@ -18,11 +18,11 @@ class BA_Plot
 public:
 	BA_String name = BA_String("BA_Plot:");
 	MyUI* pui = NULL;
-	//´°¿Ú»æÖÆÇø³¤£¬¿í£¬°ë³¤£¬°ë¿í
+	//çª—å£ç»˜åˆ¶åŒºé•¿ï¼Œå®½ï¼ŒåŠé•¿ï¼ŒåŠå®½
 	int _H, _W, _H2, _W2;
-	//Îª°ëÖá³¤¶È
+	//ä¸ºåŠè½´é•¿åº¦
 	float ylim = 0., xlim = 0.;
-	//±ÈÀı£¬xlim:_W2 = 1:scaleX
+	//æ¯”ä¾‹ï¼Œxlim:_W2 = 1:scaleX
 	float scaleX, scaleY;
 
 	float (*MapFunc)(float x, float y) = NULL;

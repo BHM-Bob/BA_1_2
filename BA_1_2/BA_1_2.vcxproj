@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BA_1_2.cpp" />
+    <ClCompile Include="BA_BioInfo.cpp" />
     <ClCompile Include="BA_File.cpp" />
     <ClCompile Include="BA_Math.cpp" />
     <ClCompile Include="BA_Plot.cpp" />
@@ -155,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="BA_1_2.hpp" />
     <ClInclude Include="BA_Base.hpp" />
+    <ClInclude Include="BA_BioInfo.hpp" />
     <ClInclude Include="BA_File.hpp" />
     <ClInclude Include="BA_Math.hpp" />
     <ClInclude Include="BA_Plot.hpp" />

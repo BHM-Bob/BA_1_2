@@ -1,4 +1,4 @@
-﻿//BASIC_ALL_1_2
+//BASIC_ALL_1_2
 //LIB
 //Writen By BHM
 //2021年11月18日 23点35分
@@ -1090,6 +1090,55 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 
 	//	}
 	//}
+}
+
+BA_Array BA_Array::ReCreate(BA_Shape _shape, const char* way)
+{
+	MyBA_Free_R(mem);
+	free(mem);
+	mem = List_Init();
+
+	dataShape = BALLOC_R(_shape.shapeLen, int, mem);
+	shapeLen = _shape.shapeLen;
+	dataL = NULL;
+	dataF = NULL;
+	type = 'f';
+	dataLen = 1;
+	dataSumF = dataSumL = 0;
+
+	for (_ULL i = 0; i < _shape.shapeLen; i++)
+	{
+		dataLen = dataLen * _shape.shape[i];
+		dataShape[i] = _shape.shape[i];
+	}
+
+	if (strcmp(way, "rand") == 0)
+	{
+		dataF = BALLOC_R(dataLen, float, mem);
+		float* te = dataF;
+		for (_ULL i = 0; i < dataLen; i++, te++)
+			*te = (float)(rand() % 10000) / (float)10000.;
+	}
+	else if (strcmp(way, "range") == 0)
+	{
+		float js = 0.;
+		dataF = BALLOC_R(dataLen, float, mem);
+		float* te = dataF;
+		for (_ULL i = 0; i < dataLen; i++, te++, js += 1.0)
+			*te = js;
+	}
+	else if (strcmp(way, "l") == 0)
+	{
+		type = 'l';
+		dataL = BALLOC_R(dataLen, _ULL, mem);
+	}
+	else if (strcmp(way, "f") == 0)
+	{
+		type = 'f';
+		dataF = BALLOC_R(dataLen, float, mem);
+	}
+
+	return *this;
 }
 
 BA_Array BA_Array::To(char toType, bool aNew)

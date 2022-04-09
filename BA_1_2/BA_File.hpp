@@ -18,7 +18,7 @@ char* StringRead(FILE* pf);
 
 unsigned long long  Get_File_Size(FILE* pf);
 
-char* ReadTXT(char* path);
+char* ReadTXT(const char* path);
 
 char* Get_File_Type(char* ppath);
 

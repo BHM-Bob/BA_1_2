@@ -1,7 +1,7 @@
-//BASIC_ALL_1_2 BA_STRING_H
+ï»¿//BASIC_ALL_1_2 BA_STRING_H
 //H
 //Writen By BHM
-//2021Äê11ÔÂ24ÈÕ 21µã11·Ö
+//2021å¹´11æœˆ24æ—¥ 21ç‚¹11åˆ†
 
 //#define USE_OPENCV
 //#define USE_WINDOWS
@@ -26,6 +26,7 @@ public:
 	//end with a NULL
 	BA_String(_ULL num,const char* _pc1,...);
 
+	BA_String ReLoad(const char* _pc);
 
 	BA_String Repeat(_ULL times);
 	BA_String Concat(BA_String string);
@@ -44,9 +45,9 @@ public:
 };
 
 char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite);
-/*À´Ô´ÓÚ VN7 v1.1 ÏîÄ¿*//*VN7 v1.2 ½øĞĞÁË¸üĞÂ*/
-//µ±È»,ÕâÍæÒâ¶ù¿ÉÓÃstrstr(pstr1,pstr2)×ö³öÀ´,¶øÇÒ¸ü·½±ã,ÄÔ×Ó¹£,Ò»Ê±Ã»ÏëÆğÀ´,°¦,ÀË·ÑÒ»¸ö¶àĞ¡Ê±,¸ü±ğËµCSH.c
-//ÀïµÄLanding_Accountµ÷ÊÔÊ±,Ò»¸ö¼«ÆäÃ÷ÏÔµ«ÓÖ²»Í»³ö,²»ºÃÕÒ,¹Ø¼üÊÇÃ»µ÷ÊÔÆ÷,µÄBUGÕÒÁËÒ»¸ö¶àĞ¡Ê±,Î¸ÌÛ,Î¸ÕÍ
+/*æ¥æºäº VN7 v1.1 é¡¹ç›®*//*VN7 v1.2 è¿›è¡Œäº†æ›´æ–°*/
+//å½“ç„¶,è¿™ç©æ„å„¿å¯ç”¨strstr(pstr1,pstr2)åšå‡ºæ¥,è€Œä¸”æ›´æ–¹ä¾¿,è„‘å­æ¢—,ä¸€æ—¶æ²¡æƒ³èµ·æ¥,å”‰,æµªè´¹ä¸€ä¸ªå¤šå°æ—¶,æ›´åˆ«è¯´CSH.c
+//é‡Œçš„Landing_Accountè°ƒè¯•æ—¶,ä¸€ä¸ªæå…¶æ˜æ˜¾ä½†åˆä¸çªå‡º,ä¸å¥½æ‰¾,å…³é”®æ˜¯æ²¡è°ƒè¯•å™¨,çš„BUGæ‰¾äº†ä¸€ä¸ªå¤šå°æ—¶,èƒƒç–¼,èƒƒèƒ€
 
 char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, unsigned long long* psite);
 

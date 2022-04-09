@@ -1,4 +1,4 @@
-﻿//BASIC_ALL_1_2
+//BASIC_ALL_1_2
 //H
 //Writen By BHM
 //2021年11月18日 23点03分
@@ -49,6 +49,8 @@ public:
 	//way=="rand" item is 0~1 randomly,
 	//way==type just create the type of array
 	BA_Array(BA_Shape _shape, const char* way);
+
+	BA_Array ReCreate(BA_Shape _shape, const char* way);
 
 	BA_Array To(char toType, bool aNew);
 

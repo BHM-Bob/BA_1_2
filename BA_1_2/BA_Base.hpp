@@ -70,7 +70,7 @@ typedef long long _LL;
 
 void PPIs(int n, ...);
 
-#define PPT() printf("\nTime now : In %s at line %lu ,<%s> <%.10f s>,\n",__func__,__LINE__,Get_Time_Without(),(float)( (float)(clock())/CLOCKS_PER_SEC))
+#define PPT() printf("\nTime now : In %s at line %lu ,<%s> <%.10f s>,\n",__func__,__LINE__,Get_Time_Without_S(),(float)( (float)(clock())/CLOCKS_PER_SEC))
 #define PPI(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%d>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
 #define PPL(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%lld>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
 #define PPD(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%le>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
@@ -118,6 +118,7 @@ void PPIs(int n, ...);
 
 char* mstrdup(const char* p);
 int* intdup(int num, ...);
+_LL* lldup(int num, ...);
 _ULL* ULLdup(_ULL num, ...);
 float* floatdup(_ULL num, ...);
 int* intdupS(int num, ...);

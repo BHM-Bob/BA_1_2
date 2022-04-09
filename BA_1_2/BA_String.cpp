@@ -1,7 +1,7 @@
 //BASIC_ALL_1_2
 //LIB
 //Writen By BHM
-//2021Äê11ÔÂ24ÈÕ 21µã13·Ö
+//2021å¹´11æœˆ24æ—¥ 21ç‚¹13åˆ†
 
 //#define USE_OPENCV
 //#define USE_WINDOWS
@@ -27,13 +27,13 @@ char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long*
 	size_t ss = strlen(pc);
 	size_t ss1 = strlen(ps1);
 	size_t ss2 = strlen(ps2);
-	_ULL r1 = 0;//±»ÕÒ×Ö·û´®Í·×Ö·ûµØÖ·
-	_ULL r2 = 0;//±»ÕÒ×Ö·û´®Î²×Ö·ûµØÖ·
-	_ULL ste1 = 0;//ÁÙÊ±µØÖ·1
-	_ULL ste2 = 0;//ÁÙÊ±µØÖ·2
-	_ULL qdz = ste1 = *psite;//È¡×Ö·û¹â±êµØÖ·
-	char* pte1 = BALLOC_S(ss1, char);//ÁÙÊ±±È¶Ô×Ö·û´®1
-	char* pte2 = BALLOC_S(ss2, char);//ÁÙÊ±±È¶Ô×Ö·û´®2
+	_ULL r1 = 0;//è¢«æ‰¾å­—ç¬¦ä¸²å¤´å­—ç¬¦åœ°å€
+	_ULL r2 = 0;//è¢«æ‰¾å­—ç¬¦ä¸²å°¾å­—ç¬¦åœ°å€
+	_ULL ste1 = 0;//ä¸´æ—¶åœ°å€1
+	_ULL ste2 = 0;//ä¸´æ—¶åœ°å€2
+	_ULL qdz = ste1 = *psite;//å–å­—ç¬¦å…‰æ ‡åœ°å€
+	char* pte1 = BALLOC_S(ss1, char);//ä¸´æ—¶æ¯”å¯¹å­—ç¬¦ä¸²1
+	char* pte2 = BALLOC_S(ss2, char);//ä¸´æ—¶æ¯”å¯¹å­—ç¬¦ä¸²2
 	for (; ste2 < ss && ste1 < ss; )
 	{
 		for (_ULL a = 0; a < ss1 && ste1 < ss; *(pte1 + a) = *(pc + ste1), a++, ste1++);
@@ -46,7 +46,7 @@ char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long*
 				for (_ULL a = 0; a < ss2 && ste2 < ss; *(pte2 + (a++)) = *(pc + (ste2++)));
 				if (strncmp(pte2, ps2, strlen(ps2)) == 0)
 				{
-					if (r1 < r2)//Á½¸ö±ê¼Ç×Ö´®·û¼äÓĞ×Ö·û
+					if (r1 < r2)//ä¸¤ä¸ªæ ‡è®°å­—ä¸²ç¬¦é—´æœ‰å­—ç¬¦
 					{
 						BALLOCS_L(char, pret, r2 - r1 + 2, NULL, );
 						char* pret_te = pret, * pc_te = pc + r1;
@@ -54,7 +54,7 @@ char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long*
 						*psite = r2;
 						return pret;
 					}
-					if (r1 == r2)//Á½¸ö±ê¼Ç×Ö´®·û¼äÃ»ÓĞ×Ö·û
+					if (r1 == r2)//ä¸¤ä¸ªæ ‡è®°å­—ä¸²ç¬¦é—´æ²¡æœ‰å­—ç¬¦
 						return NULL;
 				}
 				++r2;
@@ -65,7 +65,7 @@ char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long*
 			break;
 		ste1 = qdz;
 	}
-	return NULL;//Ã»ÕÒµ½
+	return NULL;//æ²¡æ‰¾åˆ°
 }
 char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, unsigned long long* psite)
 {
@@ -216,6 +216,25 @@ BA_String::BA_String(_ULL num,const char* _pc1, ...)
 		free(plist);
 	}
 	va_end(parg);
+}
+
+BA_String BA_String::ReLoad(const char* _pc)
+{
+	if (_pc == NULL)
+	{
+		MyBA_Err("BA_String::ReLoad(const char* _pc):_pc == NULL,return *this", 1);
+	}
+	else
+	{
+		if(pc != NULL)
+			free(pc);
+		pc = _strdup(_pc);
+		if (pc == NULL)
+			MyBA_Err("BA_String::ReLoad(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
+		else
+			len = strlen(pc);
+	}
+	return *this;
 }
 
 BA_String BA_String::Repeat(_ULL times)
@@ -419,7 +438,7 @@ List* BA_String::Split(const char* _pc)
 }
 
 _ULL* BA_String_Splitx_FindOnce(char* pc, const char* delimiters)
-{//·µ»ØÏà¶ÔpcµÄÆ«ÒÆÁ¿,from 0
+{//è¿”å›ç›¸å¯¹pcçš„åç§»é‡,from 0
 	BALLOCS_S(_ULL, psite, 1, NULL, );
 	for (*psite = 0; *pc != '\0'; (*psite)++, pc++)
 		if (strchr(delimiters, *pc) != NULL)
@@ -590,10 +609,10 @@ char* BA_Chars(float num)
 
 char* BA_Chars(BA_Shape s)
 {
-
+	return NULL;
 }
 
 char* BA_Chars(BA_Array a)
 {
-
+	return NULL;
 }
