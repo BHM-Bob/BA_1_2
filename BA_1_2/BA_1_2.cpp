@@ -17,7 +17,7 @@ MyBA* pba;
 
 float MyBA_Ver(void)
 {
-	return 1.4100f;
+	return 1.4201f;
 	/*
 	* 1.1000:2020年08月15日：MyUI； MyDir(in C)
 	* 1.2000:2021年03月28日：MyBA; ThreadQue  MyTreads; List
@@ -29,6 +29,7 @@ float MyBA_Ver(void)
 	* 1.3300:2021年11月20日: 升级内存管理机制,支持长时内存和快内存的申请与释放
 	* 1.4000:2021年11月25日: 使用C++,增加BA_Array类和BA_Dir类,支持任意形状数组运算,支持文件夹查看
 	* 1.4110:2021年12月06日: 增加BA_String,为内存申请增加内存量计数
+	* 1.4201:2022年04月10日: 增加生信序列相似度算法;修复BA_String.split的字符串头尾不处理bug
 	*/
 }
 
@@ -44,7 +45,7 @@ void MyBA_Init(void)
 	else
 	{
 		pba->BA_Ver = MyBA_Ver();
-		printf("\nMyBA (Ver: %10.5f; Build: %s %s) start\n", pba->BA_Ver, __DATE__, __TIME__);
+		printf("\nMyBA (Ver: %10.4f; Build: %s %s) start\n", pba->BA_Ver, __DATE__, __TIME__);
 
 		pba->GUT_t = clock();
 		pba->GUT_state = 0;

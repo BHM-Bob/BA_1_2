@@ -239,12 +239,14 @@ BA_String BA_String::ReLoad(const char* _pc)
 
 BA_String BA_String::Repeat(_ULL times)
 {
+	_ULL oldLen = len;
 	len *= times;
-	char* pct = MCALLOC(len, char);
+	char* pct = MCALLOC(len+1, char);
 	if (pct != NULL)
 	{
-		for (_ULL i = 0; i < times; i++)
-			strcat_s(pct, len, pc);
+		for (char* pCharNew = pct, *pEndNew = pct + len; pCharNew != pEndNew; )
+			for(char* pChar = pc, *pEnd = pc+oldLen; pChar != pEnd; pChar++, pCharNew++)
+				*pCharNew = *pChar;
 		free(pc);
 		pc = pct;
 	}
