@@ -19,6 +19,10 @@ public:
 	int seqBLen = 0;
 	int rows = seqALen + 1;
 	int cols = seqALen + 1;
+	int var1 = 0;
+	int var2 = 0;
+	int var3 = 0;
+	int bestAction = 0;
 	BA_Array H = BA_Array(BA_Shape(2, rows, cols), "l");
 	BA_Array gapH = BA_Array(BA_Shape(2, rows, cols), "l");
 

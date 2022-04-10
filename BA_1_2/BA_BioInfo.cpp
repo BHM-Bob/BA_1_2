@@ -10,15 +10,17 @@
 
 _LL SequencesSimiCacuer::CacuSequencesSimilarity(BA_String seqA, BA_String seqB)
 {
-	int seqALen = seqA.len, seqBLen = seqB.len;
-	int rows = seqALen + 1, cols = seqBLen + 1;
+	seqALen = seqA.len;
+	seqBLen = seqB.len;
+	rows = seqALen + 1;
+	cols = seqBLen + 1;
 	H.ReCreate(BA_Shape(2, rows, cols), "l");
 	gapH.ReCreate(BA_Shape(2, rows, cols), "l");
 	for (int i = 1; i < cols; i++)
 		H.dataL[i] = i;//H[0, :] = np.arange(start=0, stop=cols)
 	for (int i = 1; i < rows; i++)
 		H.dataL[i * cols] = i;//H[:, 0] = np.arange(start=0, stop=rows)
-	int var1, var2, var3, bestAction;
+	var1 = var2 = var3 = bestAction = 0;
 	for (int row = 1; row < rows; row++)
 	{
 		for (int col = 1; col < cols; col++)

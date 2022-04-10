@@ -11,31 +11,53 @@
 #include"BA_File.hpp"
 
 
-unsigned long long  Get_File_Size(FILE* pf)
+_ULL  Get_File_Size(FILE* pf)
 {
+    fseek(pf, 0, SEEK_SET);
+    _ULL begin = ftell(pf);
 	fseek(pf, 0, SEEK_END);
-	unsigned long long n = ftell(pf);
+	_ULL end = ftell(pf);
 	fseek(pf, 0, SEEK_SET);
-	return n;
+	return end - begin;
 }
 
 char* ReadTXT(const char* path)
 {
-	FILE* pf = NULL;
-	if (fopen_s(&pf, path, "r") == 0)
-	{
-		_ULL size = Get_File_Size(pf);
-		BALLOCS_L(char,pc,size + 1, NULL,);
-		fread(pc, 1, size, pf);
-		fclose(pf);
-		return pc;
-	}
-	else
-	{
-		if (!pf)
-			fclose(pf);
-		return (char*)MyBA_Errs(1,"ReadTXT: Err to open index_file:", path, " ,return NULL", NULL);
-	}
+    FILE* pf = NULL;
+    if (fopen_s(&pf, path, "r") == 0)
+    {
+        _ULL size = Get_File_Size(pf);
+        BALLOCS_L(char, pc, size + 1, NULL, );
+        fread(pc, 1, size, pf);
+        fclose(pf);
+        return pc;
+    }
+    else
+    {
+        if (!pf)
+            fclose(pf);
+        return (char*)MyBA_Errs(1, "ReadTXT: Err to open index_file:", path, " ,return NULL", NULL);
+    }
+}
+char* ReadTXT(const char* path, _ULL loadSize)
+{
+    FILE* pf = NULL;
+    if (fopen_s(&pf, path, "r") == 0)
+    {
+        _ULL size = Get_File_Size(pf);
+        if (loadSize > size)
+            return (char*)MyBA_Errs(1, "ReadTXT: loadSize > size:", path, " ,return NULL", NULL);
+        BALLOCS_L(char, pc, loadSize + 1, NULL, );
+        fread(pc, 1, loadSize, pf);
+        fclose(pf);
+        return pc;
+    }
+    else
+    {
+        if (!pf)
+            fclose(pf);
+        return (char*)MyBA_Errs(1, "ReadTXT: Err to open index_file:", path, " ,return NULL", NULL);
+    }
 }
 
 char* Get_File_Type(char* ppath)

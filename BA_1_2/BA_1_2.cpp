@@ -871,6 +871,7 @@ List* List_Put(List* plist, void* pdata)
 		plist->plast->pnext = pte;
 		plist->plast = pte;
 		if (plist->reverse_now == plist->plast->ppre)
+			// make sure put opt do not influence rverseCopy opt
 			plist->reverse_now = plist->plast;
 		pte->pdata = pdata;
 		pte->idx = plist->sumque - 1;

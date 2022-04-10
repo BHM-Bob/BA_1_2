@@ -405,13 +405,17 @@ List* BA_String::Split(BA_String string)
 	char* pcte = pc;
 	char* ptm = NULL;
 	_ULL lens = 0;
+	_ULL trgStrLen = strlen(string.pc);
 	LIST_FORG(char, p, pli)
 	{
 		lens = p - pcte;
+		if (lens == 0)
+			continue;
 		ptm = BALLOC_R(lens + 1, char, mem);
 		strncat_s(ptm, lens + 1, pcte, lens);
-		pcte += (lens + 1);
 		List_Put(pret, (void*)ptm);
+		pret->plast->usage = lens;
+		pcte += (lens + trgStrLen);
 	}
 	return pret;
 }
@@ -426,14 +430,25 @@ List* BA_String::Split(const char* _pc)
 	char* pcte = pc;
 	char* ptm = NULL;
 	_ULL lens = 0;
+	_ULL trgStrLen = strlen(_pc);
 	LIST_FORG(char, p, pli)
 	{
 		lens = p - pcte;
+		if (lens == 0)
+			continue;
 		ptm = BALLOC_R(lens +1, char, mem);
 		strncat_s(ptm, lens + 1, pcte, lens);
-		pcte += (lens+1);
 		List_Put(pret, (void*)ptm);
+		pret->plast->usage = lens;
+		pcte += (lens + trgStrLen);
 	}
+	lens = pc + len - pcte;
+	if (lens <= 0)
+		return pret;
+	ptm = BALLOC_R(lens + 1, char, mem);
+	strncat_s(ptm, lens + 1, pcte, lens);
+	List_Put(pret, (void*)ptm);
+	pret->plast->usage = lens;
 	return pret;
 }
 
