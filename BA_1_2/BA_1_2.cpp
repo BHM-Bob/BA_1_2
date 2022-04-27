@@ -974,10 +974,11 @@ void* MyThreadQueue::Get(mutex* m)
 	{
 		now = pfirst = plast = NULL;
 	}
-	else if (sumque == 0)
+	else if (sumque == 0 || (!pret))
 	{
 		m->unlock();
-		return NULL;
+		Sleep(100);
+		return this->Get(m);
 	}
 	else
 	{
@@ -1053,7 +1054,7 @@ List* MyThreadsPool::LoopToQuit(mutex* m, void* quitSig)
 {
 	List* retList = List_Init();
 	for (_ULL idx = 0; idx < sumThreads; idx++)
-		putDataQues[quePtr].Put(quitSig, m);
+		putDataQues[idx].Put(quitSig, m);
 	_ULL sumTasksTillNow = 0;
 	float st = (float)clock();
 	while (sig.Size(m) < sumThreads)
@@ -1069,6 +1070,7 @@ List* MyThreadsPool::LoopToQuit(mutex* m, void* quitSig)
 			while (getDataQues[idx].Size(m) > 0)
 				List_Put(retList, getDataQues[idx].Get(m));
 		Sleep(1000);
+		//PPT();
 	}
 	for (_ULL idx = 0; idx < sumThreads; idx++)
 	{
