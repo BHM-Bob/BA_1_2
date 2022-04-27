@@ -51,6 +51,11 @@ char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long*
 
 char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, unsigned long long* psite);
 
+//end with a NULL
+char* StrAdd_S(const char* pstr, ...);
+//end with a NULL
+char* StrAdd_L(const char* pstr, ...);
+
 
 char* BA_Chars(_ULL num);
 char* BA_Chars(_LL num);

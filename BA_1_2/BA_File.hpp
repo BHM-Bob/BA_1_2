@@ -11,9 +11,9 @@
 
 #include"BA_Base.hpp"
 
-
 char* StringWrite(FILE* pf, char* pc);
 
+//BALLOC_S
 char* StringRead(FILE* pf);
 
 unsigned long long  Get_File_Size(FILE* pf);

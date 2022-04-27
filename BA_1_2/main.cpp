@@ -1,20 +1,16 @@
 ﻿#include "BA_1_2.hpp"
 
+void proc(List* pLi)
+{
+}
+
 int main(int argc, char** argvs)
 {
 	MyBA_Init();
-
-	//BA_String seqA = BA_String("GGATCGA");
-	//BA_String seqB = BA_String("GAATTCAGTTA");
-	//SequencesSimiCacuer seqCacuer = SequencesSimiCacuer();
-	//PPS(seqA.pc);
-	//PPS(seqB.pc);
-	//PPL(seqCacuer.CacuSequencesSimilarityWithTrace2(seqA, seqB));
-	//seqCacuer.VizTraceback2(seqA, seqB);
-	CacuSimiMatFromFile(
-		"D:\\AI\\DataSet\\AlphaMedia\\rna2img\\seq\\RNASeqs.txt",
-		8592246,
-		"D:\\AI\\DataSet\\AlphaMedia\\rna2img\\seq\\result2.txt");
+    cout << "我是主线程" << endl;
+    int a = 9;
+    thread th2(proc, a);//第一个参数为函数名，第二个参数为该函数的第一个参数。此时线程开始执行。
+    th2.join();//此时主线程被阻塞直至子线程执行结束。
 
 	return MyBA_Quit();
 }

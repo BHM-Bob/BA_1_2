@@ -5,8 +5,8 @@
 //#define USE_OPENCV
 //#define USE_WINDOWS
 
-#ifndef BA_1_2__BASE_H
-#define BA_1_2__BASE_H
+#ifndef BA_1_2_BASE_H
+#define BA_1_2_BASE_H
 
 #define __STDC_WANT_LIB_EXT1__ 1
 
@@ -18,6 +18,7 @@
 #include<limits.h>
 #include<math.h>
 #include<io.h>
+#include<iostream>
 #include<setjmp.h>
 #include<stdarg.h>
 #include<stdbool.h>
@@ -27,8 +28,11 @@
 #include<sys/types.h>
 #include<time.h>
 //#include<unistd.h>
-
 #include<thread>
+#include<mutex>
+
+using namespace std;
+
 
 #ifdef USE_WINDOWS
 
@@ -151,68 +155,11 @@ bool Frees(char* ptype, ...);
 char* GBK_To_UTF8(const char* pc);
 
 //***********************************************************************************************************************
-//typedef struct MyThread MyThread;
-//struct MyThread
-//{
-//	_ULL sumthreads;
-//	_ULL numid;
-//	bool flag;
-//	bool quit;
-//	int (*pF)(void*);
-//	void* pdata;
-//	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-//	thrd_t* pid;
-//	mtx_t* pmtx;          // 一个互斥
-//	cnd_t* pcndput;       // 两个条件变量
-//	cnd_t* pcndget;
-//};
-//MyThread* MyThread_Init(_ULL sumthreads);//产生sumthreads个MyThread
-//MyThread* MyThread_Start(MyThread * pth, int (*pF)(void*), void* pdata);
-//MyThread* MyThread_Get(MyThread * pth);
-//MyThread* MyThread_Free(MyThread * pth);
-//MyThread* MyThread_Destroy(MyThread * pth);
-//***********************************************************************************************************************
-
-//***********************************************************************************************************************
-//typedef struct MyThreadQue MyThreadQue;//先进先出
-//struct MyThreadQue
-//{
-//	MyThreadQue* pnext;
-//	MyThreadQue* ppre;
-//	int (*pF)(void*);
-//	void* pdata;
-//	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-//};
-//
-//typedef struct MyThreadQueue MyThreadQueue;//先进先出
-//struct MyThreadQueue
-//{
-//	_ULL sumque;
-//	MyThreadQue* pfirst;
-//	MyThreadQue* plast;
-//	int (*pF)(void*);
-//	MyThreadQueue* (*Put)(MyThreadQueue* pque, void* pdata);
-//	MyThreadQue* (*Get)(MyThreadQueue* pqueue);
-//	int state;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-//	thrd_t* pid;
-//	mtx_t* pmtx;          // 一个互斥
-//	cnd_t* pcndput;       // 两个条件变量
-//	cnd_t* pcndget;
-//};
-//MyThreadQueue* MyThreadQueue_Init(void* pdata);
-//MyThreadQue* MyThreadQueue_Get(MyThreadQueue * pqueue);
-//MyThreadQueue* MyThreadQueue_Put(MyThreadQueue * pque, void* pdata);
-//MyThreadQueue* MyThreadQueue_Destroy(MyThreadQueue * pque);
-////***********************************************************************************************************************
-
-
-
-//***********************************************************************************************************************
 typedef struct ListDot ListDot;//先进先出
 struct ListDot
 {
 	_ULL idx;//from 0
-	_ULL usage;//for same open use
+	_ULL usage;//for some open use
 	ListDot* pnext;
 	ListDot* ppre;
 	void* pdata;
@@ -237,14 +184,81 @@ struct List
 	void* (*IndexGet)(List* plist, _ULL index);
 };
 List* List_Init(void);
-void* List_Copy(List* plist);
-void* List_ReverseCopy(List* plist);
-void* List_Get(List* plist);
-void* List_Index(List* plist, _ULL index);//Get the index dot content,from 0
-ListDot* List_IndexDot(List* plist, _ULL index);//Get the index dot,from 0
-void* List_IndexGet(List* plist, _ULL index);
-List* List_Put(List* plist, void* pdata);
-List* List_Destroy(List* plist);
+void* List_Copy(List * plist);
+void* List_ReverseCopy(List * plist);
+void* List_Get(List * plist);
+void* List_Index(List * plist, _ULL index);//Get the index dot content,from 0
+ListDot* List_IndexDot(List * plist, _ULL index);//Get the index dot,from 0
+void* List_IndexGet(List * plist, _ULL index);
+List* List_Put(List * plist, void* pdata);
+List* List_Destroy(List * plist);
+
+//***********************************************************************************************************************
+typedef struct MyThreadQue MyThreadQue;
+struct MyThreadQue//先进先出
+{
+	_ULL idx = 0;//from 0
+	_ULL usage = 0;//for some open use
+	MyThreadQue* pnext = NULL;
+	MyThreadQue* ppre = NULL;
+	void* pdata = NULL;
+	int state = 0;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
+};
+
+class MyThreadQueue//先进先出
+{
+public:
+	_ULL sumque = 0;
+	List* mem = List_Init();
+	MyThreadQue* now = NULL;
+	MyThreadQue* pfirst = NULL;
+	MyThreadQue* plast = NULL;
+	int state = 0;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
+	//std::mutex m;          // 一个互斥
+
+	MyThreadQueue(void);
+	bool Put(void* _pData, mutex m);
+	void* Get(void* _pData, mutex m);
+	_ULL Size(mutex m);
+	bool Destroy(void* _pData, mutex m);
+
+
+};
+////***********************************************************************************************************************
+
+//***********************************************************************************************************************
+
+class MyThreadsPool
+{
+public:
+	_ULL sumThreads = 0;
+	_ULL sumTasks = 0;
+	List* sig = List_Init();
+	List* putDataQues = NULL;
+	List* getDataQues = NULL;
+	_ULL quePtr = 0;
+	char* name = NULL;
+	thread** ppThs = NULL;
+
+	List* mem = List_Init();
+
+	void (*pF)(List*, List*, List*, void*) = NULL;
+
+	//std::mutex m;// 一个互斥
+
+	MyThreadsPool(void);
+	MyThreadsPool(_ULL _sumThreads,
+		void (*_pF)(List*, List*, List*, void*),
+		void* otherData, const char* _name);
+
+	void PutTask(void* pData);
+	List* LoopToQuit(std::mutex m);
+	void* MyThread_Destroy(void);
+};
+
+//***********************************************************************************************************************
+
+
 
 //***********************************************************************************************************************
 typedef struct BALog BALog;
@@ -278,7 +292,7 @@ struct MyBA
 
 	List* pLog;
 
-	int (*Quit)(void);
+	int (*Quit)(int retVal);
 	float (*GUT)(void);
 	void (*PutLog)(const char* pc);
 };
@@ -289,7 +303,7 @@ void MyBA_PutLog(const char* pc);
 bool MyBA_WriteLog(bool isquit);
 void* MyBA_Err(const char* pc, bool instance);
 void* MyBA_Errs(bool instance, ...);
-int MyBA_Quit(void);
+int MyBA_Quit(int retVal = 0);
 
 void MyBA_Free(void* p, List* mem);
 void MyBA_Free_R(List* pli);

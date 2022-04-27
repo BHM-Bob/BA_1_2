@@ -121,7 +121,7 @@ char* StringRead(FILE* pf)
 		    free(plen);
 		    return NULL;
 	    }
-	    char* pc = MCALLOC(*plen + 1, char);
+	    char* pc = BALLOC_S(*plen + 1, char);
         if (pc != NULL)
 	        fread(pc, sizeof(char), *plen, pf);
         else

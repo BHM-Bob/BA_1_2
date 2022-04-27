@@ -19,8 +19,8 @@ float MyBA_Ver(void)
 {
 	return 1.4201f;
 	/*
-	* 1.1000:2020年08月15日：MyUI； MyDir(in C)
-	* 1.2000:2021年03月28日：MyBA; ThreadQue  MyTreads; List
+	* 1.1000:2020年08月15日：MyUI, MyDir(in C)
+	* 1.2000:2021年03月28日：MyBA, List
 	* 1.3000:2021年08月20日：LOFE(仅支持正向传播);至2021年09月20日左右支持反向传播
 	* 1.3011:2021年08月28日：MyUI添加窗口透明选项，修改报错文本
 	* 1.3020:2021年08月28日：SDL_GetFontTexture修改逻辑，使得SDL_MyButton选择背景颜色创建时溢出文字可被显示
@@ -245,9 +245,9 @@ void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli)
 	return ret;
 }
 
-int MyBA_Quit(void)
+int MyBA_Quit(int retVal)
 {
-	MyBA_WriteLog(1);
+	MyBA_WriteLog(true);
 
 	MyBA_Free_R(pba->mem);
 	MyBA_Free_R(pba->LTmem);
@@ -255,7 +255,7 @@ int MyBA_Quit(void)
 
 	free(pba);
 	printf("\nMyBA Going to Quit\n");
-	return 1;
+	return retVal;
 }
 
 void MyBA_Free_R(List* pli)
@@ -545,7 +545,7 @@ char* Get_Time_S(void)
 
 char* Get_Time_For_File_Name(char char_to_replace_unspport_char)
 {
-	char* p = Get_Time_Without_L();
+	char* p = Get_Time_Without_S();
 	*(p + 13) = *(p + 16) = char_to_replace_unspport_char;
 	return p;
 }
@@ -912,94 +912,162 @@ List* List_Init(void)//产生sumthreads个List
 }
 //***********************************************************************************************************************
 
-//***********************************************************************************************************************
-//MyThread* MyThread_Init(_ULL sumthreads)//产生sumthreads个MyThread
-//{
-//	MyThread* pth = MCALLOC(sumthreads, MyThread);
-//	for (_ULL a = 0; a < sumthreads; a++)
-//	{
-//		pth[a].flag = 1;
-//		pth[a].numid = a;
-//		pth[a].sumthreads = sumthreads;
-//		pth[a].pmtx = MCALLOC(1, mtx_t);
-//	}
-//	return pth;
-//}
-//MyThread* MyThread_Start(MyThread* pth, int (*pF)(void*), void* pdata)
-//{
-//	if (thrd_create(pth->pid, pF, pdata) != thrd_success)
-//	{
-//		pth->state = 4;
-//		PPWs(Num_To_Char("u", pth->numid), "   This thread is in error due to thrd_create");
-//		return NULL;
-//	}
-//	return pth;
-//}
+
 ////***********************************************************************************************************************
-//MyThreadQue* MyThreadQueue_Get(MyThreadQueue* pque)
-//{
-//	if (pque == NULL)
-//	{
-//		PPW("get a NULL que");
-//		return NULL;
-//	}
-//	MyThreadQue* pret = NULL;
-//	MyThreadQue* pte = NULL;
-//	mtx_lock(pque->pmtx);
-//	if (cnd_wait(pque->pcndput, pque->pmtx) != thrd_success)
-//		return NULL;
-//	pret = pque->pfirst;
-//	pte = pque->pfirst->pnext;
-//	pte->ppre = NULL;
-//	pque->pfirst = pte;
-//	--pque->sumque;
-//	mtx_unlock(pque->pmtx);
-//	cnd_signal(pque->pcndget);
-//	return pret;
-//}
-//MyThreadQueue* MyThreadQueue_Put(MyThreadQueue* pque, void* pdata)//TODO递归可一次性加多个data变que
-//{
-//	mtx_lock(pque->pmtx);
-//	if (cnd_wait(pque->pcndget, pque->pmtx) != thrd_success)
-//		return NULL;
-//	MyThreadQue* pte = MCALLOC(1, MyThreadQue);
-//	++pque->sumque;
-//	pte->ppre = pque->plast;
-//	pte->pnext = NULL;
-//	pque->plast->pnext = pte;
-//	pque->plast = pte;
-//	pte->pdata = pdata;
-//	mtx_unlock(pque->pmtx);
-//	cnd_signal(pque->pcndput);
-//	return pque;
-//}
-//MyThreadQueue* MyThreadQueue_Destroy(MyThreadQueue* pque)
-//{
-//	for (MyThreadQue* pte = pque->pfirst; pte != NULL; pte = pte->pnext)
-//		free(pte);
-//	free(pque);
-//	return pque;
-//}
-//MyThreadQueue* MyThreadQueue_Init(void* pdata)
-//{
-//	MyThreadQueue* pque = MCALLOC(1, MyThreadQueue);
-//	pque->sumque = 1;
-//	pque->pfirst = MCALLOC(1, MyThreadQue);
-//	pque->plast = pque->pfirst;
-//	pque->pfirst->pnext = pque->pfirst->ppre = NULL;
-//	pque->pfirst->pdata = pdata;
-//	pque->Put = MyThreadQueue_Put;
-//	pque->Get = MyThreadQueue_Get;
-//	pque->pmtx = MCALLOC(1, mtx_t);
-//	pque->pcndput = MCALLOC(1, cnd_t);
-//	pque->pcndget = MCALLOC(1, cnd_t);
-//	if (!(mtx_init(pque->pmtx, mtx_plain) == thrd_success && cnd_init(pque->pcndput) == thrd_success && cnd_init(pque->pcndget) == thrd_success))
-//	{
-//		PPW("This queue is in error due to mtx or cnd init");
-//		return NULL;
-//	}
-//	return pque;
-//}
+
+MyThreadQueue::MyThreadQueue(void)
+{
+}
+
+bool MyThreadQueue::Put(void* _pData, mutex m)
+{
+	MyThreadQue* pret = NULL;
+	MyThreadQue* pte = NULL;
+	m.lock();
+	++(sumque);
+	if (sumque == 1)
+	{
+		pfirst = BALLOC_R(1, MyThreadQue, mem);
+		if (pfirst == NULL)
+		{
+			PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return False");
+			m.unlock();
+			return false;
+		}
+		else
+		{
+			now = plast = pfirst;
+			pfirst->pnext = pfirst->ppre = NULL;
+			pfirst->pdata = _pData;
+			pfirst->idx = sumque - 1;
+			m.unlock();
+			return true;
+		}
+	}
+	MyThreadQue* pte = BALLOC_R(1, MyThreadQue, mem);
+	if (pte == NULL)
+	{
+		PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return -1");
+		m.unlock();
+		return false;
+	}
+	else
+	{
+		pte->ppre = plast;
+		pte->pnext = NULL;
+		plast->pnext = pte;
+		plast = pte;
+		pte->pdata = _pData;
+		pte->idx = sumque - 1;
+		m.unlock();
+		return true;
+	}
+}
+
+void* MyThreadQueue::Get(void* _pData, mutex m)
+{
+	MyThreadQue* pret = pfirst;
+	m.lock();
+	if (sumque == 1)
+	{
+		now = pfirst = plast = NULL;
+	}
+	else if (sumque == 0)
+	{
+		m.unlock();
+		return NULL;
+	}
+	else
+	{
+		if (now == pfirst)
+			now = pfirst->pnext;
+		MyThreadQue* pte = pfirst->pnext;
+		pte->ppre = NULL;
+		pfirst = pte;
+	}
+	--sumque;
+	void* pdata = pret->pdata;
+	free(pret);
+	m.unlock();
+	return pdata;
+}
+
+_ULL MyThreadQueue::Size(mutex m)
+{
+	m.lock();
+	_ULL ret = sumque;
+	m.unlock();
+	return ret;
+}
+
+bool MyThreadQueue::Destroy(void* _pData, mutex m)
+{
+	m.lock();
+	MyBA_Free_R(mem);
+	for (MyThreadQue* p = pfirst, *pn = p; p; p = pn)
+	{
+		pn = p->pnext;
+		free(p);
+	}
+	pfirst = plast = NULL;
+	m.unlock();
+}
+
+MyThreadsPool::MyThreadsPool(void){}
+
+MyThreadsPool::MyThreadsPool(_ULL _sumThreads,
+	void (*_pF)(List*, List*, List*, void*),
+	void* _otherData, const char* _name)
+{
+	sumThreads = _sumThreads;
+	ppThs = BALLOC_R(_sumThreads, thread*, mem);
+	putDataQues = BALLOC_R(_sumThreads, List, mem);
+	getDataQues = BALLOC_R(_sumThreads, List, mem);
+	pF = _pF;
+	name = strdup(_name);
+	for (_ULL i = 0; i < sumThreads; i++)
+		ppThs[i] = new thread(_pF, (void*)&(putDataQues[i]),
+			(void*)&(getDataQues[i]), sig, _otherData);
+}
+
+void MyThreadsPool::PutTask(void* pData)
+{
+	List_Put(&(putDataQues[quePtr]), pData);
+	quePtr = ((quePtr + 1) < sumThreads) ? (quePtr + 1) : 0;
+	sumTasks += 1;
+}
+
+//be sure that all tasks sended, this func will
+//send 'wait to quit' signal to every que,
+//and start to loop waiting
+List* MyThreadsPool::LoopToQuit(std::mutex m)
+{
+	List* retList = List_Init();
+	for (_ULL idx = 0; idx < sumThreads; idx++)
+		List_Put(&(putDataQues[idx]), NULL);
+	while True
+		self.sig._qsize() < self.sumThreads :
+			sumTasksTillNow = sum([self.putDataQues[idx]._qsize() for idx in range(self.sumThreads)])
+			print(f'\r{self.name:s}: {sumTasksTillNow:d} / {self.sumTasks:d} -- {self.timer.OnlyUsed():8.1f}s')
+			for que in self.getDataQues :
+				while not que.empty() :
+					retList.append(que.get())
+					time.sleep(1)
+					if statuesQueOpts(statuesQue, "quit", "getValue") :
+						print('get quit sig')
+						return retList
+						for que in self.getDataQues :
+							while not que.empty() :
+								retList.append(que.get())
+								return retList
+}
+
+void* MyThreadsPool::MyThread_Destroy(void)
+{
+	return nullptr;
+}
+
+
 //***********************************************************************************************************************
 
 #ifdef USE_WINDOWS

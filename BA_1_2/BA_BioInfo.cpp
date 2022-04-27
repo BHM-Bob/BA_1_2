@@ -8,7 +8,17 @@
 #include"BA_String.hpp"
 #include "BA_BioInfo.hpp"
 
-
+//BA_String seqA = BA_String("GGATCGA");
+//BA_String seqB = BA_String("GAATTCAGTTA");
+//SequencesSimiCacuer seqCacuer = SequencesSimiCacuer();
+//PPS(seqA.pc);
+//PPS(seqB.pc);
+//PPL(seqCacuer.CacuSequencesSimilarityWithTrace2(seqA, seqB));
+//seqCacuer.VizTraceback2(seqA, seqB);
+//CacuSimiMatFromFile(
+//	"D:\\AI\\DataSet\\AlphaMedia\\rna2img\\seq\\RNASeqs.txt",
+//	8592246,
+//	"D:\\AI\\DataSet\\AlphaMedia\\rna2img\\seq\\result2.txt");
 
 void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultPath)
 {
