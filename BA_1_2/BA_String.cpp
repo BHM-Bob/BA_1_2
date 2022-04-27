@@ -14,7 +14,7 @@ char* StrAdd_S(const char* pstr, ...)//end with NULL
 {
 	va_list parg;
 	va_start(parg, pstr);
-	int sumlen = 1;
+	_ULL sumlen = 1;
 	List* plist = List_Init();
 	sumlen += strlen(pstr);
 	plist->Put(plist, (void*)pstr);
@@ -33,7 +33,7 @@ char* StrAdd_L(const char* pstr, ...)//end with NULL
 {
 	va_list parg;
 	va_start(parg, pstr);
-	int sumlen = 1;
+	_ULL sumlen = 1;
 	List* plist = List_Init();
 	sumlen += strlen(pstr);
 	plist->Put(plist, (void*)pstr);

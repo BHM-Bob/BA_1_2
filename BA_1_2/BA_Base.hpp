@@ -194,6 +194,10 @@ List* List_Put(List * plist, void* pdata);
 List* List_Destroy(List * plist);
 
 //***********************************************************************************************************************
+//NOTICE: is it 100% safe that put lock opt into MyThreadQueue?
+// may be there are many threads try to get the putDataQues[quePtr]
+// try to get the mem block of putDataQues[quePtr]
+// ?????????????????????????????????????????????
 typedef struct MyThreadQue MyThreadQue;
 struct MyThreadQue//先进先出
 {
@@ -217,42 +221,43 @@ public:
 	//std::mutex m;          // 一个互斥
 
 	MyThreadQueue(void);
-	bool Put(void* _pData, mutex m);
-	void* Get(void* _pData, mutex m);
-	_ULL Size(mutex m);
-	bool Destroy(void* _pData, mutex m);
+	bool Put(void* _pData, mutex* m);
+	void* Get(mutex* m);
+	_ULL Size(mutex* m);
+	bool Destroy(void* _pData, mutex* m);
 
 
 };
 ////***********************************************************************************************************************
 
 //***********************************************************************************************************************
-
+//void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*)
+//id, getQ, putQ, sig, data
 class MyThreadsPool
 {
 public:
 	_ULL sumThreads = 0;
 	_ULL sumTasks = 0;
-	List* sig = List_Init();
-	List* putDataQues = NULL;
-	List* getDataQues = NULL;
+	MyThreadQueue sig = MyThreadQueue();
+	MyThreadQueue* putDataQues = NULL;
+	MyThreadQueue* getDataQues = NULL;
 	_ULL quePtr = 0;
 	char* name = NULL;
 	thread** ppThs = NULL;
 
 	List* mem = List_Init();
 
-	void (*pF)(List*, List*, List*, void*) = NULL;
+	//void (*pF)(MyThreadQueue*, MyThreadQueue*, MyThreadQueue, void*) = NULL;
 
 	//std::mutex m;// 一个互斥
 
 	MyThreadsPool(void);
 	MyThreadsPool(_ULL _sumThreads,
-		void (*_pF)(List*, List*, List*, void*),
-		void* otherData, const char* _name);
+		void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*),
+		void* otherData, const char* _name = NULL);
 
-	void PutTask(void* pData);
-	List* LoopToQuit(std::mutex m);
+	void PutTask(void* pData, mutex* m);
+	List* LoopToQuit(mutex* m, void* quitSig);
 	void* MyThread_Destroy(void);
 };
 

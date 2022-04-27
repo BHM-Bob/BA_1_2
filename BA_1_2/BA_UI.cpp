@@ -8,10 +8,10 @@
 
 int* ProduceRainbowCol(int* col, float* i)// r g b
 {
-	*i += 0.05;
+	*i += 0.05f;
 	col[0] = 127 * sin(*i) + 127;
 	col[1] = 127 * cos(*i) + 127;
-	col[2] = 127 * sin(0.8 * (*i)) + 127;
+	col[2] = 127 * sin(0.8f * (*i)) + 127;
 	return col;
 }
 
@@ -953,9 +953,9 @@ MyUI_ColorSur* MyUI_ColorSur_Update(MyUI_ColorSur* pcs)
 		return (MyUI_ColorSur*)MyBA_Err("MyUI_ColorSur_Update: distSur == NULL, return NULL", 1);
 	for (long a = 0; a < pcs->sumdot; a++)
 	{
-		pcs->pdot[a].b += 0.05;
+		pcs->pdot[a].b += 0.05f;
 		ProduceRainbowCol(pcs->pdot[a].color, &(pcs->pdot[a].b));
-		pcs->pdot[a].x += 2.0 * (pcs->pdot[a].fx);//PPD((pdot[a].fx)*cos(0.01*(pdot[a].b)));
+		pcs->pdot[a].x += 2.0f * (pcs->pdot[a].fx);//PPD((pdot[a].fx)*cos(0.01*(pdot[a].b)));
 		if (pcs->pdot[a].x < 1)
 		{
 			pcs->pdot[a].fx = -pcs->pdot[a].fx;
@@ -966,7 +966,7 @@ MyUI_ColorSur* MyUI_ColorSur_Update(MyUI_ColorSur* pcs)
 			pcs->pdot[a].fx = -pcs->pdot[a].fx;
 			pcs->pdot[a].x = pcs->pre->w - 1;
 		}
-		pcs->pdot[a].y += 2.0 * (pcs->pdot[a].fy);//PPD((pcs->pdot[a].fy)*sin(0.01*(pcs->pdot[a].b)));
+		pcs->pdot[a].y += 2.0f * (pcs->pdot[a].fy);//PPD((pcs->pdot[a].fy)*sin(0.01*(pcs->pdot[a].b)));
 		if (pcs->pdot[a].y < 1)
 		{
 			pcs->pdot[a].fy = -pcs->pdot[a].fy;
@@ -1078,9 +1078,9 @@ SDL_Surface* MyUI_ColorText_Get(MyUI_ColorText* pct)
 {
 	for (long a = 0; a < pct->sumdot; a++)
 	{
-		pct->pdot[a].b += 0.05;
+		pct->pdot[a].b += 0.05f;
 		ProduceRainbowCol(pct->pdot[a].color, &(pct->pdot[a].b));
-		pct->pdot[a].x += 2.0 * (pct->pdot[a].fx);//PPD((pdot[a].fx)*cos(0.01*(pdot[a].b)));
+		pct->pdot[a].x += 2.0f * (pct->pdot[a].fx);//PPD((pdot[a].fx)*cos(0.01*(pdot[a].b)));
 		if (pct->pdot[a].x < 1)
 		{
 			pct->pdot[a].fx = -pct->pdot[a].fx;
@@ -1091,7 +1091,7 @@ SDL_Surface* MyUI_ColorText_Get(MyUI_ColorText* pct)
 			pct->pdot[a].fx = -pct->pdot[a].fx;
 			pct->pdot[a].x = pct->pre->w - 1;
 		}
-		pct->pdot[a].y += 2.0 * (pct->pdot[a].fy);//PPD((pct->pdot[a].fy)*sin(0.01*(pct->pdot[a].b)));
+		pct->pdot[a].y += 2.0f * (pct->pdot[a].fy);//PPD((pct->pdot[a].fy)*sin(0.01*(pct->pdot[a].b)));
 		if (pct->pdot[a].y < 1)
 		{
 			pct->pdot[a].fy = -pct->pdot[a].fy;

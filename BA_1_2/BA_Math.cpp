@@ -97,8 +97,8 @@ LOFE_Layer* LOFE_InitTensor(LOFE_Model* model, LOFE_Layer* layer)
 		float b = 0.f;
 		for (_ULL js = 0; js < p->bind_num; js++, pw++, pb++)
 		{
-			*pw = sin(rand());
-			*pb = sin(rand());
+			*pw = (float)sin(rand());
+			*pb = (float)sin(rand());
 		}
 	}
 	return layer;
@@ -389,7 +389,7 @@ LOFE_Model* LOFE_CreateTrDS(LOFE_Model* model, _ULL index, _LL sum, ...)
 	if (sum > 0)
 	{
 		model->train_ds[index] = BALLOC_R(sum, float, model->mem);
-		for (_ULL i = 0; i < sum; i++)
+		for (_LL i = 0; i < sum; i++)
 			model->train_ds[index][i] = va_arg(parg, double);
 	}
 	else if (sum < 0)
@@ -415,7 +415,7 @@ LOFE_Model* LOFE_CreateTeDS(LOFE_Model* model, _ULL index, _LL sum, ...)
 	if (sum > 0)
 	{
 		model->test_ds[index] = BALLOC_R(sum, float, model->mem);
-		for (_ULL i = 0; i < sum; i++)
+		for (_LL i = 0; i < sum; i++)
 			model->test_ds[index][i] = va_arg(parg, double);
 	}
 	else if (sum < 0)
@@ -439,7 +439,7 @@ LOFE_Layer* LOFE_FillLayer(LOFE_Layer* pl, _LL sum, ...)
 	{
 		if (sum != pl->sumtensor)
 			return (LOFE_Layer*)MyBA_Errs(1,"LOFE_FillLayer: sum != pl->sumtensor with layer ", pl->layerlname, "return NULL", NULL);
-		for (_ULL i = 0; i < sum; i++, pt++)
+		for (_LL i = 0; i < sum; i++, pt++)
 			pt->num = va_arg(parg, double);
 	}
 	else if (sum < 0)
@@ -494,7 +494,7 @@ LOFE_Model* LOFE_Loss(LOFE_Model* model)
 	LOFE_Tensor* pt1 = model->output_layer->tensor;
 	LOFE_Tensor* pt2 = model->ynum_layer->tensor;
 	for (_ULL i = 0; i < model->output_layer->sumtensor; i++, pt1++, pt2++)
-		model->loss += 0.5 * (pt1->num - pt2->num) * (pt1->num - pt2->num);
+		model->loss += 0.5f * (pt1->num - pt2->num) * (pt1->num - pt2->num);
 	return model;
 }
 
@@ -845,7 +845,7 @@ bool LOFE_CompileModel_B_PutB_IsEd(List** chain, _ULL his, _ULL bias, _LL adr, _
 	void* p1 = NULL, * p2 = NULL;
 	for (_ULL i = his, js = 0; i < bias; i++, js = 0)//从历史历遍到现在
 	{
-		for (_ULL k = 0; k < adr; k++)//K是当前检查链的节点索引
+		for (_LL k = 0; k < adr; k++)//K是当前检查链的节点索引
 		{
 			p1 = List_Copy(chain[i]);
 			p2 = List_Copy(chain[j]);

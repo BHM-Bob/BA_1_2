@@ -356,7 +356,8 @@ int MyBA_CMD_ShowLog(void)
 	else
 	{
 		pba->PutLog(_strdup("Unable to open mba.log file"));
-		fclose(pf);
+		if(pf)
+			fclose(pf);
 		return 0;
 	}
 	BALog* pl = MCALLOC(1, BALog);
@@ -463,7 +464,7 @@ float* floatdup(_ULL num, ...)
 	va_list parg;
 	va_start(parg, num);
 	for (_ULL a = 0; a < num; a++)
-		pret[a] = va_arg(parg, double);
+		pret[a] = (float)va_arg(parg, double);
 	va_end(parg);
 	return pret;
 }
@@ -500,7 +501,7 @@ float* floatdupS(_ULL num, ...)
 	va_list parg;
 	va_start(parg, num);
 	for (_ULL a = 0; a < num; a++)
-		pret[a] = va_arg(parg, double);
+		pret[a] = (float)va_arg(parg, double);
 	va_end(parg);
 	return pret;
 }
@@ -917,13 +918,14 @@ List* List_Init(void)//产生sumthreads个List
 
 MyThreadQueue::MyThreadQueue(void)
 {
+	mem = List_Init();
 }
 
-bool MyThreadQueue::Put(void* _pData, mutex m)
+bool MyThreadQueue::Put(void* _pData, mutex* m)
 {
-	MyThreadQue* pret = NULL;
-	MyThreadQue* pte = NULL;
-	m.lock();
+	m->lock();
+	if(!mem)
+		mem = List_Init();
 	++(sumque);
 	if (sumque == 1)
 	{
@@ -931,7 +933,7 @@ bool MyThreadQueue::Put(void* _pData, mutex m)
 		if (pfirst == NULL)
 		{
 			PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return False");
-			m.unlock();
+			m->unlock();
 			return false;
 		}
 		else
@@ -940,7 +942,7 @@ bool MyThreadQueue::Put(void* _pData, mutex m)
 			pfirst->pnext = pfirst->ppre = NULL;
 			pfirst->pdata = _pData;
 			pfirst->idx = sumque - 1;
-			m.unlock();
+			m->unlock();
 			return true;
 		}
 	}
@@ -948,7 +950,7 @@ bool MyThreadQueue::Put(void* _pData, mutex m)
 	if (pte == NULL)
 	{
 		PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return -1");
-		m.unlock();
+		m->unlock();
 		return false;
 	}
 	else
@@ -959,22 +961,22 @@ bool MyThreadQueue::Put(void* _pData, mutex m)
 		plast = pte;
 		pte->pdata = _pData;
 		pte->idx = sumque - 1;
-		m.unlock();
+		m->unlock();
 		return true;
 	}
 }
 
-void* MyThreadQueue::Get(void* _pData, mutex m)
+void* MyThreadQueue::Get(mutex* m)
 {
 	MyThreadQue* pret = pfirst;
-	m.lock();
+	m->lock();
 	if (sumque == 1)
 	{
 		now = pfirst = plast = NULL;
 	}
 	else if (sumque == 0)
 	{
-		m.unlock();
+		m->unlock();
 		return NULL;
 	}
 	else
@@ -988,21 +990,21 @@ void* MyThreadQueue::Get(void* _pData, mutex m)
 	--sumque;
 	void* pdata = pret->pdata;
 	free(pret);
-	m.unlock();
+	m->unlock();
 	return pdata;
 }
 
-_ULL MyThreadQueue::Size(mutex m)
+_ULL MyThreadQueue::Size(mutex* m)
 {
-	m.lock();
+	m->lock();
 	_ULL ret = sumque;
-	m.unlock();
+	m->unlock();
 	return ret;
 }
 
-bool MyThreadQueue::Destroy(void* _pData, mutex m)
+bool MyThreadQueue::Destroy(void* _pData, mutex* m)
 {
-	m.lock();
+	m->lock();
 	MyBA_Free_R(mem);
 	for (MyThreadQue* p = pfirst, *pn = p; p; p = pn)
 	{
@@ -1010,29 +1012,36 @@ bool MyThreadQueue::Destroy(void* _pData, mutex m)
 		free(p);
 	}
 	pfirst = plast = NULL;
-	m.unlock();
+	m->unlock();
+	return true;
 }
 
 MyThreadsPool::MyThreadsPool(void){}
 
 MyThreadsPool::MyThreadsPool(_ULL _sumThreads,
-	void (*_pF)(List*, List*, List*, void*),
+	void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*),
 	void* _otherData, const char* _name)
 {
 	sumThreads = _sumThreads;
 	ppThs = BALLOC_R(_sumThreads, thread*, mem);
-	putDataQues = BALLOC_R(_sumThreads, List, mem);
-	getDataQues = BALLOC_R(_sumThreads, List, mem);
-	pF = _pF;
-	name = strdup(_name);
+	putDataQues = BALLOC_R(_sumThreads, MyThreadQueue, mem);
+	getDataQues = BALLOC_R(_sumThreads, MyThreadQueue, mem);
+	//pF = _pF;
+	if(!_name)
+		name = _strdup("MyThreadsPool");
+	else
+		name = _strdup(_name);
 	for (_ULL i = 0; i < sumThreads; i++)
-		ppThs[i] = new thread(_pF, (void*)&(putDataQues[i]),
-			(void*)&(getDataQues[i]), sig, _otherData);
+	{
+		ppThs[i] = new thread(_pF, i, ref(putDataQues[i]),
+			ref(getDataQues[i]), ref(sig), _otherData);
+	}
 }
 
-void MyThreadsPool::PutTask(void* pData)
+void MyThreadsPool::PutTask(void* pData, mutex* m)
 {
-	List_Put(&(putDataQues[quePtr]), pData);
+	if(!putDataQues[quePtr].Put(pData, m))
+		PPW("void MyThreadsPool::PutTask(void* pData, mutex* m): !putDataQues[quePtr].Put(pData, m)");
 	quePtr = ((quePtr + 1) < sumThreads) ? (quePtr + 1) : 0;
 	sumTasks += 1;
 }
@@ -1040,26 +1049,34 @@ void MyThreadsPool::PutTask(void* pData)
 //be sure that all tasks sended, this func will
 //send 'wait to quit' signal to every que,
 //and start to loop waiting
-List* MyThreadsPool::LoopToQuit(std::mutex m)
+List* MyThreadsPool::LoopToQuit(mutex* m, void* quitSig)
 {
 	List* retList = List_Init();
 	for (_ULL idx = 0; idx < sumThreads; idx++)
-		List_Put(&(putDataQues[idx]), NULL);
-	while True
-		self.sig._qsize() < self.sumThreads :
-			sumTasksTillNow = sum([self.putDataQues[idx]._qsize() for idx in range(self.sumThreads)])
-			print(f'\r{self.name:s}: {sumTasksTillNow:d} / {self.sumTasks:d} -- {self.timer.OnlyUsed():8.1f}s')
-			for que in self.getDataQues :
-				while not que.empty() :
-					retList.append(que.get())
-					time.sleep(1)
-					if statuesQueOpts(statuesQue, "quit", "getValue") :
-						print('get quit sig')
-						return retList
-						for que in self.getDataQues :
-							while not que.empty() :
-								retList.append(que.get())
-								return retList
+		putDataQues[quePtr].Put(quitSig, m);
+	_ULL sumTasksTillNow = 0;
+	float st = (float)clock();
+	while (sig.Size(m) < sumThreads)
+	{
+		sumTasksTillNow = 0;
+		for (_ULL idx = 0; idx < sumThreads; idx++)
+			sumTasksTillNow += putDataQues[idx].Size(m);
+		printf("\r%s: %llu / %llu  --  %8.3f",
+			name, sumTasksTillNow, sumTasks,
+			(float)(clock() - st) / CLOCKS_PER_SEC);
+
+		for (_ULL idx = 0; idx < sumThreads; idx++)
+			while (getDataQues[idx].Size(m) > 0)
+				List_Put(retList, getDataQues[idx].Get(m));
+		Sleep(1000);
+	}
+	for (_ULL idx = 0; idx < sumThreads; idx++)
+	{
+		while(getDataQues[idx].Size(m) > 0)
+			List_Put(retList, getDataQues[idx].Get(m));
+		ppThs[idx]->join();
+	}
+	return retList;
 }
 
 void* MyThreadsPool::MyThread_Destroy(void)

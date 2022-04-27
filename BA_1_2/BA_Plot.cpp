@@ -39,9 +39,9 @@ BA_Plot BA_Plot::Paint(void)
 {
 	int newx = 0, newy = 0, oldx = -1, oldy = -1;
 	SDL_SetRenderDrawColor(pui->win->rend, 0, 200, 0, 255);
-	for (float y = ylim; y > -ylim; y -= 0.01)
+	for (float y = ylim; y > -ylim; y -= 0.01f)
 	{
-		for (float x = -xlim; x < xlim; x += 0.01)
+		for (float x = -xlim; x < xlim; x += 0.01f)
 		{
 			newx = scaleX * x + _W2;
 			newy = _H2 - scaleY * y;
@@ -71,9 +71,9 @@ BA_Plot BA_Plot::PaintMM(void)
 	float min = 0., max = 0.,tmp = 0.;
 	int newx = 0, newy = 0, oldx = -1, oldy = -1;
 
-	for (float y = ylim; y > -ylim; y -= 0.01)
+	for (float y = ylim; y > -ylim; y -= 0.01f)
 	{
-		for (float x = -xlim; x < xlim; x += 0.01)
+		for (float x = -xlim; x < xlim; x += 0.01f)
 		{
 			*(data.dataF+ (int)(scaleX * x) + _W2+ (_H2 - (int)(scaleY * y))*_W ) = tmp = MapFunc(x, y);
 			if (tmp > max)
@@ -82,9 +82,9 @@ BA_Plot BA_Plot::PaintMM(void)
 				min = tmp;
 		}
 	}
-	for (float y = ylim; y > -ylim; y -= 0.01)
+	for (float y = ylim; y > -ylim; y -= 0.01f)
 	{
-		for (float x = -xlim; x < xlim; x += 0.01)
+		for (float x = -xlim; x < xlim; x += 0.01f)
 		{
 			newx = scaleX * x + _W2;
 			newy = _H2 - scaleY * y;
