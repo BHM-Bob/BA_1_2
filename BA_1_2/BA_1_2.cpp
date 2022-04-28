@@ -17,7 +17,7 @@ MyBA* pba;
 
 float MyBA_Ver(void)
 {
-	return 1.4201f;
+	return 1.4310f;
 	/*
 	* 1.1000:2020年08月15日：MyUI, MyDir(in C)
 	* 1.2000:2021年03月28日：MyBA, List
@@ -30,6 +30,7 @@ float MyBA_Ver(void)
 	* 1.4000:2021年11月25日: 使用C++,增加BA_Array类和BA_Dir类,支持任意形状数组运算,支持文件夹查看
 	* 1.4110:2021年12月06日: 增加BA_String,为内存申请增加内存量计数
 	* 1.4201:2022年04月10日: 增加生信序列相似度算法;修复BA_String.split的字符串头尾不处理bug
+	* 1.4310:2022年04月28日: 增加线程安全队列和线程池;修复List_Destroy, 增加List_Gather
 	*/
 }
 
