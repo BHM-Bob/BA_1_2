@@ -273,6 +273,12 @@ BA_String BA_String::ReLoad(const char* _pc)
 	return *this;
 }
 
+void BA_String::Destroy(void)
+{
+	if(pc)
+		free(pc);
+}
+
 BA_String BA_String::Repeat(_ULL times)
 {
 	_ULL oldLen = len;

@@ -39,7 +39,7 @@ void MyBA_Init(void)
 	if (pba == NULL)
 	{
 		PPW("MyBA_Init:MCALLOC==NULL,pba = NULL");
-		PPW("Stop at this moment because pba was not Inited, so it may result in some problems");
+		PPW("Stop at this moment because pba was not Inited, it may result in some problems");
 		_SIS_;
 	}
 	else
@@ -79,13 +79,10 @@ void MyBA_Init(void)
 		pba->GUT = MyBA_GetUsedTime;
 		pba->Quit = MyBA_Quit;
 
-#ifdef USE_WINDOWS
-		Sleep(500);
-#else
 #ifdef USE_OPENCV
 		cv::WaitKey(500);
-#endif
-		for (clock_t t = clock(); clock() < t + 500;);
+#else
+		Sleep(500);
 #endif
 
 		if (_kbhit() != 0)
@@ -252,6 +249,10 @@ int MyBA_Quit(int retVal)
 	MyBA_Free_R(pba->mem);
 	MyBA_Free_R(pba->LTmem);
 	MyBA_Free_R(pba->STmem);
+	List_Destroy(pba->mem);
+	List_Destroy(pba->LTmem);
+	List_Destroy(pba->STmem);
+	free(pba->exepath);
 
 	free(pba);
 	printf("\nMyBA Going to Quit\n");
@@ -480,10 +481,10 @@ int* intdupS(int num, ...)
 	return pret;
 }
 
-_ULL* ULLdupS(_ULL num, ...)
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //!!! IT HAS PROBLEMS !!!!!!!
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!
+_ULL* ULLdupS(_ULL num, ...)
 {
 	BALLOCS_S(_ULL, pret, num, NULL, );
 	va_list parg;
@@ -518,7 +519,7 @@ char* Get_Time_Without_L(void)
 
 char* Get_Time_Without_S(void)
 {
-	BALLOCS_S(char, p, 26, NULL, PPW("Get_Time_Without_L:BALLOCS_S Faliue,return NULL"));
+	BALLOCS_S(char, p, 26, NULL, PPW("Get_Time_Without_S:BALLOCS_S Faliue,return NULL"));
 	time_t tim = time(NULL);
 	if (ctime_s(p, 26, &tim) != 0)
 		return NULL;
@@ -528,7 +529,7 @@ char* Get_Time_Without_S(void)
 
 char* Get_Time_L(void)
 {
-	BALLOCS_L(char, p, 26, NULL, PPW("Get_Time_Without_L:BALLOCS_L Faliue,return NULL"));
+	BALLOCS_L(char, p, 26, NULL, PPW("Get_Time_L:BALLOCS_L Faliue,return NULL"));
 	time_t tim = time(NULL);
 	if (ctime_s(p, 26, &tim) != 0)
 		return NULL;
@@ -537,7 +538,7 @@ char* Get_Time_L(void)
 
 char* Get_Time_S(void)
 {
-	BALLOCS_S(char, p, 26, NULL, PPW("Get_Time_Without_L:BALLOCS_S Faliue,return NULL"));
+	BALLOCS_S(char, p, 26, NULL, PPW("Get_Time_S:BALLOCS_S Faliue,return NULL"));
 	time_t tim = time(NULL);
 	if (ctime_s(p, 26, &tim) != 0)
 		return NULL;
@@ -881,16 +882,31 @@ List* List_Put(List* plist, void* pdata)
 	return plist;
 }
 
+List* List_Gather(void* pData1, ...)
+{
+	va_list parg;
+	va_start(parg, pData1);
+	List* plist = List_Init();
+	plist->Put(plist, pData1);
+	for (void* p = va_arg(parg, void*); p != NULL; p = va_arg(parg, void*))
+		plist->Put(plist, p);
+	va_end(parg);
+	return plist;
+}
+
 List* List_Destroy(List* plist)
 {
-	for (ListDot* pte = plist->pfirst; pte != NULL; pte = pte->pnext)
-		free(pte);
+	for (ListDot* p = plist->pfirst, *pn = NULL; p; p = pn)
+	{
+		pn = p->pnext;
+		free(p);
+	}
 	free(plist);
 	plist = NULL;
 	return NULL;
 }
 
-List* List_Init(void)//产生sumthreads个List
+List* List_Init(void)
 {
 	MCALLOCS(List,plist,1);
 	if (plist == NULL)
@@ -916,20 +932,15 @@ List* List_Init(void)//产生sumthreads个List
 
 ////***********************************************************************************************************************
 
-MyThreadQueue::MyThreadQueue(void)
-{
-	mem = List_Init();
-}
+MyThreadQueue::MyThreadQueue(void){}
 
 bool MyThreadQueue::Put(void* _pData, mutex* m)
 {
 	m->lock();
-	if(!mem)
-		mem = List_Init();
 	++(sumque);
 	if (sumque == 1)
 	{
-		pfirst = BALLOC_R(1, MyThreadQue, mem);
+		pfirst = MCALLOC(1, MyThreadQue, mem);
 		if (pfirst == NULL)
 		{
 			PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return False");
@@ -946,7 +957,7 @@ bool MyThreadQueue::Put(void* _pData, mutex* m)
 			return true;
 		}
 	}
-	MyThreadQue* pte = BALLOC_R(1, MyThreadQue, mem);
+	MyThreadQue* pte = MCALLOC(1, MyThreadQue);
 	if (pte == NULL)
 	{
 		PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return -1");
@@ -968,17 +979,18 @@ bool MyThreadQueue::Put(void* _pData, mutex* m)
 
 void* MyThreadQueue::Get(mutex* m)
 {
-	MyThreadQue* pret = pfirst;
+MyThreadQueue_Label_A:
 	m->lock();
+	MyThreadQue* pret = pfirst;
 	if (sumque == 1)
 	{
 		now = pfirst = plast = NULL;
 	}
-	else if (sumque == 0 || (!pret))
+	else if (sumque == 0 || (!pfirst))
 	{
 		m->unlock();
 		Sleep(100);
-		return this->Get(m);
+		goto MyThreadQueue_Label_A;
 	}
 	else
 	{
@@ -1001,20 +1013,6 @@ _ULL MyThreadQueue::Size(mutex* m)
 	_ULL ret = sumque;
 	m->unlock();
 	return ret;
-}
-
-bool MyThreadQueue::Destroy(void* _pData, mutex* m)
-{
-	m->lock();
-	MyBA_Free_R(mem);
-	for (MyThreadQue* p = pfirst, *pn = p; p; p = pn)
-	{
-		pn = p->pnext;
-		free(p);
-	}
-	pfirst = plast = NULL;
-	m->unlock();
-	return true;
 }
 
 MyThreadsPool::MyThreadsPool(void){}
@@ -1070,7 +1068,6 @@ List* MyThreadsPool::LoopToQuit(mutex* m, void* quitSig)
 			while (getDataQues[idx].Size(m) > 0)
 				List_Put(retList, getDataQues[idx].Get(m));
 		Sleep(1000);
-		//PPT();
 	}
 	for (_ULL idx = 0; idx < sumThreads; idx++)
 	{
@@ -1081,8 +1078,10 @@ List* MyThreadsPool::LoopToQuit(mutex* m, void* quitSig)
 	return retList;
 }
 
-void* MyThreadsPool::MyThread_Destroy(void)
+void* MyThreadsPool::Destroy(mutex* m)
 {
+	MyBA_Free_R(mem);
+	List_Destroy(mem);
 	return nullptr;
 }
 

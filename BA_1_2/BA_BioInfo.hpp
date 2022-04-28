@@ -33,6 +33,7 @@ public:
 
 	_LL CacuSequencesSimilarity(BA_String seqA, BA_String seqB);
 	_LL CacuSequencesSimilarity2(BA_String seqA, BA_String seqB);
+	_LL CacuSequencesSimilarity2(BA_String* seqA, BA_String* seqB);
 	_LL CacuSequencesSimilarityWithTrace(BA_String seqA, BA_String seqB);
 	_LL CacuSequencesSimilarityWithTrace2(BA_String seqA, BA_String seqB);
 	void VizTraceback(BA_String seqA, BA_String seqB);

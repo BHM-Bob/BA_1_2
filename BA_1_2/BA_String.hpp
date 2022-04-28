@@ -42,6 +42,8 @@ public:
 	List* Find(BA_String string);
 	//return the multi char* of pos
 	List* Find(const char* _pc);
+
+	void Destroy(void);
 };
 
 char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite);

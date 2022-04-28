@@ -56,7 +56,7 @@ void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultP
 	}
 	else
 	{
-		if (!pf)
+		if (pf)
 			fclose(pf);
 	}
 }
@@ -218,6 +218,31 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarity2(BA_String seqA, BA_String seqB
 			// up&left | leave_or_replace_letter = H[row - 1, col - 1] + score_func(a, b)
 			var1 = H.dataL[(row - 1) * cols + col - 1] +
 				(seqA.pc[row - 1] == seqB.pc[col - 1] ? 1 : 0);
+			// up | delete_indel = H[row - 1, col] + score
+			var2 = H.dataL[(row - 1) * cols + col];
+			// left | insert_indel = H[row, col - 1] + score
+			var3 = H.dataL[row * cols + (col - 1)];
+			// H[row, col] = max([var1, var2, var3])
+			H.dataL[row * cols + col] = (var1 >= var2 && var1 >= var3) ? var1 : (var2 >= var3 ? var2 : var3);
+		}
+	}
+	return H.dataL[H.dataLen - 1];
+}
+_LL SequencesSimiCacuer::CacuSequencesSimilarity2(BA_String* seqA, BA_String* seqB)
+{
+	seqALen = seqA->len;
+	seqBLen = seqB->len;
+	rows = seqALen + 1;
+	cols = seqBLen + 1;
+	H.ReCreate(BA_Shape(2, rows, cols), "l");
+	var1 = var2 = var3 = bestAction = 0;
+	for (int row = 1; row < rows; row++)
+	{
+		for (int col = 1; col < cols; col++)
+		{
+			// up&left | leave_or_replace_letter = H[row - 1, col - 1] + score_func(a, b)
+			var1 = H.dataL[(row - 1) * cols + col - 1] +
+				(seqA->pc[row - 1] == seqB->pc[col - 1] ? 1 : 0);
 			// up | delete_indel = H[row - 1, col] + score
 			var2 = H.dataL[(row - 1) * cols + col];
 			// left | insert_indel = H[row, col - 1] + score

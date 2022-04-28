@@ -187,10 +187,14 @@ List* List_Init(void);
 void* List_Copy(List * plist);
 void* List_ReverseCopy(List * plist);
 void* List_Get(List * plist);
-void* List_Index(List * plist, _ULL index);//Get the index dot content,from 0
-ListDot* List_IndexDot(List * plist, _ULL index);//Get the index dot,from 0
+//Get the index dot content,from 0
+void* List_Index(List * plist, _ULL index);
+//Get the index dot,from 0
+ListDot* List_IndexDot(List * plist, _ULL index);
 void* List_IndexGet(List * plist, _ULL index);
 List* List_Put(List * plist, void* pdata);
+// end with a NULL
+List* List_Gather(void* pData1, ...);
 List* List_Destroy(List * plist);
 
 //***********************************************************************************************************************
@@ -199,34 +203,29 @@ List* List_Destroy(List * plist);
 // try to get the mem block of putDataQues[quePtr]
 // ?????????????????????????????????????????????
 typedef struct MyThreadQue MyThreadQue;
-struct MyThreadQue//先进先出
+struct MyThreadQue//FIFO node
 {
 	_ULL idx = 0;//from 0
 	_ULL usage = 0;//for some open use
 	MyThreadQue* pnext = NULL;
 	MyThreadQue* ppre = NULL;
 	void* pdata = NULL;
-	int state = 0;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
+	int state = 0;//from 0, thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
 };
 
-class MyThreadQueue//先进先出
+class MyThreadQueue//FIFO
 {
 public:
 	_ULL sumque = 0;
-	List* mem = List_Init();
 	MyThreadQue* now = NULL;
 	MyThreadQue* pfirst = NULL;
 	MyThreadQue* plast = NULL;
-	int state = 0;//从零开始 thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-	//std::mutex m;          // 一个互斥
+	int state = 0;//from 0, thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
 
 	MyThreadQueue(void);
 	bool Put(void* _pData, mutex* m);
 	void* Get(mutex* m);
 	_ULL Size(mutex* m);
-	bool Destroy(void* _pData, mutex* m);
-
-
 };
 ////***********************************************************************************************************************
 
@@ -249,8 +248,6 @@ public:
 
 	//void (*pF)(MyThreadQueue*, MyThreadQueue*, MyThreadQueue, void*) = NULL;
 
-	//std::mutex m;// 一个互斥
-
 	MyThreadsPool(void);
 	MyThreadsPool(_ULL _sumThreads,
 		void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*),
@@ -258,7 +255,7 @@ public:
 
 	void PutTask(void* pData, mutex* m);
 	List* LoopToQuit(mutex* m, void* quitSig);
-	void* MyThread_Destroy(void);
+	void* Destroy(mutex* m);
 };
 
 //***********************************************************************************************************************
