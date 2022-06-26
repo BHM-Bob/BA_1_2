@@ -17,6 +17,7 @@
 
 void BA_String_Test(void);
 void BA_Array_Test(void);
+void BA_Array_Test2(void);
 float BA_ArrayTest_1(float* p);
 BA_Array BA_Array_GetTest();
 void BA_Dir_Test(void);

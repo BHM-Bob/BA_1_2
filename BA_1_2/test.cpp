@@ -1,4 +1,4 @@
-
+﻿
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
 #include"BA_UI.hpp"
@@ -49,16 +49,26 @@ float BA_ArrayTest_2(float* pt, void* p)
 
 void BA_Array_Test(void)
 {
-	PPF(pba->GUT());
-	BA_Array t1 = BA_Array(BA_Shape(1, 1000000), "rand");
-	float x8 = t1.Sum().dataSumF / t1.dataLen;
-	PPF(x8);
-	float* px8 = &x8;
-	float e1 = t1.Func(BA_ArrayTest_1, 1).Sum().dataSumF / t1.dataLen - x8*x8;
-	float e2 = t1.Maps(BA_ArrayTest_2, (void*)px8, 1).Sum().dataSumF / t1.dataLen;
-	PPF(e1);
-	PPF(e2);
-	PPF(pba->GUT());
+    PPF(pba->GUT());
+    BA_Array t1 = BA_Array(BA_Shape(1, 1000000), "rand");
+    float x8 = t1.Sum().dataSumF / t1.dataLen;
+    PPF(x8);
+    float* px8 = &x8;
+    float e1 = t1.Func(BA_ArrayTest_1, 1).Sum().dataSumF / t1.dataLen - x8 * x8;
+    float e2 = t1.Maps(BA_ArrayTest_2, (void*)px8, 1).Sum().dataSumF / t1.dataLen;
+    PPF(e1);
+    PPF(e2);
+    PPF(pba->GUT());
+}
+void BA_Array_Test2(void)
+{
+    PPF(pba->GUT());
+    BA_Array t1 = BA_Array(BA_Shape(1, 1000000), "rand");
+    BA_Array t2 = BA_Array(BA_Shape(1, 1000000), "rand");
+
+    BA_Array t3 = t1.Concat(t2, 0);
+    PPU(t3.dataLen);
+    PPF(t3.dataF[t3.dataLen - 2]);
 }
 
 void BA_ThreadPool_Test_workFunc(_ULL id, MyThreadQueue& getQ, MyThreadQueue& putQ,

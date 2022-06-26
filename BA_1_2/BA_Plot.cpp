@@ -115,7 +115,6 @@ BA_Plot BA_Plot::PaintMM(void)
 
 BA_Plot BA_Plot::Loop(bool renderClear)
 {
-	PPF(pba->GUT());
 	for (; pui->pF_PollQuit(pui)==0 ; )
 		pui->pF_Update(pui, renderClear, 0);
 	return *this;

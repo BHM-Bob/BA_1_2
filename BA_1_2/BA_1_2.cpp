@@ -31,6 +31,7 @@ float MyBA_Ver(void)
 	* 1.4110:2021年12月06日: 增加BA_String,为内存申请增加内存量计数
 	* 1.4201:2022年04月10日: 增加生信序列相似度算法;修复BA_String.split的字符串头尾不处理bug
 	* 1.4310:2022年04月28日: 增加线程安全队列和线程池;修复List_Destroy, 增加List_Gather
+	* 1.4330:2022年06月26日: 增加Array.Concat,Array.Sub,Array.Str
 	*/
 }
 

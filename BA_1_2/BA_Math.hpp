@@ -20,11 +20,12 @@ class BA_Shape
 {
 public:
 	_ULL shapeLen;
-	int* shape;
+	_ULL* shape;
 
 	BA_Shape(_ULL len, ...);
-	BA_Shape(_ULL len, int* _shape);
-	BA_Shape(int* _shape,_ULL len);
+	BA_Shape(_ULL len, _ULL* _shape);
+	BA_Shape(_ULL* _shape,_ULL len);
+	char* Str(bool toStr = false, bool printOut = true);
 };
 
 class BA_Array
@@ -39,13 +40,14 @@ public:
 	char type;//f = float, l = _ULL
 	_ULL dataLen;
 
-	int* dataShape;
+	_ULL* dataShape;
 	int shapeLen;
 
 	List* mem;
 
 	BA_Array(BA_Shape _shape, _ULL content);
 	BA_Array(BA_Shape _shape, float content);
+	BA_Array(BA_Shape _shape, float* content);
 	//way=="rand" item is 0~1 randomly,
 	//way==type just create the type of array
 	BA_Array(BA_Shape _shape, const char* way);
@@ -56,7 +58,8 @@ public:
 
 	//as pytorch, dims can be [2,1,4,1]
 	BA_Array Repeat(BA_Shape dims, bool aNew);
-	BA_Array Concat(BA_Array a, int _dim, bool aNew);
+	BA_Array Concat(BA_Array a, int _dim);
+	BA_Array Sub(_ULL from, _ULL to);
 
 	BA_Array Add(BA_Array other, bool aNew);
 	BA_Array Add(_ULL other, bool aNew);
@@ -79,13 +82,15 @@ public:
 	BA_Array Eq(float other, bool aNew);
 	BA_Array Ge(float other, bool aNew);
 
+	BA_Array Seq(float from, float by);
 	BA_Array Func(float (*Func)(float* pt), bool aNew);
 	BA_Array Maps(float (*MapFunc)(float* pt, void* p), void* p, bool aNew);
-
 
 	BA_Array Sum(void);
 
 	BA_Array Reshape(BA_Shape newShape,bool aNew);
+
+	char* Str(bool toStr = false, bool printOut = true);
 };
 
 //void* mymax(char* ptype, int sum, ...);//配合atoi等
