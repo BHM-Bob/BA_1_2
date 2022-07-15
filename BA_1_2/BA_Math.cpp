@@ -25,10 +25,10 @@ double abs_d(double a)
 	return a;
 }
 
-int* MyBA_Zeros_AllocD(int* ret, int* shape, int dims,int nowdim)
+int* MyBA_Zeros_AllocD(int* ret, int* shape, int dims, int nowdim)
 {
 	ret = (int*)calloc(shape[nowdim], sizeof(int));
-	for (int i = 0; i < shape[nowdim] && nowdim < dims-1; i++, ret++)
+	for (int i = 0; i < shape[nowdim] && nowdim < dims - 1; i++, ret++)
 		MyBA_Zeros_AllocD((int*)ret, shape, dims, nowdim + 1);
 	return ret;
 }
@@ -36,7 +36,7 @@ int* MyBA_Zeros_AllocD(int* ret, int* shape, int dims,int nowdim)
 void* MyBA_ZerosD(int* shape, int dims)
 {
 	void* ret = NULL;
-	return MyBA_Zeros_AllocD((int*)ret,shape, dims,0);
+	return MyBA_Zeros_AllocD((int*)ret, shape, dims, 0);
 }
 
 //***********************************************************************************************************************
@@ -44,7 +44,7 @@ void* MyBA_ZerosD(int* shape, int dims)
 
 LOFE_Model* LOFE_CreatNULLModel(const char* name, float lr)
 {
-	BALLOCS_L(LOFE_Model, pret, 1,  NULL,);
+	BALLOCS_L(LOFE_Model, pret, 1, NULL, );
 	pret->modelname = mstrdup(name);
 	pret->lr = lr;
 	pret->sumlayer = 0;
@@ -62,7 +62,7 @@ LOFE_Model* LOFE_CreatNULLModel(const char* name, float lr)
 LOFE_Model* LOFE_AddLayer(LOFE_Model* model, const char* name, unsigned long sumtensor, float dropout, LOFE_Layer* (*Func)(LOFE_Layer*))
 {
 	model->sumlayer += 1;
-	BALLOCS_R(LOFE_Layer, p,1,  model->mem,NULL,);
+	BALLOCS_R(LOFE_Layer, p, 1, model->mem, NULL, );
 	p->layerlname = mstrdup(name);
 	p->layerid = model->sumlayer;//from 1
 	p->bindlayerid = 0;
@@ -207,16 +207,16 @@ LOFE_Model* LOFE_SaveModel(LOFE_Model* model, char* ppath)
 	FILE* pf = NULL;
 	fopen_s(&pf, StringAdd_S(ppath, "model.lofe", NULL), "wb");
 	if (pf == NULL)
-		return (LOFE_Model*)MyBA_Errs(1,"LOFE_SaveModel:Got a NULL pf with path ", ppath, "model.lofe", NULL);
+		return (LOFE_Model*)MyBA_Errs(1, "LOFE_SaveModel:Got a NULL pf with path ", ppath, "model.lofe", NULL);
 	fwrite(model, sizeof(LOFE_Model), 1, pf);
 	StringWrite(pf, model->modelname);
 	fclose(pf);
 
 	fopen_s(&pf, StringAdd_S(ppath, "layers.lofe", NULL), "wb");
 	if (pf == NULL)
-		return (LOFE_Model*)MyBA_Errs(1,"LOFE_SaveModel:Got a NULL pf with path ", ppath, "layers.lofe", NULL);
+		return (LOFE_Model*)MyBA_Errs(1, "LOFE_SaveModel:Got a NULL pf with path ", ppath, "layers.lofe", NULL);
 	LOFE_Tensor* pt = NULL;
-	LIST_FORS(LOFE_Layer,pl,model->layers)
+	LIST_FORS(LOFE_Layer, pl, model->layers)
 	{
 		fwrite(pl, sizeof(LOFE_Layer), 1, pf);
 		StringWrite(pf, pl->layerlname);
@@ -237,11 +237,11 @@ LOFE_Model* LOFE_SaveModel(LOFE_Model* model, char* ppath)
 
 LOFE_Model* LOFE_ReadModel(char* ppath)
 {
-	BALLOCS_L(LOFE_Model, model, 1,  NULL,);
+	BALLOCS_L(LOFE_Model, model, 1, NULL, );
 	FILE* pf = NULL;
 	fopen_s(&pf, StringAdd_S(ppath, "model.lofe", NULL), "rb");
 	if (pf == NULL)
-		return (LOFE_Model*)MyBA_Errs(1,"LOFE_ReadModel:Got a NULL pf with path :", ppath, NULL);
+		return (LOFE_Model*)MyBA_Errs(1, "LOFE_ReadModel:Got a NULL pf with path :", ppath, NULL);
 	fread(model, sizeof(LOFE_Model), 1, pf);
 	model->mem = List_Init();
 	model->modelname = StringRead(pf);
@@ -249,7 +249,7 @@ LOFE_Model* LOFE_ReadModel(char* ppath)
 
 	fopen_s(&pf, StringAdd_S(ppath, "layers.lofe", NULL), "rb");
 	if (pf == NULL)
-		return (LOFE_Model*)MyBA_Errs(1,"LOFE_ReadModel:Got a NULL pf with path :", ppath, NULL);
+		return (LOFE_Model*)MyBA_Errs(1, "LOFE_ReadModel:Got a NULL pf with path :", ppath, NULL);
 	model->layers = List_Init();
 	LOFE_Layer* pl = NULL;
 	LOFE_Tensor* pt = NULL;
@@ -438,7 +438,7 @@ LOFE_Layer* LOFE_FillLayer(LOFE_Layer* pl, _LL sum, ...)
 	if (sum > 0)
 	{
 		if (sum != pl->sumtensor)
-			return (LOFE_Layer*)MyBA_Errs(1,"LOFE_FillLayer: sum != pl->sumtensor with layer ", pl->layerlname, "return NULL", NULL);
+			return (LOFE_Layer*)MyBA_Errs(1, "LOFE_FillLayer: sum != pl->sumtensor with layer ", pl->layerlname, "return NULL", NULL);
 		for (_LL i = 0; i < sum; i++, pt++)
 			pt->num = va_arg(parg, double);
 	}
@@ -446,7 +446,7 @@ LOFE_Layer* LOFE_FillLayer(LOFE_Layer* pl, _LL sum, ...)
 	{
 		sum = -sum;
 		if (sum != pl->sumtensor)
-			return (LOFE_Layer*)MyBA_Errs(1,"LOFE_FillLayer: -sum != pl->sumtensor with layer ", pl->layerlname, "return NULL", NULL);
+			return (LOFE_Layer*)MyBA_Errs(1, "LOFE_FillLayer: -sum != pl->sumtensor with layer ", pl->layerlname, "return NULL", NULL);
 		float* p = va_arg(parg, float*);
 		for (_LL i = 0; i < sum; i++, pt++)
 			pt->num = p[i];
@@ -454,7 +454,7 @@ LOFE_Layer* LOFE_FillLayer(LOFE_Layer* pl, _LL sum, ...)
 	else
 	{
 		va_end(parg);
-		return (LOFE_Layer*)MyBA_Errs(1,"LOFE_FillLayer : Got 0 with sum with layer ", pl->layerlname, "return NULL", NULL);
+		return (LOFE_Layer*)MyBA_Errs(1, "LOFE_FillLayer : Got 0 with sum with layer ", pl->layerlname, "return NULL", NULL);
 	}
 	va_end(parg);
 	return pl;
@@ -744,7 +744,7 @@ LOFE_Chain* LOFE_CompileModel_CacuSum(LOFE_Model* model, LOFE_Chain* chain)
 LOFE_Model* LOFE_CompileModel_W(LOFE_Model* model, LOFE_Chain* chain)
 {
 	LOFE_Tensor* pt = NULL;
-	BALLOCS_S(_ULL, psum, 1,  NULL,);
+	BALLOCS_S(_ULL, psum, 1, NULL, );
 	bool reseti = 0;
 	_ULL times = 0;
 	for (LOFE_Layer* pl = (LOFE_Layer*)(List_ReverseCopy(model->layers)); pl != NULL; pl = (LOFE_Layer*)(List_ReverseCopy(model->layers)))
@@ -945,7 +945,7 @@ BA_Shape::BA_Shape(_ULL len, ...)
 	{
 		MyBA_Err("BA_Shape::BA_Shape(_ULL len, ...): BALLOC_L(len,int)==NULL, make shape = NULL", 1);
 	}
-	else 
+	else
 	{
 		va_list parg;
 		va_start(parg, len);
@@ -1097,14 +1097,14 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 		dataF = BALLOC_R(dataLen, float, mem);
 		float* te = dataF;
 		for (_ULL i = 0; i < dataLen; i++, te++)
-			*te = (float)(rand()%10000) / (float)10000.;
+			*te = (float)(rand() % 10000) / (float)10000.;
 	}
 	else if (strcmp(way, "range") == 0)
 	{
 		float js = 0.;
 		dataF = BALLOC_R(dataLen, float, mem);
 		float* te = dataF;
-		for (_ULL i = 0; i < dataLen; i++, te++,js+=1.0)
+		for (_ULL i = 0; i < dataLen; i++, te++, js += 1.0)
 			*te = js;
 	}
 	else if (strcmp(way, "l") == 0)
@@ -1280,13 +1280,13 @@ BA_Array BA_Array::Concat(BA_Array a, int _dim)
 		}
 	}
 	BA_Shape newShape = BA_Shape(dataShape, shapeLen);
-	newShape.shape[_dim] = dataShape[_dim]+a.dataShape[_dim];
+	newShape.shape[_dim] = dataShape[_dim] + a.dataShape[_dim];
 	BA_Array ret = BA_Array(newShape, &type);
 	// TODO: support axis
 	if (type == 'f')
 	{
 		memcpy((void*)ret.dataF, (void*)dataF, dataLen * 4);
-		memcpy((void*)(ret.dataF+ dataLen), (void*)a.dataF, a.dataLen * 4);
+		memcpy((void*)(ret.dataF + dataLen), (void*)a.dataF, a.dataLen * 4);
 	}
 	else
 	{
@@ -1305,7 +1305,7 @@ BA_Array BA_Array::Sub(_ULL from, _ULL to)
 	}
 
 	BA_Array ret = BA_Array(BA_Shape(1, to - from), 0.f);
-	float* p1 = dataF+from, * p2 = ret.dataF;
+	float* p1 = dataF + from, * p2 = ret.dataF;
 	for (_ULL idxR = 0; idxR < ret.dataLen; p1++, p2++, idxR++)
 		*p2 = *p1;
 	return ret;
@@ -1333,8 +1333,8 @@ BA_Array BA_Array::Add(BA_Array other, bool aNew)
 			if (aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt2 = other.dataL, *pt3 = ret.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++,pt3++)
+				_ULL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
+				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = *pt1 + *pt2;
 				return ret;
 			}
@@ -1350,10 +1350,10 @@ BA_Array BA_Array::Add(BA_Array other, bool aNew)
 			if (aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL,  * pt3 = ret.dataL;
+				_ULL* pt1 = dataL, * pt3 = ret.dataL;
 				float* pt2 = other.dataF;
 				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
-					*pt3 = *pt1 + (_ULL) (*pt2);
+					*pt3 = *pt1 + (_ULL)(*pt2);
 				return ret;
 			}
 			else
@@ -1620,7 +1620,7 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
 				_ULL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
 				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
-					if(*pt2 != 0)
+					if (*pt2 != 0)
 						*pt3 = (*pt1) / (*pt2);
 				return ret;
 			}
@@ -2041,12 +2041,12 @@ BA_Array BA_Array::MatMul(BA_Array other)
 		MyBA_Err("BA_Array BA_Array::MatMul(BA_Array other, bool aNew): shapeLen <= 2 || other.shapeLen <= 2,return *this", 1);
 		return *this;
 	}
-	if (dataShape[shapeLen-1] != other.dataShape[other.dataLen-2])
+	if (dataShape[shapeLen - 1] != other.dataShape[other.dataLen - 2])
 	{
 		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): dataShape[shapeLen-1] != other.dataShape[other.dataLen-2],return *this", 1);
 		return *this;
 	}
-	for(_ULL i = 0;i<shapeLen-2;i++)
+	for (_ULL i = 0; i < shapeLen - 2; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
@@ -2070,7 +2070,7 @@ BA_Array BA_Array::Eq(float other, bool aNew)
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
 			_ULL* pt1 = dataL, * pt3 = ret.dataL;
 			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) == (_ULL)(other) ? 1:0;
+				*pt3 = (*pt1) == (_ULL)(other) ? 1 : 0;
 			return ret;
 		}
 		else
@@ -2192,12 +2192,12 @@ BA_Array BA_Array::Seq(float from, float by)
 	{
 		float* pt1 = dataF;
 		float nowVal = from;
-		for (_ULL i = 0; i < dataLen; i++, pt1++, nowVal+= by)
+		for (_ULL i = 0; i < dataLen; i++, pt1++, nowVal += by)
 			*pt1 = nowVal;
 	}
 	else
 	{
-		MyBA_Err("BA_Array BA_Array::Func(float (*Func)(float* pt), bool aNew): unsupport for type = 'l',do nothing", 1);
+		MyBA_Err("BA_Array BA_Array::Seq(float from, float by): unsupport for type = 'l',do nothing", 1);
 	}
 	return *this;
 }
@@ -2237,14 +2237,14 @@ BA_Array BA_Array::Maps(float(*MapFunc)(float* pt, void* p), void* p, bool aNew)
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
 			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = MapFunc(pt1,p);
+				*pt3 = MapFunc(pt1, p);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
 			for (_ULL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = MapFunc(pt1,p);
+				*pt1 = MapFunc(pt1, p);
 		}
 	}
 	else

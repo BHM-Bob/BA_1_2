@@ -107,7 +107,7 @@ void MyBA_Init(void)
 
 void MyBA_PutLog(const char* pc)
 {
-	MCALLOCS(BALog,plog, 1);
+	MCALLOCS(BALog, plog, 1);
 	plog->t = clock();
 	plog->pdate = Get_Time_Without_L();
 	plog->pc = _strdup(pc);
@@ -143,7 +143,7 @@ bool MyBA_WriteLog(bool isquit)
 	else
 	{
 		pba->PutLog(_strdup("Unable to open mba.log file"));
-		if(pf != NULL)
+		if (pf != NULL)
 			fclose(pf);
 		return 0;
 	}
@@ -176,7 +176,7 @@ void* MyBA_Err(const char* pc, bool instance)
 	return NULL;
 }
 
-void* MyBA_Errs(bool instance,...)
+void* MyBA_Errs(bool instance, ...)
 //End with a NULL
 {
 	va_list parg;
@@ -211,7 +211,7 @@ void* MyBA_CALLOC_S(_ULL count, _ULL size)
 		return NULL;
 	}
 	List_Put(pba->STmem, ret);
-	pba->STmem->plast->usage = size*count;
+	pba->STmem->plast->usage = size * count;
 	pba->STmem->tik += pba->STmem->plast->usage;
 	return ret;
 }
@@ -225,7 +225,7 @@ void* MyBA_CALLOC_L(_ULL count, _ULL size)
 		return NULL;
 	}
 	List_Put(pba->LTmem, ret);
-	pba->LTmem->plast->usage = size* count;
+	pba->LTmem->plast->usage = size * count;
 	pba->LTmem->tik += pba->LTmem->plast->usage;
 	return ret;
 }
@@ -239,7 +239,7 @@ void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli)
 		return NULL;
 	}
 	List_Put(pli, ret);
-	pli->plast->usage = size*count;
+	pli->plast->usage = size * count;
 	pli->tik += pli->plast->usage;
 	return ret;
 }
@@ -276,13 +276,13 @@ void MyBA_Free_R(List* pli)
 	pli->now = pli->pfirst;
 }
 
-void MyBA_Free(void* p,List* mem)
+void MyBA_Free(void* p, List* mem)
 {
 	if (mem != NULL)
 	{
 		ListDot* pd = NULL;
 		_ULL js = 0;
-		for (void* pm = List_Copy(mem); pm != NULL; pm = List_Copy(mem),js++)
+		for (void* pm = List_Copy(mem); pm != NULL; pm = List_Copy(mem), js++)
 		{
 			if (pm == p)
 			{
@@ -359,7 +359,7 @@ int MyBA_CMD_ShowLog(void)
 	else
 	{
 		pba->PutLog(_strdup("Unable to open mba.log file"));
-		if(pf)
+		if (pf)
 			fclose(pf);
 		return 0;
 	}
@@ -375,8 +375,8 @@ int MyBA_CMD_ShowLog(void)
 		pl->pc = StringRead(pf);
 		fread(&(pl->code), sizeof(int), 1, pf);
 		printf("\nBoot:%10.5fs | Date:%s | Code:%d\nContent:<%s>\n", (float)((float)(pl->t) / CLOCKS_PER_SEC), pl->pdate, pl->code, pl->pc);
-		free(pl->pc);
-		free(pl->pdate);
+		//free(pl->pc);
+		//free(pl->pdate);
 
 		len2 = ftell(pf);
 	}
@@ -511,7 +511,7 @@ float* floatdupS(_ULL num, ...)
 
 char* Get_Time_Without_L(void)
 {
-	BALLOCS_L(char,p,26,NULL,PPW("Get_Time_Without_L:BALLOCS_L Faliue,return NULL"));
+	BALLOCS_L(char, p, 26, NULL, PPW("Get_Time_Without_L:BALLOCS_L Faliue,return NULL"));
 	time_t tim = time(NULL);
 	if (ctime_s(p, 26, &tim) != 0)
 		return NULL;
@@ -619,7 +619,7 @@ char* Num_To_Char(const char* ptype, ...)
 	else
 	{
 		va_end(parg);
-		return (char*)MyBA_Errs(1,"Num_To_Char: type default with", ptype,"return NULL",NULL);
+		return (char*)MyBA_Errs(1, "Num_To_Char: type default with", ptype, "return NULL", NULL);
 	}
 	va_end(parg);
 	return preturn;
@@ -681,7 +681,7 @@ bool Frees(char* ptype, ...)
 	else
 	{
 		va_end(parg);
-		MyBA_Errs(1,"Frees:Can't match the type of", ptype,NULL);
+		MyBA_Errs(1, "Frees:Can't match the type of", ptype, NULL);
 		return 1;
 	}
 	va_end(parg);
@@ -701,7 +701,7 @@ char* StringAdd_L(const char* pstr, ...)//end with NULL
 		sumlen += strlen(p);
 		plist->Put(plist, (void*)p);
 	}
-	BALLOCS_L(char,pret, sumlen, NULL,);
+	BALLOCS_L(char, pret, sumlen, NULL, );
 	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
 		strcat_s(pret, sumlen, p);
 	va_end(parg);
@@ -734,7 +734,7 @@ int GetDayOfMonth(int year, int month)
 	//month:1~12
 	if (month < 1 || month >12)
 	{
-		MyBA_Errs(1,"GetDayOfMonth: month is out of range with input:",Num_To_Char("d",month), ",return -1");
+		MyBA_Errs(1, "GetDayOfMonth: month is out of range with input:", Num_To_Char("d", month), ",return -1");
 		return -1;
 	}
 	int a[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
@@ -910,7 +910,7 @@ List* List_Destroy(List* plist)
 
 List* List_Init(void)
 {
-	MCALLOCS(List,plist,1);
+	MCALLOCS(List, plist, 1);
 	if (plist == NULL)
 	{
 		PPW("List * List_Init(void):plist == NULL,return NULL");
@@ -934,7 +934,7 @@ List* List_Init(void)
 
 ////***********************************************************************************************************************
 
-MyThreadQueue::MyThreadQueue(void){}
+MyThreadQueue::MyThreadQueue(void) {}
 
 bool MyThreadQueue::Put(void* _pData, mutex* m)
 {
@@ -1017,7 +1017,7 @@ _ULL MyThreadQueue::Size(mutex* m)
 	return ret;
 }
 
-MyThreadsPool::MyThreadsPool(void){}
+MyThreadsPool::MyThreadsPool(void) {}
 
 MyThreadsPool::MyThreadsPool(_ULL _sumThreads,
 	void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*),
@@ -1028,7 +1028,7 @@ MyThreadsPool::MyThreadsPool(_ULL _sumThreads,
 	putDataQues = BALLOC_R(_sumThreads, MyThreadQueue, mem);
 	getDataQues = BALLOC_R(_sumThreads, MyThreadQueue, mem);
 	//pF = _pF;
-	if(!_name)
+	if (!_name)
 		name = _strdup("MyThreadsPool");
 	else
 		name = _strdup(_name);
@@ -1041,7 +1041,7 @@ MyThreadsPool::MyThreadsPool(_ULL _sumThreads,
 
 void MyThreadsPool::PutTask(void* pData, mutex* m)
 {
-	if(!putDataQues[quePtr].Put(pData, m))
+	if (!putDataQues[quePtr].Put(pData, m))
 		PPW("void MyThreadsPool::PutTask(void* pData, mutex* m): !putDataQues[quePtr].Put(pData, m)");
 	quePtr = ((quePtr + 1) < sumThreads) ? (quePtr + 1) : 0;
 	sumTasks += 1;
@@ -1073,7 +1073,7 @@ List* MyThreadsPool::LoopToQuit(mutex* m, void* quitSig)
 	}
 	for (_ULL idx = 0; idx < sumThreads; idx++)
 	{
-		while(getDataQues[idx].Size(m) > 0)
+		while (getDataQues[idx].Size(m) > 0)
 			List_Put(retList, getDataQues[idx].Get(m));
 		ppThs[idx]->join();
 	}
