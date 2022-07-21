@@ -6,9 +6,26 @@
 #include"BA_Base.hpp"
 #include"BA_UI.hpp"
 
-int* ProduceRainbowCol(int* col, float* i)// r g b
+int* ProduceRainbowCol(int* col, float* i, float* di)// r g b
 {
-	*i += 0.05f;
+	*i += *di;
+	if (*i > 10000.f || *i < -10000.f)
+	{
+		*di = -*di;
+		*i += 100. * (*di);
+	}
+	col[0] = 127 * sin(*i) + 127;
+	col[1] = 127 * cos(*i) + 127;
+	col[2] = 127 * sin(0.8f * (*i)) + 127;
+	return col;
+}
+
+int* ProduceRainbowCol(int* col, float* i, float di)// r g b
+{
+	*i += di;
+	float sh = 5000.f * (0.5 * sin(*i) + 0.7);
+	if (*i > sh || *i < -sh)
+		*i -= 400. * di;
 	col[0] = 127 * sin(*i) + 127;
 	col[1] = 127 * cos(*i) + 127;
 	col[2] = 127 * sin(0.8f * (*i)) + 127;
@@ -103,14 +120,14 @@ SDL_Surface* SDL_GetImage_Sur(const char* ppath)
 
 	SDL_Surface* pte = IMG_Load(ppath);
 	if (!pte)
-		return (SDL_Surface*)MyBA_Errs(1,"SDL_GetImage_Sur:Can't load IMG ", ppath, ", return NULL", NULL);
+		return (SDL_Surface*)MyBA_Errs(1, "SDL_GetImage_Sur:Can't load IMG ", ppath, ", return NULL", NULL);
 	return pte;
 }
 SDL_Texture* SDL_GetImage_Tex(SDL_Renderer* renderer, const char* ppath, bool BackColorKeep, int BR, int BG, int BB)
 {
 	SDL_Surface* pte = IMG_Load(ppath);
 	if (!pte)
-		return(SDL_Texture*)MyBA_Errs(1,"SDL_GetImage_Tex:Can't load IMG ", ppath, ", return NULL", NULL);
+		return(SDL_Texture*)MyBA_Errs(1, "SDL_GetImage_Tex:Can't load IMG ", ppath, ", return NULL", NULL);
 	if (!BackColorKeep)
 	{
 		Uint32 color = SDL_MapRGB(pte->format, BR, BG, BB);
@@ -148,7 +165,7 @@ SDL_Texture* SDL_Get_Font_Texture(SDL_Renderer* prend, SDL_Surface* pscr, TTF_Fo
 	free(pte2);
 	SDL_Texture* pTex = NULL;
 	if (pte == NULL)
-		return (SDL_Texture*)MyBA_Errs(0,"SDL_Get_Font_Texture: Can't blended Surface with text:", pc, ", skip", NULL);
+		return (SDL_Texture*)MyBA_Errs(0, "SDL_Get_Font_Texture: Can't blended Surface with text:", pc, ", skip", NULL);
 	if (pscr != NULL)
 	{
 		if (pscr->w < Box.w || pscr->h < Box.h)
@@ -175,7 +192,7 @@ SDL_Surface* SDL_Get_Font_Surface(SDL_Surface** ppscr, TTF_Font* pfont, int R, i
 	SDL_Color color = { R,G,B };
 	SDL_Surface* pte = TTF_RenderUTF8_Blended(pfont, pc, color);
 	if (pte == NULL)
-		return (SDL_Surface*)MyBA_Errs(0,"SDL_Get_Font_Surface: Can't blended Surface with text:", pc, ", skip", NULL);
+		return (SDL_Surface*)MyBA_Errs(0, "SDL_Get_Font_Surface: Can't blended Surface with text:", pc, ", skip", NULL);
 	SDL_Rect Box = { x, y,  (int)strlen(pc) * Size,  Size };
 	SDL_BlitScaled(pte, NULL, *ppscr, &Box);
 	SDL_FreeSurface(pte);
@@ -625,6 +642,7 @@ MyTextInput* SDL_ChangeBack_MyTextInput(MyTextInput* ptext, SDL_Renderer* rend, 
 	return ptext;
 }
 
+//End With a NULL
 bool SDL_Quit_s(SDL_Window** win, SDL_Renderer** renderer, SDL_Surface** ppSurface1, ...)
 {
 	va_list parg;
@@ -638,9 +656,10 @@ bool SDL_Quit_s(SDL_Window** win, SDL_Renderer** renderer, SDL_Surface** ppSurfa
 	va_end(parg);
 	return 1;
 }
-//End With a NULL
 
-MyUI* MyUI_Init(const char* titlepc, int winw, int winh, int winflags, int* color)//flag==0 mean defualt
+//flag==0 means defualt
+//color==NULL means translucent BG
+MyUI* MyUI_Init(const char* titlepc, int winw, int winh, int winflags, int* color)
 {
 	MyUI* pui = MCALLOC(1, MyUI);
 	pui->win = MCALLOC(1, MyUI_win);
@@ -683,6 +702,7 @@ MyUI* MyUI_Init(const char* titlepc, int winw, int winh, int winflags, int* colo
 		return (MyUI*)MyBA_Err("MyUI_Init: Can't create win", 1);
 	pui->win->rend = SDL_CreateRenderer(pui->win->pwin, -1, SDL_RENDERER_ACCELERATED);
 	SDL_RenderClear(pui->win->rend);
+	SDL_SetRenderDrawColor(pui->win->rend, 200, 200, 200, 200);
 
 	if (color != NULL)
 	{
@@ -893,7 +913,7 @@ bool MyUI_PollQuit(MyUI* pui)
 
 MyUI_ColorSur* MyUI_ColorSur_Init(SDL_Surface* distSur)
 {
-	MCALLOCS(MyUI_ColorSur,pcs, 1);
+	MCALLOCS(MyUI_ColorSur, pcs, 1);
 	pcs->pre = MCALLOC(1, SDL_Rect);
 	pcs->pre->x = pcs->pre->y = 0;
 	pcs->pre->w = distSur->w;
@@ -994,7 +1014,7 @@ MyUI_ColorSur* MyUI_ColorSur_Update(MyUI_ColorSur* pcs)
 MyUI_ColorText* MyUI_ColorText_Init(SDL_Renderer* rend, TTF_Font* font, const char* pc)
 //为什么直接从fontSur中读取像素是失败的？？？？(get 255 0 0 0)
 {
-	MCALLOCS(MyUI_ColorText,pct, 1);
+	MCALLOCS(MyUI_ColorText, pct, 1);
 	pct->mem = List_Init();
 	pct->font = font;
 	pct->rend = rend;
@@ -1003,7 +1023,7 @@ MyUI_ColorText* MyUI_ColorText_Init(SDL_Renderer* rend, TTF_Font* font, const ch
 	SDL_Color color = { .r = 255 , .g = 0 , .b = 0, .a = 255 };
 	pct->fontSur = TTF_RenderUTF8_Blended(pct->font, pct->pc, color);
 	if (pct->fontSur == NULL)
-		return (MyUI_ColorText*)MyBA_Errs(0,"MyUI_ColorText_Init: Can't blended Surface with text:", pc, ", skip", NULL);
+		return (MyUI_ColorText*)MyBA_Errs(0, "MyUI_ColorText_Init: Can't blended Surface with text:", pc, ", skip", NULL);
 	pct->pre->w = pct->fontSur->w;
 	pct->pre->h = pct->fontSur->h;
 	pct->pSur = SDL_CreateRGBSurface(0, pct->pre->w, pct->pre->h, 32, 0, 0, 0, 255);

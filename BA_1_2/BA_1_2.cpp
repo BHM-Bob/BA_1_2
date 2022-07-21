@@ -17,7 +17,7 @@ MyBA* pba;
 
 float MyBA_Ver(void)
 {
-	return 1.4310f;
+	return 1.4340f;
 	/*
 	* 1.1000:2020年08月15日：MyUI, MyDir(in C)
 	* 1.2000:2021年03月28日：MyBA, List
@@ -32,6 +32,7 @@ float MyBA_Ver(void)
 	* 1.4201:2022年04月10日: 增加生信序列相似度算法;修复BA_String.split的字符串头尾不处理bug
 	* 1.4310:2022年04月28日: 增加线程安全队列和线程池;修复List_Destroy, 增加List_Gather
 	* 1.4330:2022年06月26日: 增加Array.Concat,Array.Sub,Array.Str
+	* 1.4340:2022年07月21日: 修复ProduceRainbowCol bug
 	*/
 }
 

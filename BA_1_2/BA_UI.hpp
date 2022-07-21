@@ -1,7 +1,7 @@
-//BASIC_ALL_1_2
+ï»¿//BASIC_ALL_1_2
 //H
 //Writen By BHM
-//2021Äê11ÔÂ18ÈÕ 23µã08·Ö
+//2021å¹´11æœˆ18æ—¥ 23ç‚¹08åˆ†
 
 //#define USE_OPENCV
 //#define USE_WINDOWS
@@ -11,7 +11,8 @@
 
 #include"BA_Base.hpp"
 
-int* ProduceRainbowCol(int* col, float* i);// r g b
+int* ProduceRainbowCol(int* col, float* i, float* di);// r g b
+int* ProduceRainbowCol(int* col, float* i, float di = 0.05);// r g b
 //************************************************************************************************************************
 //*********************************************SDL2*****************************************************************Start
 //*************************************************************************************************************************
@@ -37,7 +38,7 @@ struct MyUI_ColorSur
 	float* plv;
 	float* plen;
 	int col[4];
-	SDL_Surface* distSur;//Íâ²¿·ÇNULL Surface£¬Ğè»æÖÆ
+	SDL_Surface* distSur;//å¤–éƒ¨éNULL Surfaceï¼Œéœ€ç»˜åˆ¶
 	SDL_Rect re_paint;
 	MyUI_ColorSur* (*pF_Update)(MyUI_ColorSur* pcs);
 };
@@ -71,13 +72,10 @@ MyUI_ColorText* MyUI_ColorText_Init(SDL_Renderer* rend, TTF_Font* font, const ch
 SDL_Surface* MyUI_ColorText_Get(MyUI_ColorText* pct);
 bool MyUI_ColorText_Destroy(MyUI_ColorText* pct);
 
-
-
-
 typedef struct SDL_MyButton SDL_MyButton;
 struct SDL_MyButton
 {
-	SDL_Texture** ppTex;//Button ËùÒÀ¸½µÄ,button½«Õ¼Âú´ËTex,ÔÚÎŞ±³¾°Çé¿öÏÂÄ¬ÈÏTexÒÑ´´½¨
+	SDL_Texture** ppTex;//Button æ‰€ä¾é™„çš„,buttonå°†å æ»¡æ­¤Tex,åœ¨æ— èƒŒæ™¯æƒ…å†µä¸‹é»˜è®¤Texå·²åˆ›å»º
 	SDL_Rect re_butt;
 	int backcolor[3];
 	char* pc;
@@ -87,11 +85,11 @@ struct SDL_MyButton
 	Uint32 Format;
 	MyUI_ColorSur* pct;
 	SDL_Surface* back1;
-	SDL_Surface* back2;//±£Áô±³¾°
-	SDL_Surface* back3;//±£Áô±³¾°
+	SDL_Surface* back2;//ä¿ç•™èƒŒæ™¯
+	SDL_Surface* back3;//ä¿ç•™èƒŒæ™¯
 };
 SDL_MyButton* SDL_Create_MyButton(SDL_Renderer* rend, Uint32 Format, SDL_Rect re_butt_in, int backcolor[3], const char* pc, TTF_Font* pfont, unsigned int charsize, int charcolor[3], SDL_Surface* back);
-//backcolor == NULL Í¸Ã÷±³¾°
+//backcolor == NULL é€æ˜èƒŒæ™¯
 
 bool SDL_Destroy_MyButton(SDL_MyButton* pbutt);
 
@@ -114,10 +112,10 @@ int SDL_CheckClick_MyButton(SDL_Rect* re_butt, SDL_Event* peve);
 //***************************************************************************************************************************Struct SDL_MyButton ***End
 
 //***************************************************************************************************************************Struct MyTextInput ***Start
-typedef struct MyTextInput MyTextInput;//µ¥ĞĞ×Ö·ûÊäÈë(ascii<<<¿ÉÊÓ×Ö·û>>><<<backspace>>>)
-struct MyTextInput//¼üÈëenter½áÊøÊäÈë¹ı³Ì
+typedef struct MyTextInput MyTextInput;//å•è¡Œå­—ç¬¦è¾“å…¥(ascii<<<å¯è§†å­—ç¬¦>>><<<backspace>>>)
+struct MyTextInput//é”®å…¥enterç»“æŸè¾“å…¥è¿‡ç¨‹
 {
-	SDL_Texture** ppTex;//MyTextInput ËùÒÀ¸½µÄ,MyTextInput½«Õ¼Âú´ËTex,ÔÚÎŞ±³¾°Çé¿öÏÂÄ¬ÈÏTexÒÑ´´½¨
+	SDL_Texture** ppTex;//MyTextInput æ‰€ä¾é™„çš„,MyTextInputå°†å æ»¡æ­¤Tex,åœ¨æ— èƒŒæ™¯æƒ…å†µä¸‹é»˜è®¤Texå·²åˆ›å»º
 	SDL_Rect re_text;
 	int edgingwidth;
 	int edgingwidthcolor[3];
@@ -127,8 +125,8 @@ struct MyTextInput//¼üÈëenter½áÊøÊäÈë¹ı³Ì
 	int charsize;
 	int charcolor[3];
 	SDL_Surface* back1;
-	SDL_Surface* back2;//±£Áô±³¾°
-	SDL_Surface* back3;//±£Áô±³¾°
+	SDL_Surface* back2;//ä¿ç•™èƒŒæ™¯
+	SDL_Surface* back3;//ä¿ç•™èƒŒæ™¯
 };
 MyTextInput* SDL_Create_MyTextInput(SDL_Renderer* rend, Uint32 Format, SDL_Rect re_text_in, int edgingwidth, int edgingwidthcolor[3], int backcolor[3], TTF_Font* pfont, int charsize, int charcolor[3], SDL_Surface* back);
 
@@ -152,7 +150,7 @@ struct SD_Pushmess
 };
 SDL_Window* SDL_Pushmess(const char* mess, TTF_Font* pfont, int charsize, int sec);
 int SDL_Pushmess2(void* pwin);
-//Ä£·Â°²×¿ÆÁµ×ºÚ¿ò
+//æ¨¡ä»¿å®‰å“å±åº•é»‘æ¡†
 //***************************************************************************************************************************Struct Pussmess ***End
 
 
@@ -188,8 +186,8 @@ struct MyUI_butt
 {
 	int sumbutt;
 	int* eventbutt;//1 left ; 2 right
-	int* buttava;//°´Å¥ÁĞ±íÕ¼ÓÃ 0²»´æÔÚ   1´æÔÚÇÒÏÔÊ¾   2´æÔÚ²»ÏÔÊ¾
-	SDL_MyButton* pbutt[1024];//°´Å¥ÁĞ±í
+	int* buttava;//æŒ‰é’®åˆ—è¡¨å ç”¨ 0ä¸å­˜åœ¨   1å­˜åœ¨ä¸”æ˜¾ç¤º   2å­˜åœ¨ä¸æ˜¾ç¤º
+	SDL_MyButton* pbutt[1024];//æŒ‰é’®åˆ—è¡¨
 };
 
 
@@ -221,7 +219,7 @@ struct MyUI_font
 {
 	int sumfont;
 	TTF_Font* pdefaultfont;//"C:\\Windows\\Fonts\\simkai.ttf"
-	int* FontListAvaliable;//×ÖÌåÁĞ±íÕ¼ÓÃ
+	int* FontListAvaliable;//å­—ä½“åˆ—è¡¨å ç”¨
 	TTF_Font* pfont;
 };
 
@@ -260,7 +258,7 @@ struct MyUI
 
 MyUI* MyUI_Init(const char* titlepc, int winw, int winh, int winflags, int* color);//flag==0 mean defualt
 MyUI* MyUI_Addfont(MyUI* pui, int order, const char* ppath);
-MyUI* MyUI_Addbutt(MyUI* pui, int order, const char* name, int charsize, int charcolor[3], int backcolor[3], int xywh[4], SDL_Surface* back);//order ´Ó0¼ÆÊı
+MyUI* MyUI_Addbutt(MyUI* pui, int order, const char* name, int charsize, int charcolor[3], int backcolor[3], int xywh[4], SDL_Surface* back);//order ä»0è®¡æ•°
 MyUI* MyUI_Delbutt(MyUI* pui, int order);
 MyUI* MyUI_Checkbutt(MyUI* pui);
 MyUI* MyUI_Checktitle(MyUI* pui);
