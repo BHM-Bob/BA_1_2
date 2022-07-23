@@ -41,17 +41,17 @@ bool SDL_Init_s(void)//ok return 1
 	return 1;
 }
 
+/*
+		int r = (color >> 16) & 0xFF;
+		int g = (color >> 8) & 0xFF;
+		int b = (color >> 0) & 0xFF;
+*/
 Uint32 SDL_GetPixel(SDL_Surface* surface, int x, int y)
 {
 	int bpp = surface->format->BytesPerPixel;
 	Uint32* p = (Uint32*)(surface->pixels);
 	return *(p + (Uint32)y * (surface->w) + (Uint32)x);
 }
-/*
-		int r = (color >> 16) & 0xFF;
-		int g = (color >> 8) & 0xFF;
-		int b = (color >> 0) & 0xFF;
-*/
 
 SDL_Texture* SDL_CreateRGBTexture(SDL_Renderer* rend, int w, int h, int r, int g, int b)
 {
@@ -741,6 +741,10 @@ MyUI* MyUI_Init(const char* titlepc, int winw, int winh, int winflags, int* colo
 		return (MyUI*)MyBA_Err("MyUI_Init: Can't open defaultfont:C:\\Windows\\Fonts\\simkai.ttf", 1);
 	SDL_RenderPresent(pui->win->rend);
 	pui->win->time = clock();
+
+	List_Put(pba->exitFunc, (void*)MyUI_Quit);
+	List_Put(pba->exitFuncData, (void*)pui);
+
 	return pui;
 }
 
@@ -909,6 +913,27 @@ bool MyUI_PollQuit(MyUI* pui)
 	if ((pui->win->exitbutt != -1) && ((pui->butt->eventbutt)[pui->win->exitbutt] == 1))
 		return 1;
 	return SDL_Poll_Quit(pui->win->peve);
+}
+
+int MyUI_Quit(void* pui_, int code, ...)
+{
+	MyUI* pui = (MyUI*)pui_;
+
+	free(pui->win->titlepc);
+	SDL_FreeSurface(pui->win->pwinSur);
+	SDL_DestroyTexture(pui->win->pwinTex);
+	SDL_DestroyWindow(pui->win->pwin);
+	//free(pui->win->pre_win);
+	SDL_DestroyRenderer(pui->win->rend);
+	SDL_FreeFormat(pui->win->format);
+	free(pui->win->peve);
+	free(pui->win->pre_title);
+
+	free(pui->win);
+	free(pui->font);
+	free(pui->set);
+
+	return 0;
 }
 
 MyUI_ColorSur* MyUI_ColorSur_Init(SDL_Surface* distSur)

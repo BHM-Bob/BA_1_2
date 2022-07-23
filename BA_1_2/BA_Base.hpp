@@ -1,7 +1,7 @@
-//BASIC_ALL_1_2
+ï»¿//BASIC_ALL_1_2
 //H
 //Writen By BHM
-//2021Äê11ÔÂ20ÈÕ
+//2021å¹´11æœˆ20æ—¥
 //#define USE_OPENCV
 //#define USE_WINDOWS
 
@@ -147,7 +147,7 @@ char* Get_Time_S(void);
 char* Get_Time_For_File_Name(char char_to_replace_unspport_char);
 
 char* Num_To_Char(const char* ptype, ...);
-// ... ±íÊ¾±»»»µÄÊı×Ö±äÁ¿
+// ... è¡¨ç¤ºè¢«æ¢çš„æ•°å­—å˜é‡
 
 bool Frees(char* ptype, ...);
 // ... Must end with a NULL
@@ -155,7 +155,7 @@ bool Frees(char* ptype, ...);
 char* GBK_To_UTF8(const char* pc);
 
 //***********************************************************************************************************************
-typedef struct ListDot ListDot;//ÏÈ½øÏÈ³ö
+typedef struct ListDot ListDot;//å…ˆè¿›å…ˆå‡º
 struct ListDot
 {
 	_ULL idx;//from 0
@@ -165,10 +165,10 @@ struct ListDot
 	void* pdata;
 };
 
-typedef struct List List;//ÏÈ½øÏÈ³ö
+typedef struct List List;//å…ˆè¿›å…ˆå‡º
 struct List
 {
-	_ULL tik;//±êÊ¶·û£¬Çø·ÖList£¬»òÕßÓÃÀ´´¢´æÒ»Ğ©IDĞÅÏ¢
+	_ULL tik;//æ ‡è¯†ç¬¦ï¼ŒåŒºåˆ†Listï¼Œæˆ–è€…ç”¨æ¥å‚¨å­˜ä¸€äº›IDä¿¡æ¯
 	_ULL sumque;
 	ListDot* pfirst;
 	ListDot* plast;
@@ -184,18 +184,19 @@ struct List
 	void* (*IndexGet)(List* plist, _ULL index);
 };
 List* List_Init(void);
-void* List_Copy(List * plist);
-void* List_ReverseCopy(List * plist);
-void* List_Get(List * plist);
+void* List_Copy(List* plist);
+ListDot* List_CopyDot(List* plist);
+void* List_ReverseCopy(List* plist);
+void* List_Get(List* plist);
 //Get the index dot content,from 0
-void* List_Index(List * plist, _ULL index);
+void* List_Index(List* plist, _ULL index);
 //Get the index dot,from 0
-ListDot* List_IndexDot(List * plist, _ULL index);
-void* List_IndexGet(List * plist, _ULL index);
-List* List_Put(List * plist, void* pdata);
+ListDot* List_IndexDot(List* plist, _ULL index);
+void* List_IndexGet(List* plist, _ULL index);
+List* List_Put(List* plist, void* pdata);
 // end with a NULL
 List* List_Gather(void* pData1, ...);
-List* List_Destroy(List * plist);
+List* List_Destroy(List* plist);
 
 //***********************************************************************************************************************
 //NOTICE: is it 100% safe that put lock opt into MyThreadQueue?
@@ -294,6 +295,9 @@ struct MyBA
 
 	List* pLog;
 
+	List* exitFuncData;
+	List* exitFunc;
+
 	int (*Quit)(int retVal);
 	float (*GUT)(void);
 	void (*PutLog)(const char* pc);
@@ -305,6 +309,7 @@ void MyBA_PutLog(const char* pc);
 bool MyBA_WriteLog(bool isquit);
 void* MyBA_Err(const char* pc, bool instance);
 void* MyBA_Errs(bool instance, ...);
+_ULL MyBA_AtQuit(int (*exitFunc)(void* data, int code, ...), void* data);
 int MyBA_Quit(int retVal = 0);
 
 void MyBA_Free(void* p, List* mem);

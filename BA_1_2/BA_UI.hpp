@@ -264,6 +264,7 @@ MyUI* MyUI_Checkbutt(MyUI* pui);
 MyUI* MyUI_Checktitle(MyUI* pui);
 MyUI* MyUI_Update(MyUI* pui, bool rendclear, bool copyTex);
 bool MyUI_PollQuit(MyUI* pui);
+int MyUI_Quit(void* pui_, int code, ...);
 
 //***************************************************************************************************************************Struct MyUI ***End
 //************************************************************************************************************************

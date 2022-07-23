@@ -3,14 +3,14 @@
  * @Date: 2021-11-18 22:51:44
  * @LastEditors: BHM-Bob G
  * @LastEditTime: 2022-05-31 00:20:10
- * @Description: 
+ * @Description:
  */
 #include "BA_1_2.hpp"
-//mutex m;
+ //mutex m;
 
 int main(int argc, char** argvs)
 {
 	MyBA_Init();
-	BA_Array_Test2();
+	MyUI_Init("TEST", 800, 800, 0, NULL);
 	return MyBA_Quit();
 }

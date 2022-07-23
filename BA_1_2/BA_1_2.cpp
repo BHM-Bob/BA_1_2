@@ -27,12 +27,13 @@ float MyBA_Ver(void)
 	* 1.3100:2021年08月29日: 将QQDH项目转化为SDL_ColorSur部件，修改MyUI_Addbutt，添加彩色按钮选项
 	* 1.3200:2021年08月29日: 将QQDH项目转化为SDL_ColorText部件
 	* 1.3300:2021年11月20日: 升级内存管理机制,支持长时内存和快内存的申请与释放
-	* 1.4000:2021年11月25日: 使用C++,增加BA_Array类和BA_Dir类,支持任意形状数组运算,支持文件夹查看
+	* 1.4000:2021年11月25日: 使用C++,增加BA_Array类和BA_Dir类,支持一维数组运算,支持文件夹查看
 	* 1.4110:2021年12月06日: 增加BA_String,为内存申请增加内存量计数
 	* 1.4201:2022年04月10日: 增加生信序列相似度算法;修复BA_String.split的字符串头尾不处理bug
 	* 1.4310:2022年04月28日: 增加线程安全队列和线程池;修复List_Destroy, 增加List_Gather
 	* 1.4330:2022年06月26日: 增加Array.Concat,Array.Sub,Array.Str
 	* 1.4340:2022年07月21日: 修复ProduceRainbowCol bug
+	* 1.4351:2022年07月23日: 添加BA退出时注册函数功能，将MyUI与之挂钩；修改部分注释
 	*/
 }
 
@@ -59,6 +60,9 @@ void MyBA_Init(void)
 		pba->mem = List_Init();
 		pba->LTmem = List_Init();
 		pba->STmem = List_Init();
+
+		pba->exitFunc = List_Init();
+		pba->exitFuncData = List_Init();
 
 #ifdef USE_SDL2
 		pba->isSDL2 = 1;
@@ -203,6 +207,13 @@ void* MyBA_Errs(bool instance, ...)
 	return NULL;
 }
 
+_ULL MyBA_AtQuit(int(*exitFunc)(void* data, int code, ...), void* data)
+{
+	List_Put(pba->exitFunc, (void*)exitFunc);
+	List_Put(pba->exitFuncData, (void*)data);
+	return pba->exitFunc->plast->idx;
+}
+
 void* MyBA_CALLOC_S(_ULL count, _ULL size)
 {
 	void* ret = calloc(count, size);
@@ -249,6 +260,19 @@ int MyBA_Quit(int retVal)
 {
 	MyBA_WriteLog(true);
 
+	int (*exitFunc)(void* data, int code, ...) = NULL;
+	for (ListDot* pdata = List_CopyDot(pba->exitFuncData), *pfunc = List_CopyDot(pba->exitFunc);
+		pdata;
+		pdata = List_CopyDot(pba->exitFuncData), pfunc = List_CopyDot(pba->exitFunc))
+	{
+		exitFunc = (int (*)(void* data, int code, ...))(pfunc->pdata);
+		if (exitFunc(pdata->pdata, 0) != 0)
+		{
+			MyBA_Errs(1, "int MyBA_Quit(int retVal): exitFunc(pdata, 0) != 0, func No.",
+				Num_To_Char("llu", pdata->idx), " err!", NULL);
+		}
+	}
+
 	MyBA_Free_R(pba->mem);
 	MyBA_Free_R(pba->LTmem);
 	MyBA_Free_R(pba->STmem);
@@ -269,12 +293,12 @@ void MyBA_Free_R(List* pli)
 		for (void* pm = List_Copy(pli); pm != NULL; pm = List_Copy(pli))
 			if (pm != (void*)0x1)
 				free(pm);
+		pli->now = pli->pfirst;
 	}
 	else
 	{
 		PPW("MyBA_Free_R: pli==NULL,return");
 	}
-	pli->now = pli->pfirst;
 }
 
 void MyBA_Free(void* p, List* mem)
@@ -293,12 +317,12 @@ void MyBA_Free(void* p, List* mem)
 				break;
 			}
 		}
+		mem->now = mem->pfirst;
 	}
 	else
 	{
 		PPW("MyBA_Free: mem==NULL,return");
 	}
-	mem->now = mem->pfirst;
 }
 
 void MyBA_FreeInstance(void)
@@ -308,12 +332,12 @@ void MyBA_FreeInstance(void)
 		for (void* pm = List_Copy(pba->STmem); pm != NULL; pm = List_Copy(pba->STmem))
 			if (pm != (void*)0x1)
 				free(pm);
+		pba->STmem->now = pba->STmem->pfirst;
 	}
 	else
 	{
 		PPW("MyBA_FreeInstance: pba->STmem==NULL,return");
 	}
-	pba->STmem->now = pba->STmem->pfirst;
 }
 
 void MyBA_CMD(void)
@@ -548,14 +572,13 @@ char* Get_Time_S(void)
 	return p;
 }
 
+//Get_Time_Without_S
 char* Get_Time_For_File_Name(char char_to_replace_unspport_char)
 {
 	char* p = Get_Time_Without_S();
 	*(p + 13) = *(p + 16) = char_to_replace_unspport_char;
 	return p;
 }
-
-
 
 char* Num_To_Char(const char* ptype, ...)
 {
@@ -781,6 +804,20 @@ void* List_Copy(List* plist)
 		return NULL;
 	}
 	void* pret = plist->now->pdata;
+	plist->now = plist->now->pnext;//If it means the end, it will report a NULL to rise a signal
+	return pret;
+}
+
+ListDot* List_CopyDot(List* plist)
+{
+	if (plist == NULL)
+		return (ListDot*)MyBA_Err("get a NULL que", 1);
+	if (plist->now == NULL)//Get the signal
+	{
+		plist->now = plist->pfirst;//ReSet
+		return NULL;
+	}
+	ListDot* pret = plist->now;
 	plist->now = plist->now->pnext;//If it means the end, it will report a NULL to rise a signal
 	return pret;
 }
