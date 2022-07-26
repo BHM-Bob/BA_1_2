@@ -239,6 +239,8 @@ public:
 
 	// + 运算符重载, join tow list
 	list<dataType> operator+(list& other);
+	// [] 运算符重载, IndexCopy
+	dataType* operator[](_ULL index);
 };
 
 //***********************************************************************************************************************

@@ -1117,6 +1117,12 @@ list<dataType> list<dataType>::operator+(list& other)
 	return *this;
 }
 
+template<typename dataType>
+dataType* list<dataType>::operator[](_ULL index)
+{
+	return this->IndexCopy(index);
+}
+
 ////***********************************************************************************************************************
 
 MyThreadQueue::MyThreadQueue(void) {}
