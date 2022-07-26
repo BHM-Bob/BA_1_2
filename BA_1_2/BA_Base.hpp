@@ -198,6 +198,49 @@ List* List_Put(List* plist, void* pdata);
 List* List_Gather(void* pData1, ...);
 List* List_Destroy(List* plist);
 
+//******************************************************************
+//High level List
+template <typename dataType>
+class listDot
+{
+public:
+	listDot();
+	listDot(dataType* _pdata);
+	~listDot();
+
+	dataType* pdata = NULL;
+	_ULL idx = 0;//from 0
+	_ULL usage = 0;//for some open use
+	listDot* pnext = NULL;
+	listDot* ppre = NULL;
+};
+template <typename dataType>
+class list
+{
+public:
+	list();
+
+	_ULL tik = 0;//标识符，区分List，或者用来储存一些ID信息
+	_ULL sumque = 0;
+	listDot<dataType>* pfirst = NULL;
+	listDot<dataType>* plast = NULL;
+	listDot<dataType>* now = NULL;
+
+	dataType* Copy();
+	dataType* Get();
+	//Get the index dot content,from 0
+	dataType* IndexCopy(_ULL index);
+	//Copy the index dot content,from 0
+	dataType* IndexGet(_ULL index);
+	list<dataType> Put(dataType* pdata);
+	// end with a NULL
+	list<dataType> Gather(dataType* pData1, ...);
+	~list();
+
+	// + 运算符重载, join tow list
+	list<dataType> operator+(list& other);
+};
+
 //***********************************************************************************************************************
 //NOTICE: is it 100% safe that put lock opt into MyThreadQueue?
 // may be there are many threads try to get the putDataQues[quePtr]
