@@ -1079,7 +1079,7 @@ list<dataType> list<dataType>::Put(dataType* pdata)
 	}
 	else
 	{
-		ListDot* pte = new listDot<dataType>(pdata);
+		listDot<dataType>* pte = new listDot<dataType>(pdata);
 		if (pte == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
@@ -1110,13 +1110,19 @@ list<dataType> list<dataType>::Gather(dataType* pData1, ...)
 }
 
 template<typename dataType>
-list<dataType>::~list()
+void list<dataType>::Destroy(void)
 {
 	for (listDot<dataType>* p = pfirst, *pn = NULL; p; p = pn)
 	{
 		pn = p->pnext;
 		delete p;
 	}
+}
+
+template<typename dataType>
+list<dataType>::~list()
+{
+
 }
 
 template<typename dataType>

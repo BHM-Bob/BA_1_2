@@ -236,6 +236,7 @@ public:
 	list<dataType> Put(dataType* pdata);
 	// end with a NULL
 	list<dataType> Gather(dataType* pData1, ...);
+	void Destroy(void);
 	~list();
 
 	// + 运算符重载, join tow list
