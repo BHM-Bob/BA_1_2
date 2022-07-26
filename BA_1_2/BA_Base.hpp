@@ -226,6 +226,7 @@ public:
 	listDot<dataType>* plast = NULL;
 	listDot<dataType>* now = NULL;
 
+	_ULL GetNowIndex();
 	dataType* Copy();
 	dataType* Get();
 	//Get the index dot content,from 0
