@@ -753,8 +753,8 @@ MyUI* MyUI_Addfont(MyUI* pui, int order, const char* ppath)
 	return pui;
 }
 
-MyUI* MyUI_Addbutt(MyUI* pui, int order, const char* name, int charsize, int charcolor[3], int backcolor[3], int xywh[4], SDL_Surface* back)
 //back: 0x1 means to use MyUI_ColorSur
+MyUI* MyUI_Addbutt(MyUI* pui, int order, const char* name, int charsize, int charcolor[3], int backcolor[3], int xywh[4], SDL_Surface* back)
 {
 	if (order < (pui->butt->sumbutt))
 	{

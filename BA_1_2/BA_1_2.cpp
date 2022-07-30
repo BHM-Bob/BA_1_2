@@ -922,6 +922,18 @@ List* List_Put(List* plist, void* pdata)
 	}
 	return plist;
 }
+void List_SetVar(List* plist, void* pdata, void* newVar)
+{
+	if (plist == NULL)
+	{
+		MyBA_Err("get a NULL plist pram", 1);
+		return ;
+	}
+	ListDot* p = plist->pfirst;
+	for ( ; (p != NULL) && (p->pdata != pdata); p = p->pnext);
+	if (p)
+		p->pdata = newVar;
+}
 
 List* List_Gather(void* pData1, ...)
 {
@@ -934,6 +946,7 @@ List* List_Gather(void* pData1, ...)
 	va_end(parg);
 	return plist;
 }
+
 
 List* List_Destroy(List* plist)
 {
@@ -969,175 +982,6 @@ List* List_Init(void)
 	}
 }
 //***********************************************************************************************************************
-
-template<typename dataType>
-listDot<dataType>::listDot()
-{
-}
-
-template<typename dataType>
-inline listDot<dataType>::listDot(dataType* _pdata)
-{
-	pdata = _pdata;
-}
-
-template<typename dataType>
-listDot<dataType>::~listDot()
-{
-}
-
-template<typename dataType>
-inline list<dataType>::list()
-{
-}
-
-template<typename dataType>
-_ULL list<dataType>::GetNowIndex()
-{
-	if (now == NULL)
-		return sumque;
-	else
-		return now->idx;
-}
-
-template<typename dataType>
-dataType* list<dataType>::Copy()
-{
-	if (now == NULL)//Get the signal
-	{
-		now = pfirst;//ReSet
-		return NULL;
-	}
-	dataType* pret = now->pdata;
-	now = now->pnext;//If it means the end, it will report a NULL to rise a signal
-	return pret;
-}
-
-template<typename dataType>
-dataType* list<dataType>::Get()
-{
-	listDot<dataType>* pret = pfirst;
-	if (sumque == 1)
-	{
-		now = pfirst = plast = NULL;
-	}
-	else if (sumque == 0)
-	{
-		return NULL;
-	}
-	else
-	{
-		if (now == pfirst)
-			now = pfirst->pnext;
-		ListDot* pte = pfirst->pnext;
-		pte->ppre = NULL;
-		pfirst = pte;
-	}
-	--sumque;
-	dataType* pdata = pret->pdata;
-	delete pret;
-	return pdata;
-}
-
-template<typename dataType>
-dataType* list<dataType>::IndexCopy(_ULL index)
-{
-	listDot<dataType>* p = pfirst;
-	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
-	return p->pdata;
-}
-
-template<typename dataType>
-dataType* list<dataType>::IndexGet(_ULL index)
-{
-	listDot<dataType>* p = pfirst;
-	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
-	p->ppre->pnext = p->pnext;
-	p->pnext->ppre = p->ppre;
-	dataType* pret = p->pdata;
-	delete p;
-	return pret;
-}
-
-template<typename dataType>
-list<dataType> list<dataType>::Put(dataType* pdata)
-{
-	++sumque;
-	if (sumque == 1)
-	{
-		pfirst = new listDot<dataType>(pdata);
-		if (pfirst == NULL)
-		{
-			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
-		}
-		else
-		{
-			plast = pfirst;
-			pfirst->pnext = pfirst->ppre = NULL;
-			pfirst->idx = sumque - 1;
-		}
-	}
-	else
-	{
-		listDot<dataType>* pte = new listDot<dataType>(pdata);
-		if (pte == NULL)
-		{
-			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
-		}
-		else
-		{
-			pte->ppre = plast;
-			pte->pnext = NULL;
-			plast->pnext = pte;
-			plast = pte;
-			pte->pdata = pdata;
-			pte->idx = sumque - 1;
-		}
-	}
-	return *this;
-}
-
-template<typename dataType>
-list<dataType> list<dataType>::Gather(dataType* pData1, ...)
-{
-	va_list parg;
-	va_start(parg, pData1);
-	this->Put(pData1);
-	for (dataType* p = va_arg(parg, dataType*); p != NULL; p = va_arg(parg, dataType*))
-		this->Put(p);
-	va_end(parg);
-	return *this;
-}
-
-template<typename dataType>
-void list<dataType>::Destroy(void)
-{
-	for (listDot<dataType>* p = pfirst, *pn = NULL; p; p = pn)
-	{
-		pn = p->pnext;
-		delete p;
-	}
-}
-
-template<typename dataType>
-list<dataType>::~list()
-{
-
-}
-
-template<typename dataType>
-list<dataType> list<dataType>::operator+(list& other)
-{
-	for (dataType* p = other.Get(); p; p = other.Get())
-		this->Put(p);
-	return *this;
-}
-
-template<typename dataType>
-dataType* list<dataType>::operator[](_ULL index)
-{
-	return this->IndexCopy(index);
-}
 
 ////***********************************************************************************************************************
 

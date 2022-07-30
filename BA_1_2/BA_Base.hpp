@@ -194,6 +194,7 @@ void* List_Index(List* plist, _ULL index);
 ListDot* List_IndexDot(List* plist, _ULL index);
 void* List_IndexGet(List* plist, _ULL index);
 List* List_Put(List* plist, void* pdata);
+void List_SetVar(List* plist, void* pdata, void* newVar);
 // end with a NULL
 List* List_Gather(void* pData1, ...);
 List* List_Destroy(List* plist);
@@ -204,27 +205,34 @@ template <typename dataType>
 class listDot
 {
 public:
-	listDot();
-	listDot(dataType* _pdata);
-	~listDot();
-
 	dataType* pdata = NULL;
 	_ULL idx = 0;//from 0
 	_ULL usage = 0;//for some open use
 	listDot* pnext = NULL;
 	listDot* ppre = NULL;
+
+	listDot();
+	listDot(dataType* _pdata);
+	~listDot();
 };
 template <typename dataType>
 class list
 {
 public:
-	list();
-
 	_ULL tik = 0;//标识符，区分List，或者用来储存一些ID信息
 	_ULL sumque = 0;
 	listDot<dataType>* pfirst = NULL;
 	listDot<dataType>* plast = NULL;
 	listDot<dataType>* now = NULL;
+
+
+	list();
+	// end with a NULL
+	list(dataType* data1, ...);
+
+
+	_ULL lastIndex = 0;
+	listDot<dataType>* lastIndexDot = NULL;
 
 	_ULL GetNowIndex();
 	dataType* Copy();
@@ -240,10 +248,12 @@ public:
 	~list();
 
 	// + 运算符重载, join tow list
-	list<dataType> operator+(list& other);
+	list<dataType> operator+(list<dataType>& other);
 	// [] 运算符重载, IndexCopy
 	dataType* operator[](_ULL index);
 };
+
+
 
 //***********************************************************************************************************************
 //NOTICE: is it 100% safe that put lock opt into MyThreadQueue?
@@ -371,4 +381,236 @@ int MyBA_CMD_SearchCom(char* pc);
 int MyBA_CMD_ShowLog(void);
 void MyBA_SafeMode(void);
 //***********************************************************************************************************************
+
+
+
+
+//***********************************************************************************************************************
+//***********************************************************************************************************************
+//***********************************************************************************************************************
+//***********************************************************************************************************************
+//***********************************************************************************************************************
+
+
+
+
+
+
+template<typename dataType>
+listDot<dataType>::listDot()
+{
+}
+
+template<typename dataType>
+inline listDot<dataType>::listDot(dataType* _pdata)
+{
+	pdata = _pdata;
+}
+
+template<typename dataType>
+listDot<dataType>::~listDot()
+{
+}
+
+template<typename dataType>
+list<dataType>::list()
+{
+}
+
+template<typename dataType>
+list<dataType>::list(dataType* data1, ...)
+{
+	va_list parg;
+	va_start(parg, data1);
+	this->Put(data1);
+	for (dataType* p = va_arg(parg, dataType*); p != NULL; p = va_arg(parg, dataType*))
+		this->Put(p);
+	va_end(parg);
+}
+
+template<typename dataType>
+_ULL list<dataType>::GetNowIndex()
+{
+	if (now == NULL)
+		return sumque;
+	else
+		return now->idx;
+}
+
+template<typename dataType>
+dataType* list<dataType>::Copy()
+{
+	if (now == NULL)//Get the signal
+	{
+		now = pfirst;//ReSet
+		return NULL;
+	}
+	dataType* pret = now->pdata;
+	now = now->pnext;//If it means the end, it will report a NULL to rise a signal
+	return pret;
+}
+
+template<typename dataType>
+dataType* list<dataType>::Get()
+{
+	listDot<dataType>* pret = pfirst;
+	if (sumque == 1)
+	{
+		now = pfirst = plast = NULL;
+	}
+	else if (sumque == 0)
+	{
+		return NULL;
+	}
+	else
+	{
+		if (now == pfirst)
+			now = pfirst->pnext;
+		ListDot* pte = pfirst->pnext;
+		pte->ppre = NULL;
+		pfirst = pte;
+	}
+	--sumque;
+	dataType* pdata = pret->pdata;
+	delete pret;
+	return pdata;
+}
+
+template<typename dataType>
+dataType* list<dataType>::IndexCopy(_ULL index)
+{
+	listDot<dataType>* p = pfirst;
+	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
+	return p->pdata;
+}
+
+template<typename dataType>
+dataType* list<dataType>::IndexGet(_ULL index)
+{
+	listDot<dataType>* p = pfirst;
+	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
+	p->ppre->pnext = p->pnext;
+	p->pnext->ppre = p->ppre;
+	dataType* pret = p->pdata;
+	delete p;
+	return pret;
+}
+
+template<typename dataType>
+list<dataType> list<dataType>::Put(dataType* pdata)
+{
+	++sumque;
+	if (sumque == 1)
+	{
+		pfirst = new listDot<dataType>(pdata);
+		if (pfirst == NULL)
+		{
+			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+		}
+		else
+		{
+			plast = pfirst;
+			pfirst->pnext = pfirst->ppre = NULL;
+			pfirst->idx = sumque - 1;
+		}
+	}
+	else
+	{
+		listDot<dataType>* pte = new listDot<dataType>(pdata);
+		if (pte == NULL)
+		{
+			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+		}
+		else
+		{
+			pte->ppre = plast;
+			pte->pnext = NULL;
+			plast->pnext = pte;
+			plast = pte;
+			pte->pdata = pdata;
+			pte->idx = sumque - 1;
+		}
+	}
+	return *this;
+}
+
+template<typename dataType>
+list<dataType> list<dataType>::Gather(dataType* pData1, ...)
+{
+	va_list parg;
+	va_start(parg, pData1);
+	this->Put(pData1);
+	for (dataType* p = va_arg(parg, dataType*); p != NULL; p = va_arg(parg, dataType*))
+		this->Put(p);
+	va_end(parg);
+	return *this;
+}
+
+template<typename dataType>
+void list<dataType>::Destroy(void)
+{
+	for (listDot<dataType>* p = pfirst, *pn = NULL; p; p = pn)
+	{
+		pn = p->pnext;
+		delete p;
+	}
+}
+
+template<typename dataType>
+list<dataType>::~list()
+{
+
+}
+
+template<typename dataType>
+list<dataType> list<dataType>::operator+(list<dataType>& other)
+{
+	list<dataType>* ret = new list<dataType>;
+	this->now = this->pfirst;
+	for (dataType* p = this.Copy(); p; p = other.Copy())
+		ret->Put(p);
+	other.now = other.pfirst;
+	for (dataType* p = other.Copy(); p; p = other.Copy())
+		ret->Put(p);
+	return *ret;
+}
+
+template<typename dataType>
+dataType* list<dataType>::operator[](_ULL index)
+{
+	if (!lastIndexDot)
+		lastIndexDot = pfirst;
+	listDot<dataType>* pd = lastIndexDot;
+	if (index > lastIndex)
+		for (_ULL i = lastIndex; (i < index) && (pd != NULL); i++, pd = pd->pnext);
+	else if (index < lastIndex)
+		for (_ULL i = lastIndex; (i > index) && (pd != NULL); i--, pd = pd->ppre);
+	//else//(index == lastIndex);
+	lastIndex = index;
+	lastIndexDot = pd;
+	return pd->pdata;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif
