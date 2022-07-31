@@ -36,6 +36,7 @@ float MyBA_Ver(void)
 	* 1.3351 : 2.4.3.1 :2022年07月23日: 添加BA退出时注册函数功能，将MyUI与之挂钩；修改部分注释
 	* 1.3401 : 2.5.0.1 :2022年07月26日: 添加list(使用template)；修改部分注释
 	* 1.3501 : 2.6.0.1 :2022年07月31日: 添加QUI；修改部分注释
+	* 1.3600 : 2.7.0.0 :2022年07月31日: 添加dict(使用any & template), 修改MakeSDLCol和MakeSDLRect参数mem为NULL时行为
 	*/
 }
 
@@ -983,6 +984,105 @@ List* List_Init(void)
 	}
 }
 //***********************************************************************************************************************
+
+dictPair::dictPair()
+{
+}
+
+dictPair::dictPair(const char* _key, any _data)
+{
+	key = _strdup(_key);
+	data = _data;
+}
+
+dictPair::~dictPair()
+{
+}
+
+dict::dict()
+{
+}
+
+dict::dict(const char* _key, any _data)
+{
+	this->Put(_key, _data);
+}
+
+bool dict::HasKey(const char* key)
+{
+	dictPair* pd = pfirst;
+	for (; pd; pd = pd->pnext)
+		if (!strcmp(pd->key, key))
+			return true;
+	return false;
+}
+
+dict dict::Put(const char* _key, any _data)
+{
+	++sumque;
+	if (sumque == 1)
+	{
+		pfirst = new dictPair(_key, _data);
+		if (pfirst == NULL)
+		{
+			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+		}
+		else
+		{
+			plast = pfirst;
+			pfirst->pnext = pfirst->ppre = NULL;
+			pfirst->idx = sumque - 1;
+		}
+	}
+	else
+	{
+		dictPair* pte = new dictPair(_key, _data);
+		if (pte == NULL)
+		{
+			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+		}
+		else
+		{
+			pte->ppre = plast;
+			pte->pnext = NULL;
+			plast->pnext = pte;
+			plast = pte;
+			pte->idx = sumque - 1;
+		}
+	}
+	return *this;
+}
+
+void dict::Destroy(void)
+{
+	for (dictPair* p = pfirst, *pn = NULL; p; p = pn)
+	{
+		free(p->key);
+		delete p;
+	}
+}
+
+dict::~dict()
+{
+}
+
+//dict dict::operator+(dict& other)
+//{
+//	dict* ret = new dict();
+//	this->now = this->pfirst;
+//	for (dataType* p = this.Copy(); p; p = other.Copy())
+//		ret->Put(p);
+//	other.now = other.pfirst;
+//	for (dataType* p = other.Copy(); p; p = other.Copy())
+//		ret->Put(p);
+//	return *ret;
+//}
+
+dict dict::operator()(const char* _key, any _data)
+{
+	this->Put(_key, _data);
+	return *this;
+}
 
 ////***********************************************************************************************************************
 

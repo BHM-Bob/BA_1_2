@@ -10,6 +10,7 @@
 
 #define __STDC_WANT_LIB_EXT1__ 1
 
+#include<any>
 #include<assert.h>
 #include<ctype.h>
 #include<conio.h>
@@ -74,23 +75,21 @@ typedef long long _LL;
 
 void PPIs(int n, ...);
 
-#define PPT() printf("\nTime now : In %s at line %lu ,<%s> <%.10f s>,\n",__func__,__LINE__,Get_Time_Without_S(),(float)( (float)(clock())/CLOCKS_PER_SEC))
-#define PPI(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%d>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
-#define PPL(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%lld>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
-#define PPD(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%le>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
-#define PPF(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%f>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
-#define PPU(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%llu>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
-#define PPC(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%c>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
-#define PPP(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%p>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
-#define PPSS(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%s>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p))
+#define PPT() printf("\nTime now : In %s\n, %s at line %lu ,<%s> <%.10f s>,\n",__FILE__, __func__,__LINE__,Get_Time_Without_S(),(float)( (float)(clock())/CLOCKS_PER_SEC))
+#define PPI(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%d>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+#define PPL(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%lld>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+#define PPD(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%le>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+#define PPF(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%f>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+#define PPU(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%llu>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+#define PPC(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%c>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+#define PPP(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%p>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+#define PPSS(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%s>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
 //this str can not contan any ++ opts, because ti will use twice in this define line
-#define PPS(p) printf("\n <%.10f s>In %s at line %lu , "#p" is <%s>,It's size is %llu\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__func__,__LINE__,(p),strlen(p))
-
-#define PPW(p) printf("\nWarning : In %s at line %lu ,<%s>!!!,\n",__func__,__LINE__,(p))
+#define PPS(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%s>,It's size is %llu\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p),strlen(p))
 //Push Warning
-
-#define PPWs(p,q) printf("\nWarning : In %s at line %lu ,<%s %s>!!!,\n",__func__,__LINE__,(p),(q))
+#define PPW(p) printf("\nWarning : In %s\n, %s at line %lu ,<%s>!!!,\n",__FILE__,__func__,__LINE__,(p))
 //Push Warning for a variate string q
+#define PPWs(p,q) printf("\nWarning : In %s\n, %s at line %lu ,<%s %s>!!!,\n",__FILE__,__func__,__LINE__,(p),(q))
 
 /*STOP_IF_SCANF*/
 #define _SIS_ {printf("\nStopping Now,Enter Anykey To Comtinue\nAt %s in line %lu  ",__func__,__LINE__);fflush(stdin);int c = _getch();printf("   Scanfed\n");fflush(stdin);}
@@ -264,6 +263,52 @@ public:
 	// () 运算符重载, setVar via name
 	void operator()(const char* name, dataType* newVar, bool freeOld = true);
 };
+//******************************************************************
+//High level dict
+class dictPair
+{
+public:
+	char* key = NULL;
+	any data;
+	_LL idx = 0;//from 0
+	_ULL usage = 0;//for some open use
+	dictPair* pnext = NULL;
+	dictPair* ppre = NULL;
+
+	dictPair();
+	dictPair(const char* _key, any _data);
+	~dictPair();
+};
+class dict
+{
+public:
+	_LL tik = 0;//标识符，区分List，或者用来储存一些ID信息
+	_LL sumque = 0;
+	dictPair* pfirst = NULL;
+	dictPair* plast = NULL;
+	dictPair* now = NULL;
+
+
+	dict();
+	// end with a NULL
+	dict(const char* _key, any _data);
+
+	bool HasKey(const char* key);
+	//Get the data to key
+	template <typename dataType> dataType GetData2Key(const char* key);
+	dict Put(const char* _key, any _data);
+	void Destroy(void);
+	~dict();
+
+	// + 运算符重载, join tow dict
+	dict operator+(dict& other);
+	// [] 运算符重载, GetData2Key
+	// the way to call this func is unkown now
+	template <typename dataType>
+	dataType operator[](const char* key);
+	// () 运算符重载, setVar via key
+	dict operator()(const char* _key, any _data);
+};
 
 
 
@@ -402,6 +447,11 @@ void MyBA_SafeMode(void);
 //***********************************************************************************************************************
 //***********************************************************************************************************************
 //***********************************************************************************************************************
+//***********************************************************************************************************************
+//***********************************************************************************************************************
+//***********************************************************************************************************************
+//***********************************************************************************************************************
+//***********************************************************************************************************************
 
 
 //int* pi = typeDupR<int>(mem, 2, 99, 99);
@@ -431,8 +481,6 @@ dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
 
 //***********************************************************************************************************************
 //***********************************************************************************************************************
-
-
 
 
 template<typename dataType>
@@ -604,7 +652,6 @@ list<dataType> list<dataType>::Put(dataType* pdata, const char* name)
 			pte->pnext = NULL;
 			plast->pnext = pte;
 			plast = pte;
-			pte->pdata = pdata;
 			pte->idx = sumque - 1;
 		}
 	}
@@ -711,12 +758,32 @@ inline void list<dataType>::operator()(const char* name, dataType* newVar, bool 
 }
 
 
+//***********************************************************************************************************************
+//***********************************************************************************************************************
 
 
 
+template<typename dataType>
+inline dataType dict::GetData2Key(const char* key)
+{
+	dictPair* pd = pfirst;
+	for (; pd; pd = pd->pnext)
+		if (! strcmp(pd->key, key))
+			return any_cast<dataType>(pd->data);
+	PPWs("No Such Key: ", key);
+	//dataType errRet;
+	//return errRet; // C4700
+	//unkown return var !!!
+}
 
-
-
+template<typename dataType>
+inline dataType dict::operator[](const char* key)
+{
+	dictPair* pd = pfirst;
+	for (; pd; pd = pd->pnext)
+		if (!strcmp(pd->key, key))
+			return any_cast<dataType>(pd->data);
+}
 
 
 
@@ -733,3 +800,4 @@ inline void list<dataType>::operator()(const char* name, dataType* newVar, bool 
 
 
 #endif
+

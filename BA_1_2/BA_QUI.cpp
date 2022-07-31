@@ -21,7 +21,15 @@ SDL_Color* SetSDLCol(SDL_Color* col, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 
 SDL_Color* MakeSDLCol(List* mem, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-	SDL_Color* col = BALLOC_R(1, SDL_Color, mem);
+	SDL_Color* col = NULL;
+	if (mem)
+	{
+		col = BALLOC_R(1, SDL_Color, mem);
+	}
+	else
+	{
+		col = BALLOC_L(1, SDL_Color);
+	}
 	return SetSDLCol(col, r, g, b, a);
 }
 
@@ -39,7 +47,15 @@ SDL_Rect* SetSDLRect(SDL_Rect* pos, int w, int h, int x, int y)
 
 SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y)
 {
-	SDL_Rect* pos = BALLOC_R(1, SDL_Rect, mem);
+	SDL_Rect* pos = NULL;
+	if (mem)
+	{
+		pos = BALLOC_R(1, SDL_Rect, mem);
+	}
+	else
+	{
+		pos = BALLOC_L(1, SDL_Rect);
+	}
 	return SetSDLRect(pos, w, h, x, y);
 }
 
