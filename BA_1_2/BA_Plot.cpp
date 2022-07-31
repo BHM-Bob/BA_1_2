@@ -92,7 +92,7 @@ BA_Plot BA_Plot::PaintMM(void)
 			{
 				tmp = *(data.dataF + newx + (newy) * _W);
 				if (tmp > 0)
-					SDL_SetRenderDrawColor(pui->win->rend, 255* tmp/max, 0, 255, 255);
+					SDL_SetRenderDrawColor(pui->win->rend, 255* (Uint8)(tmp/max), 0, 255, 255);
 				else//tmp <= 0
 					SDL_SetRenderDrawColor(pui->win->rend, 0, 255 * tmp / min, 255, 255);
 

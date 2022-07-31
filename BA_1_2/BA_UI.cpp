@@ -316,6 +316,7 @@ SDL_MyButton* SDL_Create_MyButton(SDL_Renderer* rend, Uint32 Format, SDL_Rect re
 	return pbutt;
 }
 
+
 bool SDL_Destroy_MyButton(SDL_MyButton* pbutt)
 {
 	SDL_DestroyTexture(*(pbutt->ppTex));

@@ -19,22 +19,23 @@ float MyBA_Ver(void)
 {
 	return 1.3401f;
 	/*
-	* 1.1000:2020年08月15日：MyUI, MyDir(in C)
-	* 1.2000:2021年03月28日：MyBA, List
-	* 1.2100:2021年08月20日：LOFE(仅支持正向传播);至2021年09月20日左右支持反向传播
-	* 1.2111:2021年08月28日：MyUI添加窗口透明选项，修改报错文本
-	* 1.2120:2021年08月28日：SDL_GetFontTexture修改逻辑，使得SDL_MyButton选择背景颜色创建时溢出文字可被显示
-	* 1.2200:2021年08月29日: 将QQDH项目转化为SDL_ColorSur部件，修改MyUI_Addbutt，添加彩色按钮选项
-	* 1.2300:2021年08月29日: 将QQDH项目转化为SDL_ColorText部件
-	* 1.2400:2021年11月20日: 升级内存管理机制,支持长时内存和快内存的申请与释放
-	* 1.3000:2021年11月25日: 使用C++,增加BA_Array类和BA_Dir类,支持一维数组运算,支持文件夹查看
-	* 1.3110:2021年12月06日: 增加BA_String,为内存申请增加内存量计数
-	* 1.3201:2022年04月10日: 增加生信序列相似度算法;修复BA_String.split的字符串头尾不处理bug
-	* 1.3310:2022年04月28日: 增加线程安全队列和线程池;修复List_Destroy, 增加List_Gather
-	* 1.3330:2022年06月26日: 增加Array.Concat,Array.Sub,Array.Str
-	* 1.3340:2022年07月21日: 修复ProduceRainbowCol bug
-	* 1.3351:2022年07月23日: 添加BA退出时注册函数功能，将MyUI与之挂钩；修改部分注释
-	* 1.3401:2022年07月26日: 添加list(使用template)；修改部分注释
+	* 1.1000 : 1.1.0.0 :2020年08月15日：MyUI, MyDir(in C)
+	* 1.2000 : 1.2.0.0 :2021年03月28日：MyBA, List
+	* 1.2100 : 1.3.0.0 :2021年08月20日：LOFE(仅支持正向传播);至2021年09月20日左右支持反向传播
+	* 1.2111 : 1.3.1.1 :2021年08月28日：MyUI添加窗口透明选项，修改报错文本
+	* 1.2120 : 1.3.2.0 :2021年08月28日：SDL_GetFontTexture修改逻辑，使得SDL_MyButton选择背景颜色创建时溢出文字可被显示
+	* 1.2200 : 1.3.3.1 :2021年08月29日: 将QQDH项目转化为SDL_ColorSur部件，修改MyUI_Addbutt，添加彩色按钮选项
+	* 1.2300 : 1.3.4.0 :2021年08月29日: 将QQDH项目转化为SDL_ColorText部件
+	* 1.2400 : 1.4.0.0 :2021年11月20日: 升级内存管理机制,支持长时内存和快内存的申请与释放
+	* 1.3000 : 2.1.0.0 :2021年11月25日: 使用C++,增加BA_Array类和BA_Dir类,支持一维数组运算,支持文件夹查看
+	* 1.3110 : 2.2.1.0 :2021年12月06日: 增加BA_String,为内存申请增加内存量计数
+	* 1.3201 : 2.3.0.1 :2022年04月10日: 增加生信序列相似度算法;修复BA_String.split的字符串头尾不处理bug
+	* 1.3310 : 2.4.1.1 :2022年04月28日: 增加线程安全队列和线程池;修复List_Destroy, 增加List_Gather
+	* 1.3330 : 2.4.2.0 :2022年06月26日: 增加Array.Concat,Array.Sub,Array.Str
+	* 1.3340 : 2.4.2.1 :2022年07月21日: 修复ProduceRainbowCol bug
+	* 1.3351 : 2.4.3.1 :2022年07月23日: 添加BA退出时注册函数功能，将MyUI与之挂钩；修改部分注释
+	* 1.3401 : 2.5.0.1 :2022年07月26日: 添加list(使用template)；修改部分注释
+	* 1.3501 : 2.6.0.1 :2022年07月31日: 添加QUI；修改部分注释
 	*/
 }
 
@@ -845,7 +846,7 @@ void* List_Index(List* plist, _ULL index)
 	if (plist == NULL)
 		return MyBA_Err("get a NULL plist pram", 1);
 	ListDot* p = plist->pfirst;
-	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
+	for (_ULL i = 0; (i < index) && p; i++, p = p->pnext);
 	return p->pdata;
 }
 
@@ -993,7 +994,7 @@ bool MyThreadQueue::Put(void* _pData, mutex* m)
 	++(sumque);
 	if (sumque == 1)
 	{
-		pfirst = MCALLOC(1, MyThreadQue, mem);
+		pfirst = MCALLOC(1, MyThreadQue);
 		if (pfirst == NULL)
 		{
 			PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return False");

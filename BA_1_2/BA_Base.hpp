@@ -206,21 +206,22 @@ class listDot
 {
 public:
 	dataType* pdata = NULL;
-	_ULL idx = 0;//from 0
+	char* name = NULL;
+	_LL idx = 0;//from 0
 	_ULL usage = 0;//for some open use
 	listDot* pnext = NULL;
 	listDot* ppre = NULL;
 
 	listDot();
-	listDot(dataType* _pdata);
+	listDot(dataType* _pdata, const char* _name = NULL);
 	~listDot();
 };
 template <typename dataType>
 class list
 {
 public:
-	_ULL tik = 0;//标识符，区分List，或者用来储存一些ID信息
-	_ULL sumque = 0;
+	_LL tik = 0;//标识符，区分List，或者用来储存一些ID信息
+	_LL sumque = 0;
 	listDot<dataType>* pfirst = NULL;
 	listDot<dataType>* plast = NULL;
 	listDot<dataType>* now = NULL;
@@ -231,17 +232,20 @@ public:
 	list(dataType* data1, ...);
 
 
-	_ULL lastIndex = 0;
+	_LL lastIndex = 0;
 	listDot<dataType>* lastIndexDot = NULL;
 
-	_ULL GetNowIndex();
+	_LL GetNowIndex();
+	_LL Index(dataType* data);
 	dataType* Copy();
 	dataType* Get();
 	//Get the index dot content,from 0
-	dataType* IndexCopy(_ULL index);
+	dataType* IndexCopy(_LL index);
 	//Copy the index dot content,from 0
-	dataType* IndexGet(_ULL index);
-	list<dataType> Put(dataType* pdata);
+	dataType* IndexGet(_LL index);
+	//Get the name dot content
+	dataType* NameGet(const char* name);
+	list<dataType> Put(dataType* pdata, const char* name = NULL);
 	// end with a NULL
 	list<dataType> Gather(dataType* pData1, ...);
 	void Destroy(void);
@@ -250,7 +254,15 @@ public:
 	// + 运算符重载, join tow list
 	list<dataType> operator+(list<dataType>& other);
 	// [] 运算符重载, IndexCopy
-	dataType* operator[](_ULL index);
+	dataType* operator[](_LL index);
+	// [] 运算符重载, NameCopy
+	dataType* operator[](const char* name);
+	// () 运算符重载, setVar via data, freeOld[0=No, 1=free(), 2=MyBA_Free
+	void operator()(dataType* data, dataType* newVar, bool freeOld = true);
+	// () 运算符重载, setVar via index
+	void operator()(_LL index, dataType* newVar, bool freeOld = true);
+	// () 运算符重载, setVar via name
+	void operator()(const char* name, dataType* newVar, bool freeOld = true);
 };
 
 
@@ -392,6 +404,33 @@ void MyBA_SafeMode(void);
 //***********************************************************************************************************************
 
 
+//int* pi = typeDupR<int>(mem, 2, 99, 99);
+template<typename dataType>
+dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
+{
+	dataType* pret = NULL;
+	if (mem)
+	{
+		pret = BALLOC_R(num, dataType, mem);
+	}
+	else
+	{
+		pret = MCALLOC(num, dataType);
+	}
+	if (pret)
+	{
+		pret[0] = firstData;
+		va_list parg;
+		va_start(parg, firstData);
+		for (_ULL a = 1; a < num; a++)
+			pret[a] = (dataType)va_arg(parg, dataType);
+		va_end(parg);
+	}
+	return pret;
+}
+
+//***********************************************************************************************************************
+//***********************************************************************************************************************
 
 
 
@@ -402,9 +441,11 @@ listDot<dataType>::listDot()
 }
 
 template<typename dataType>
-inline listDot<dataType>::listDot(dataType* _pdata)
+inline listDot<dataType>::listDot(dataType* _pdata, const char* _name)
 {
 	pdata = _pdata;
+	if(_name)
+		name = _strdup(_name);
 }
 
 template<typename dataType>
@@ -429,12 +470,22 @@ list<dataType>::list(dataType* data1, ...)
 }
 
 template<typename dataType>
-_ULL list<dataType>::GetNowIndex()
+_LL list<dataType>::GetNowIndex()
 {
 	if (now == NULL)
 		return sumque;
 	else
 		return now->idx;
+}
+
+template<typename dataType>
+_LL list<dataType>::Index(dataType* data)
+{
+	listDot<dataType>* pd = pfirst;
+	for (; pd; pd = pd->pnext)
+		if (pd->pdata == data)
+			return (_LL)(pd->idx);
+	return -1;
 }
 
 template<typename dataType>
@@ -477,18 +528,28 @@ dataType* list<dataType>::Get()
 }
 
 template<typename dataType>
-dataType* list<dataType>::IndexCopy(_ULL index)
+dataType* list<dataType>::IndexCopy(_LL index)
 {
-	listDot<dataType>* p = pfirst;
-	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
-	return p->pdata;
+	if (index < 0)
+		return (dataType*)(0x1);
+	if (!lastIndexDot)
+		lastIndexDot = pfirst;
+	listDot<dataType>* pd = lastIndexDot;
+	if (index > lastIndex)
+		for (_LL i = lastIndex; (i < index) && (pd != NULL); i++, pd = pd->pnext);
+	else if (index < lastIndex)
+		for (_LL i = lastIndex; (i > index) && (pd != NULL); i--, pd = pd->ppre);
+	//else//(index == lastIndex);
+	lastIndex = index;
+	lastIndexDot = pd;
+	return pd->pdata;
 }
 
 template<typename dataType>
-dataType* list<dataType>::IndexGet(_ULL index)
+dataType* list<dataType>::IndexGet(_LL index)
 {
 	listDot<dataType>* p = pfirst;
-	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
+	for (_LL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
 	p->ppre->pnext = p->pnext;
 	p->pnext->ppre = p->ppre;
 	dataType* pret = p->pdata;
@@ -497,12 +558,28 @@ dataType* list<dataType>::IndexGet(_ULL index)
 }
 
 template<typename dataType>
-list<dataType> list<dataType>::Put(dataType* pdata)
+inline dataType* list<dataType>::NameGet(const char* name)
+{
+	listDot<dataType>* pd = pfirst;
+	for (; pd; pd = pd->pnext)
+		if (pd->name && strcmp(pd->name, name) == 0)
+		{
+			pd->ppre->pnext = pd->pnext;
+			pd->pnext->ppre = pd->ppre;
+			dataType* pret = pd->pdata;
+			delete pd;
+			return pret;
+		}
+	return NULL;
+}
+
+template<typename dataType>
+list<dataType> list<dataType>::Put(dataType* pdata, const char* name)
 {
 	++sumque;
 	if (sumque == 1)
 	{
-		pfirst = new listDot<dataType>(pdata);
+		pfirst = new listDot<dataType>(pdata, name);
 		if (pfirst == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
@@ -516,7 +593,7 @@ list<dataType> list<dataType>::Put(dataType* pdata)
 	}
 	else
 	{
-		listDot<dataType>* pte = new listDot<dataType>(pdata);
+		listDot<dataType>* pte = new listDot<dataType>(pdata, name);
 		if (pte == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
@@ -552,18 +629,19 @@ void list<dataType>::Destroy(void)
 	for (listDot<dataType>* p = pfirst, *pn = NULL; p; p = pn)
 	{
 		pn = p->pnext;
+		free(p->name);
 		delete p;
 	}
 }
 
 template<typename dataType>
-list<dataType>::~list()
+inline list<dataType>::~list()
 {
 
 }
 
 template<typename dataType>
-list<dataType> list<dataType>::operator+(list<dataType>& other)
+inline list<dataType> list<dataType>::operator+(list<dataType>& other)
 {
 	list<dataType>* ret = new list<dataType>;
 	this->now = this->pfirst;
@@ -576,19 +654,60 @@ list<dataType> list<dataType>::operator+(list<dataType>& other)
 }
 
 template<typename dataType>
-dataType* list<dataType>::operator[](_ULL index)
+inline dataType* list<dataType>::operator[](_LL index)
 {
-	if (!lastIndexDot)
-		lastIndexDot = pfirst;
+	return this->IndexCopy(index);
+}
+
+template<typename dataType>
+inline dataType* list<dataType>::operator[](const char* name)
+{
 	listDot<dataType>* pd = lastIndexDot;
-	if (index > lastIndex)
-		for (_ULL i = lastIndex; (i < index) && (pd != NULL); i++, pd = pd->pnext);
-	else if (index < lastIndex)
-		for (_ULL i = lastIndex; (i > index) && (pd != NULL); i--, pd = pd->ppre);
-	//else//(index == lastIndex);
-	lastIndex = index;
-	lastIndexDot = pd;
-	return pd->pdata;
+	for (; pd; pd = pd->pnext)
+		if (pd->name && strcmp(pd->name, name) == 0)
+			return pd->pdata;
+	return NULL;
+}
+
+template<typename dataType>
+inline void list<dataType>::operator()(dataType* data, dataType* newVar, bool freeOld)
+{
+	listDot<dataType>* pd = lastIndexDot;
+	for (; pd; pd = pd->pnext)
+		if (pd->pdata == data)
+		{
+			if (freeOld)
+				free(pd->pdata);
+			pd->pdata = newVar;
+			break;
+		}
+}
+
+template<typename dataType>
+inline void list<dataType>::operator()(_LL index, dataType* newVar, bool freeOld)
+{
+	listDot< dataType>* pd = pfirst;
+	for (_LL i = 0; (i < index) && (pd != NULL); i++, pd = pd->pnext);
+	if (pd)
+	{
+		if (freeOld)
+			free(pd->pdata);
+		pd->pdata = newVar;
+	}
+}
+
+template<typename dataType>
+inline void list<dataType>::operator()(const char* name, dataType* newVar, bool freeOld)
+{
+	listDot<dataType>* pd = lastIndexDot;
+	for (; pd; pd = pd->pnext)
+		if (pd->name && strcmp(pd->name, name) == 0)
+		{
+			if (freeOld)
+				free(pd->pdata);
+			pd->pdata = newVar;
+			break;
+		}
 }
 
 

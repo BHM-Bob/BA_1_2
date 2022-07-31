@@ -266,6 +266,21 @@ MyUI* MyUI_Update(MyUI* pui, bool rendclear, bool copyTex);
 bool MyUI_PollQuit(MyUI* pui);
 int MyUI_Quit(void* pui_, int code, ...);
 
+
+
+class BA_KUI
+{
+public:
+	MyUI_win* win;
+	MyUI_butt* butt;
+	MyUI_font* font;
+	MyUI_set* set;//Settings
+	List* otherTex;
+	List* otherTexRe;
+	SDL_Texture* otherTex2[1024];
+	SDL_Rect* otherTexRe2[1024];
+};
+
 //***************************************************************************************************************************Struct MyUI ***End
 //************************************************************************************************************************
 //*********************************************SDL2******************************************************************End
