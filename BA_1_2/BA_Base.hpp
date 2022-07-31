@@ -286,17 +286,18 @@ public:
 	_LL sumque = 0;
 	dictPair* pfirst = NULL;
 	dictPair* plast = NULL;
-	dictPair* now = NULL;
 
 
 	dict();
 	// end with a NULL
-	dict(const char* _key, any _data);
+	dict(const char* key, any data);
 
 	bool HasKey(const char* key);
 	//Get the data to key
 	template <typename dataType> dataType GetData2Key(const char* key);
-	dict Put(const char* _key, any _data);
+	dict Put(const char* key, any data);
+	// del
+	bool Del(const char* key);
 	void Destroy(void);
 	~dict();
 

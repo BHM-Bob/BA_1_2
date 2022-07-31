@@ -1003,9 +1003,9 @@ dict::dict()
 {
 }
 
-dict::dict(const char* _key, any _data)
+dict::dict(const char* key, any data)
 {
-	this->Put(_key, _data);
+	this->Put(key, data);
 }
 
 bool dict::HasKey(const char* key)
@@ -1017,12 +1017,12 @@ bool dict::HasKey(const char* key)
 	return false;
 }
 
-dict dict::Put(const char* _key, any _data)
+dict dict::Put(const char* key, any data)
 {
 	++sumque;
 	if (sumque == 1)
 	{
-		pfirst = new dictPair(_key, _data);
+		pfirst = new dictPair(key, data);
 		if (pfirst == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
@@ -1036,7 +1036,7 @@ dict dict::Put(const char* _key, any _data)
 	}
 	else
 	{
-		dictPair* pte = new dictPair(_key, _data);
+		dictPair* pte = new dictPair(key, data);
 		if (pte == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
@@ -1051,6 +1051,21 @@ dict dict::Put(const char* _key, any _data)
 		}
 	}
 	return *this;
+}
+
+bool dict::Del(const char* key)
+{
+	dictPair* pd = pfirst;
+	for (; pd; pd = pd->pnext)
+		if (!strcmp(pd->key, key))
+		{
+			pd->ppre->pnext = pd->pnext;
+			pd->pnext->ppre = pd->ppre;
+			free(pd->key);
+			delete pd;
+			return true;
+		}
+	return false;
 }
 
 void dict::Destroy(void)
