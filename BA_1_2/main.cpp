@@ -12,6 +12,11 @@ int main(int argc, char** argvs)
 {
 	MyBA_Init();
 
+	BA_Array a = BA_Array(BA_Shape(3, 90, 90, 90), "rand");
+	BA_Array b = BA_Array(BA_Shape(3, 90, 90, 90), "l");
+	BA_Array c = a * (b + 1LL);
+
+
 	dict d = dict();
 	d("k1", 8.9f);
 	d("k2", mstrdup("GGGKKK"));

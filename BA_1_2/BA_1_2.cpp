@@ -1065,6 +1065,7 @@ bool dict::Del(const char* key)
 			delete pd;
 			return true;
 		}
+	PPWs("No Such Key: ", key);
 	return false;
 }
 

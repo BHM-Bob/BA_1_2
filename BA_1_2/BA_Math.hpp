@@ -19,33 +19,33 @@ void* MyBA_ZerosD(int* shape, int dims);
 class BA_Shape
 {
 public:
-	_ULL shapeLen;
-	_ULL* shape;
+	_LL shapeLen;
+	_LL* shape;
 
-	BA_Shape(_ULL len, ...);
-	BA_Shape(_ULL len, _ULL* _shape);
-	BA_Shape(_ULL* _shape,_ULL len);
+	BA_Shape(_LL len, ...);
+	BA_Shape(_LL len, _LL* _shape);
+	BA_Shape(_LL* _shape,_LL len);
 	char* Str(bool toStr = false, bool printOut = true);
 };
 
 class BA_Array
 {
 public:
-	_ULL* dataL;
+	_LL* dataL;
 	float* dataF;
 
-	_ULL dataSumL;
+	_LL dataSumL;
 	float dataSumF;
 
-	char type;//f = float, l = _ULL
-	_ULL dataLen;
+	char type;//f = float, l = _LL
+	_LL dataLen;
 
-	_ULL* dataShape;
+	_LL* dataShape;
 	int shapeLen;
 
 	List* mem;
 
-	BA_Array(BA_Shape _shape, _ULL content);
+	BA_Array(BA_Shape _shape, _LL content);
 	BA_Array(BA_Shape _shape, float content);
 	BA_Array(BA_Shape _shape, float* content);
 	//way=="rand" item is 0~1 randomly,
@@ -59,22 +59,22 @@ public:
 	//as pytorch, dims can be [2,1,4,1]
 	BA_Array Repeat(BA_Shape dims, bool aNew);
 	BA_Array Concat(BA_Array a, int _dim);
-	BA_Array Sub(_ULL from, _ULL to);
+	BA_Array Sub(_LL from, _LL to);
 
 	BA_Array Add(BA_Array other, bool aNew);
-	BA_Array Add(_ULL other, bool aNew);
+	BA_Array Add(_LL other, bool aNew);
 	BA_Array Add(float other, bool aNew);
 
 	BA_Array Reduc(BA_Array other, bool aNew);
-	BA_Array Reduc(_ULL other, bool aNew);
+	BA_Array Reduc(_LL other, bool aNew);
 	BA_Array Reduc(float other, bool aNew);
 
 	BA_Array Mul(BA_Array other, bool aNew);
-	BA_Array Mul(_ULL other, bool aNew);
+	BA_Array Mul(_LL other, bool aNew);
 	BA_Array Mul(float other, bool aNew);
 
 	BA_Array Devide(BA_Array other, bool aNew);
-	BA_Array Devide(_ULL other, bool aNew);
+	BA_Array Devide(_LL other, bool aNew);
 	BA_Array Devide(float other, bool aNew);
 
 	BA_Array MatMul(BA_Array other);
@@ -91,6 +91,18 @@ public:
 	BA_Array Reshape(BA_Shape newShape,bool aNew);
 
 	char* Str(bool toStr = false, bool printOut = true);
+
+	template<typename dataType>
+	BA_Array operator+(dataType other);
+	template<typename dataType>
+	BA_Array operator-(dataType other);
+	template<typename dataType>
+	BA_Array operator*(dataType other);
+	template<typename dataType>
+	BA_Array operator/(dataType other);
+	any operator[](_LL idx);
+	any operator()(_LL idx1, ...);
+
 };
 
 //void* mymax(char* ptype, int sum, ...);//配合atoi等
@@ -237,4 +249,29 @@ bool LOFE_FreeModel(LOFE_Model* model);
 //***********************************************************************************************************************
 
 
+template<typename dataType>
+inline BA_Array BA_Array::operator+(dataType other)
+{
+	return this->Add(other, true);
+}
+
+template<typename dataType>
+inline BA_Array BA_Array::operator-(dataType other)
+{
+	return this->Reduc(other, true);
+}
+
+template<typename dataType>
+inline BA_Array BA_Array::operator*(dataType other)
+{
+	return this->Mul(other, true);
+}
+
+template<typename dataType>
+inline BA_Array BA_Array::operator/(dataType other)
+{
+	return this->Devide(other, true);
+}
+
 #endif
+

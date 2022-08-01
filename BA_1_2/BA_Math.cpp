@@ -937,13 +937,13 @@ bool LOFE_FreeModel(LOFE_Model* model)
 
 //***********************************************************************************************************************
 
-BA_Shape::BA_Shape(_ULL len, ...)
+BA_Shape::BA_Shape(_LL len, ...)
 {
 	shapeLen = len;
-	shape = BALLOC_L(len, _ULL);
+	shape = BALLOC_L(len, _LL);
 	if (shape == NULL)
 	{
-		MyBA_Err("BA_Shape::BA_Shape(_ULL len, ...): BALLOC_L(len,int)==NULL, make shape = NULL", 1);
+		MyBA_Err("BA_Shape::BA_Shape(_LL len, ...): BALLOC_L(len,int)==NULL, make shape = NULL", 1);
 	}
 	else
 	{
@@ -955,13 +955,13 @@ BA_Shape::BA_Shape(_ULL len, ...)
 	}
 }
 
-BA_Shape::BA_Shape(_ULL len, _ULL* _shape)
+BA_Shape::BA_Shape(_LL len, _LL* _shape)
 {
 	shapeLen = len;
-	shape = BALLOC_L(len, _ULL);
+	shape = BALLOC_L(len, _LL);
 	if (shape == NULL)
 	{
-		MyBA_Err("BA_Shape::BA_Shape(_ULL len, ...): BALLOC_L(len,int)==NULL, make shape = NULL", 1);
+		MyBA_Err("BA_Shape::BA_Shape(_LL len, ...): BALLOC_L(len,int)==NULL, make shape = NULL", 1);
 	}
 	else
 	{
@@ -970,13 +970,13 @@ BA_Shape::BA_Shape(_ULL len, _ULL* _shape)
 	}
 }
 
-BA_Shape::BA_Shape(_ULL* _shape, _ULL len)
+BA_Shape::BA_Shape(_LL* _shape, _LL len)
 {
 	shapeLen = len;
-	shape = BALLOC_L(len, _ULL);
+	shape = BALLOC_L(len, _LL);
 	if (shape == NULL)
 	{
-		MyBA_Err("BA_Shape::BA_Shape(_ULL len, ...): BALLOC_L(len,int)==NULL, make shape = NULL", 1);
+		MyBA_Err("BA_Shape::BA_Shape(_LL len, ...): BALLOC_L(len,int)==NULL, make shape = NULL", 1);
 	}
 	else
 	{
@@ -989,7 +989,7 @@ char* BA_Shape::Str(bool toStr, bool printOut)
 {
 	char* pc = NULL;
 	printf("[");
-	for (_ULL idx = 0; idx < shapeLen; idx++)
+	for (_LL idx = 0; idx < shapeLen; idx++)
 	{
 		printf("%llu, ", shape[idx]);
 	}
@@ -997,28 +997,28 @@ char* BA_Shape::Str(bool toStr, bool printOut)
 	return nullptr;
 }
 
-BA_Array::BA_Array(BA_Shape _shape, _ULL content)
+BA_Array::BA_Array(BA_Shape _shape, _LL content)
 {
 	mem = List_Init();
-	_ULL* pt = _shape.shape;
-	dataShape = BALLOC_R(_shape.shapeLen, _ULL, mem);
+	_LL* pt = _shape.shape;
+	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
 	dataF = NULL;
 	type = 'l';
 	dataLen = 1;
 	dataSumF = dataSumL = 0;
 
-	for (_ULL i = 0; i < _shape.shapeLen; i++, pt++)
+	for (_LL i = 0; i < _shape.shapeLen; i++, pt++)
 	{
 		dataLen *= (*pt);
 		dataShape[i] = *pt;
 	}
 
-	dataL = BALLOC_R(dataLen, _ULL, mem);
+	dataL = BALLOC_R(dataLen, _LL, mem);
 	if (content != 0)
 	{
-		_ULL* pt2 = dataL;
-		for (_ULL i = 0; i < dataLen; i++, pt2++)
+		_LL* pt2 = dataL;
+		for (_LL i = 0; i < dataLen; i++, pt2++)
 			*pt2 = content;
 	}
 }
@@ -1026,15 +1026,15 @@ BA_Array::BA_Array(BA_Shape _shape, _ULL content)
 BA_Array::BA_Array(BA_Shape _shape, float content)
 {
 	mem = List_Init();
-	_ULL* pt = _shape.shape;
-	dataShape = BALLOC_R(_shape.shapeLen, _ULL, mem);
+	_LL* pt = _shape.shape;
+	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
 	dataL = NULL;
 	type = 'f';
 	dataLen = 1;
 	dataSumF = dataSumL = 0;
 
-	for (_ULL i = 0; i < _shape.shapeLen; i++, pt++)
+	for (_LL i = 0; i < _shape.shapeLen; i++, pt++)
 	{
 		dataLen *= (*pt);
 		dataShape[i] = *pt;
@@ -1044,7 +1044,7 @@ BA_Array::BA_Array(BA_Shape _shape, float content)
 	if (content != 0)
 	{
 		float* pt2 = dataF;
-		for (_ULL i = 0; i < dataLen; i++, pt2++)
+		for (_LL i = 0; i < dataLen; i++, pt2++)
 			*pt2 = content;
 	}
 }
@@ -1052,15 +1052,15 @@ BA_Array::BA_Array(BA_Shape _shape, float content)
 BA_Array::BA_Array(BA_Shape _shape, float* content)
 {
 	mem = List_Init();
-	_ULL* pt = _shape.shape;
-	dataShape = BALLOC_R(_shape.shapeLen, _ULL, mem);
+	_LL* pt = _shape.shape;
+	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
 	dataL = NULL;
 	type = 'f';
 	dataLen = 1;
 	dataSumF = dataSumL = 0;
 
-	for (_ULL i = 0; i < _shape.shapeLen; i++, pt++)
+	for (_LL i = 0; i < _shape.shapeLen; i++, pt++)
 	{
 		dataLen *= (*pt);
 		dataShape[i] = *pt;
@@ -1070,7 +1070,7 @@ BA_Array::BA_Array(BA_Shape _shape, float* content)
 	if (content != NULL)
 	{
 		float* pt1 = content, * pt2 = dataF;
-		for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+		for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 			*pt2 = *pt1;
 	}
 }
@@ -1078,7 +1078,7 @@ BA_Array::BA_Array(BA_Shape _shape, float* content)
 BA_Array::BA_Array(BA_Shape _shape, const char* way)
 {
 	mem = List_Init();
-	dataShape = BALLOC_R(_shape.shapeLen, _ULL, mem);
+	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
 	dataL = NULL;
 	dataF = NULL;
@@ -1086,7 +1086,7 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 	dataLen = 1;
 	dataSumF = dataSumL = 0;
 
-	for (_ULL i = 0; i < _shape.shapeLen; i++)
+	for (_LL i = 0; i < _shape.shapeLen; i++)
 	{
 		dataLen = dataLen * _shape.shape[i];
 		dataShape[i] = _shape.shape[i];
@@ -1096,7 +1096,7 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 	{
 		dataF = BALLOC_R(dataLen, float, mem);
 		float* te = dataF;
-		for (_ULL i = 0; i < dataLen; i++, te++)
+		for (_LL i = 0; i < dataLen; i++, te++)
 			*te = (float)(rand() % 10000) / (float)10000.;
 	}
 	else if (strcmp(way, "range") == 0)
@@ -1104,13 +1104,13 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 		float js = 0.;
 		dataF = BALLOC_R(dataLen, float, mem);
 		float* te = dataF;
-		for (_ULL i = 0; i < dataLen; i++, te++, js += 1.0)
+		for (_LL i = 0; i < dataLen; i++, te++, js += 1.0)
 			*te = js;
 	}
 	else if (strcmp(way, "l") == 0)
 	{
 		type = 'l';
-		dataL = BALLOC_R(dataLen, _ULL, mem);
+		dataL = BALLOC_R(dataLen, _LL, mem);
 	}
 	else if (strcmp(way, "f") == 0)
 	{
@@ -1121,7 +1121,7 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 	//{
 	//	if (_shapeLen < 2)
 	//	{
-	//		MyBA_Err("BA_Array::BA_Array(_ULL* _dataShape, _ULL _shapeLen, char* way): _shapeLen < 2 but way==\"xy\" which need least 2 dims,return 0s", 1);
+	//		MyBA_Err("BA_Array::BA_Array(_LL* _dataShape, _LL _shapeLen, char* way): _shapeLen < 2 but way==\"xy\" which need least 2 dims,return 0s", 1);
 	//	}
 	//	else
 	//	{
@@ -1136,7 +1136,7 @@ BA_Array BA_Array::ReCreate(BA_Shape _shape, const char* way)
 	free(mem);
 	mem = List_Init();
 
-	dataShape = BALLOC_R(_shape.shapeLen, _ULL, mem);
+	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
 	dataL = NULL;
 	dataF = NULL;
@@ -1144,7 +1144,7 @@ BA_Array BA_Array::ReCreate(BA_Shape _shape, const char* way)
 	dataLen = 1;
 	dataSumF = dataSumL = 0;
 
-	for (_ULL i = 0; i < _shape.shapeLen; i++)
+	for (_LL i = 0; i < _shape.shapeLen; i++)
 	{
 		dataLen = dataLen * _shape.shape[i];
 		dataShape[i] = _shape.shape[i];
@@ -1154,7 +1154,7 @@ BA_Array BA_Array::ReCreate(BA_Shape _shape, const char* way)
 	{
 		dataF = BALLOC_R(dataLen, float, mem);
 		float* te = dataF;
-		for (_ULL i = 0; i < dataLen; i++, te++)
+		for (_LL i = 0; i < dataLen; i++, te++)
 			*te = (float)(rand() % 10000) / (float)10000.;
 	}
 	else if (strcmp(way, "range") == 0)
@@ -1162,13 +1162,13 @@ BA_Array BA_Array::ReCreate(BA_Shape _shape, const char* way)
 		float js = 0.;
 		dataF = BALLOC_R(dataLen, float, mem);
 		float* te = dataF;
-		for (_ULL i = 0; i < dataLen; i++, te++, js += 1.0)
+		for (_LL i = 0; i < dataLen; i++, te++, js += 1.0)
 			*te = js;
 	}
 	else if (strcmp(way, "l") == 0)
 	{
 		type = 'l';
-		dataL = BALLOC_R(dataLen, _ULL, mem);
+		dataL = BALLOC_R(dataLen, _LL, mem);
 	}
 	else if (strcmp(way, "f") == 0)
 	{
@@ -1185,19 +1185,19 @@ BA_Array BA_Array::To(char toType, bool aNew)
 	{
 		if (toType == 'l')
 		{
-			BA_Array te(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* te1 = te.dataL;
+			BA_Array te(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* te1 = te.dataL;
 			if (type == 'l')
 			{
-				_ULL* te2 = dataL;
-				for (_ULL i = 0; i < dataLen; i++, te1++, te2++)
+				_LL* te2 = dataL;
+				for (_LL i = 0; i < dataLen; i++, te1++, te2++)
 					*te1 = *te2;
 			}
 			else
 			{
 				float* te2 = dataF;
-				for (_ULL i = 0; i < dataLen; i++, te1++, te2++)
-					*te1 = (_ULL)(*te2);
+				for (_LL i = 0; i < dataLen; i++, te1++, te2++)
+					*te1 = (_LL)(*te2);
 			}
 			return te;
 		}
@@ -1207,14 +1207,14 @@ BA_Array BA_Array::To(char toType, bool aNew)
 			float* te1 = te.dataF;
 			if (type == 'l')
 			{
-				_ULL* te2 = dataL;
-				for (_ULL i = 0; i < dataLen; i++, te1++, te2++)
+				_LL* te2 = dataL;
+				for (_LL i = 0; i < dataLen; i++, te1++, te2++)
 					*te1 = (float)(*te2);
 			}
 			else//selfType=='f'
 			{
 				float* te2 = dataF;
-				for (_ULL i = 0; i < dataLen; i++, te1++, te2++)
+				for (_LL i = 0; i < dataLen; i++, te1++, te2++)
 					*te1 = (*te2);
 			}
 			return te;
@@ -1227,11 +1227,11 @@ BA_Array BA_Array::To(char toType, bool aNew)
 			if (type == 'f')//f->l
 			{
 				type = 'l';
-				dataL = BALLOC_R(dataLen, _ULL, mem);
+				dataL = BALLOC_R(dataLen, _LL, mem);
 				float* te1 = dataF;
-				_ULL* te2 = dataL;
-				for (_ULL i = 0; i < dataLen; i++, te1++, te2++)
-					*te2 = (_ULL)(*te1);
+				_LL* te2 = dataL;
+				for (_LL i = 0; i < dataLen; i++, te1++, te2++)
+					*te2 = (_LL)(*te1);
 			}
 		}
 		else//toType=='f'
@@ -1241,8 +1241,8 @@ BA_Array BA_Array::To(char toType, bool aNew)
 				type = 'f';
 				dataF = BALLOC_R(dataLen, float, mem);
 				float* te1 = dataF;
-				_ULL* te2 = dataL;
-				for (_ULL i = 0; i < dataLen; i++, te1++, te2++)
+				_LL* te2 = dataL;
+				for (_LL i = 0; i < dataLen; i++, te1++, te2++)
 					*te1 = (float)(*te2);
 			}
 		}
@@ -1296,17 +1296,17 @@ BA_Array BA_Array::Concat(BA_Array a, int _dim)
 	return ret;
 }
 
-BA_Array BA_Array::Sub(_ULL from, _ULL to)
+BA_Array BA_Array::Sub(_LL from, _LL to)
 {
 	if (shapeLen != 1 || from >= to || from < 0 || to > dataLen)
 	{
-		MyBA_Err("BA_Array BA_Array::Sub(_ULL from, _ULL to):shapeLen != 1 || from >= to || from < 0 || to > dataLen, return *this", 1);
+		MyBA_Err("BA_Array BA_Array::Sub(_LL from, _LL to):shapeLen != 1 || from >= to || from < 0 || to > dataLen, return *this", 1);
 		return *this;
 	}
 
 	BA_Array ret = BA_Array(BA_Shape(1, to - from), 0.f);
 	float* p1 = dataF + from, * p2 = ret.dataF;
-	for (_ULL idxR = 0; idxR < ret.dataLen; p1++, p2++, idxR++)
+	for (_LL idxR = 0; idxR < ret.dataLen; p1++, p2++, idxR++)
 		*p2 = *p1;
 	return ret;
 }
@@ -1318,7 +1318,7 @@ BA_Array BA_Array::Add(BA_Array other, bool aNew)
 		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
 		return *this;
 	}
-	for (_ULL i = 0; i < other.shapeLen; i++)
+	for (_LL i = 0; i < other.shapeLen; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
@@ -1332,16 +1332,16 @@ BA_Array BA_Array::Add(BA_Array other, bool aNew)
 		{
 			if (aNew)
 			{
-				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+				_LL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = *pt1 + *pt2;
 				return ret;
 			}
 			else
 			{
-				_ULL* pt1 = dataL, * pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt1 = dataL, * pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = *pt1 + *pt2;
 			}
 		}
@@ -1349,18 +1349,18 @@ BA_Array BA_Array::Add(BA_Array other, bool aNew)
 		{
 			if (aNew)
 			{
-				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt3 = ret.dataL;
+				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+				_LL* pt1 = dataL, * pt3 = ret.dataL;
 				float* pt2 = other.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
-					*pt3 = *pt1 + (_ULL)(*pt2);
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+					*pt3 = *pt1 + (_LL)(*pt2);
 				return ret;
 			}
 			else
 			{
-				_ULL* pt1 = dataL, * pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
-					*pt1 = *pt1 + (_ULL)(*pt2);
+				_LL* pt1 = dataL, * pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
+					*pt1 = *pt1 + (_LL)(*pt2);
 			}
 		}
 	}
@@ -1372,16 +1372,16 @@ BA_Array BA_Array::Add(BA_Array other, bool aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 				float* pt1 = dataF, * pt3 = ret.dataF;
-				_ULL* pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				_LL* pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = *pt1 + (float)(*pt2);
 				return ret;
 			}
 			else
 			{
 				float* pt1 = dataF;
-				_ULL* pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = *pt1 + (float)(*pt2);
 			}
 		}
@@ -1391,14 +1391,14 @@ BA_Array BA_Array::Add(BA_Array other, bool aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 				float* pt1 = dataF, * pt2 = other.dataF, * pt3 = ret.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = *pt1 + (*pt2);
 				return ret;
 			}
 			else
 			{
 				float* pt1 = dataF, * pt2 = other.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = *pt1 + (*pt2);
 			}
 		}
@@ -1413,7 +1413,7 @@ BA_Array BA_Array::Reduc(BA_Array other, bool aNew)
 		MyBA_Err("BA_Array BA_Array::Reduc(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
 		return *this;
 	}
-	for (_ULL i = 0; i < other.shapeLen; i++)
+	for (_LL i = 0; i < other.shapeLen; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
@@ -1427,16 +1427,16 @@ BA_Array BA_Array::Reduc(BA_Array other, bool aNew)
 		{
 			if (aNew)
 			{
-				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+				_LL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = *pt1 - *pt2;
 				return ret;
 			}
 			else
 			{
-				_ULL* pt1 = dataL, * pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt1 = dataL, * pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = *pt1 - *pt2;
 			}
 		}
@@ -1444,18 +1444,18 @@ BA_Array BA_Array::Reduc(BA_Array other, bool aNew)
 		{
 			if (aNew)
 			{
-				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt3 = ret.dataL;
+				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+				_LL* pt1 = dataL, * pt3 = ret.dataL;
 				float* pt2 = other.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
-					*pt3 = *pt1 - (_ULL)(*pt2);
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+					*pt3 = *pt1 - (_LL)(*pt2);
 				return ret;
 			}
 			else
 			{
-				_ULL* pt1 = dataL, * pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
-					*pt1 = *pt1 - (_ULL)(*pt2);
+				_LL* pt1 = dataL, * pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
+					*pt1 = *pt1 - (_LL)(*pt2);
 			}
 		}
 	}
@@ -1467,16 +1467,16 @@ BA_Array BA_Array::Reduc(BA_Array other, bool aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 				float* pt1 = dataF, * pt3 = ret.dataF;
-				_ULL* pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				_LL* pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = *pt1 - (float)(*pt2);
 				return ret;
 			}
 			else
 			{
 				float* pt1 = dataF;
-				_ULL* pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = *pt1 - (float)(*pt2);
 			}
 		}
@@ -1486,14 +1486,14 @@ BA_Array BA_Array::Reduc(BA_Array other, bool aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 				float* pt1 = dataF, * pt2 = other.dataF, * pt3 = ret.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = *pt1 - (*pt2);
 				return ret;
 			}
 			else
 			{
 				float* pt1 = dataF, * pt2 = other.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = *pt1 - (*pt2);
 			}
 		}
@@ -1508,7 +1508,7 @@ BA_Array BA_Array::Mul(BA_Array other, bool aNew)
 		MyBA_Err("BA_Array BA_Array::Mul(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
 		return *this;
 	}
-	for (_ULL i = 0; i < other.shapeLen; i++)
+	for (_LL i = 0; i < other.shapeLen; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
@@ -1522,16 +1522,16 @@ BA_Array BA_Array::Mul(BA_Array other, bool aNew)
 		{
 			if (aNew)
 			{
-				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+				_LL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = (*pt1) * (*pt2);
 				return ret;
 			}
 			else
 			{
-				_ULL* pt1 = dataL, * pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt1 = dataL, * pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = (*pt1) * (*pt2);
 			}
 		}
@@ -1539,18 +1539,18 @@ BA_Array BA_Array::Mul(BA_Array other, bool aNew)
 		{
 			if (aNew)
 			{
-				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt3 = ret.dataL;
+				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+				_LL* pt1 = dataL, * pt3 = ret.dataL;
 				float* pt2 = other.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
-					*pt3 = (*pt1) * (_ULL)(*pt2);
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+					*pt3 = (*pt1) * (_LL)(*pt2);
 				return ret;
 			}
 			else
 			{
-				_ULL* pt1 = dataL, * pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
-					*pt1 = (*pt1) * (_ULL)(*pt2);
+				_LL* pt1 = dataL, * pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
+					*pt1 = (*pt1) * (_LL)(*pt2);
 			}
 		}
 	}
@@ -1562,16 +1562,16 @@ BA_Array BA_Array::Mul(BA_Array other, bool aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 				float* pt1 = dataF, * pt3 = ret.dataF;
-				_ULL* pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				_LL* pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = (*pt1) * (float)(*pt2);
 				return ret;
 			}
 			else
 			{
 				float* pt1 = dataF;
-				_ULL* pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = (*pt1) * (float)(*pt2);
 			}
 		}
@@ -1581,14 +1581,14 @@ BA_Array BA_Array::Mul(BA_Array other, bool aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 				float* pt1 = dataF, * pt2 = other.dataF, * pt3 = ret.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					*pt3 = (*pt1) * (*pt2);
 				return ret;
 			}
 			else
 			{
 				float* pt1 = dataF, * pt2 = other.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					*pt1 = (*pt1) * (*pt2);
 			}
 		}
@@ -1603,7 +1603,7 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 		MyBA_Err("BA_Array BA_Array::Devide(BA_Array other, bool aNew): shapeLen != other.GetShapeLen(),return", 1);
 		return *this;
 	}
-	for (_ULL i = 0; i < other.shapeLen; i++)
+	for (_LL i = 0; i < other.shapeLen; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
@@ -1617,17 +1617,17 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 		{
 			if (aNew)
 			{
-				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+				_LL* pt1 = dataL, * pt2 = other.dataL, * pt3 = ret.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					if (*pt2 != 0)
 						*pt3 = (*pt1) / (*pt2);
 				return ret;
 			}
 			else
 			{
-				_ULL* pt1 = dataL, * pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt1 = dataL, * pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					if (*pt2 != 0)
 						*pt1 = (*pt1) / (*pt2);
 			}
@@ -1636,20 +1636,20 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 		{
 			if (aNew)
 			{
-				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-				_ULL* pt1 = dataL, * pt3 = ret.dataL;
+				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+				_LL* pt1 = dataL, * pt3 = ret.dataL;
 				float* pt2 = other.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					if (*pt2 != 0)
-						*pt3 = (*pt1) / (_ULL)(*pt2);
+						*pt3 = (*pt1) / (_LL)(*pt2);
 				return ret;
 			}
 			else
 			{
-				_ULL* pt1 = dataL, * pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt1 = dataL, * pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					if (*pt2 != 0)
-						*pt1 = (*pt1) / (_ULL)(*pt2);
+						*pt1 = (*pt1) / (_LL)(*pt2);
 			}
 		}
 	}
@@ -1661,8 +1661,8 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 				float* pt1 = dataF, * pt3 = ret.dataF;
-				_ULL* pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				_LL* pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					if (*pt2 != 0)
 						*pt3 = (*pt1) / (float)(*pt2);
 				return ret;
@@ -1670,8 +1670,8 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 			else
 			{
 				float* pt1 = dataF;
-				_ULL* pt2 = other.dataL;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				_LL* pt2 = other.dataL;
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					if (*pt2 != 0)
 						*pt1 = (*pt1) / (float)(*pt2);
 			}
@@ -1682,7 +1682,7 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 			{
 				BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 				float* pt1 = dataF, * pt2 = other.dataF, * pt3 = ret.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++, pt3++)
 					if (*pt2 != 0)
 						*pt3 = (*pt1) / (*pt2);
 				return ret;
@@ -1690,7 +1690,7 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 			else
 			{
 				float* pt1 = dataF, * pt2 = other.dataF;
-				for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+				for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 					if (*pt2 != 0)
 						*pt1 = (*pt1) / (*pt2);
 			}
@@ -1699,23 +1699,23 @@ BA_Array BA_Array::Devide(BA_Array other, bool aNew)
 	return *this;
 }
 
-BA_Array BA_Array::Add(_ULL other, bool aNew)
+BA_Array BA_Array::Add(_LL other, bool aNew)
 {
 	if (type == 'l')
 	{
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) + (other);
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) + (other);
 		}
 	}
@@ -1725,37 +1725,37 @@ BA_Array BA_Array::Add(_ULL other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) + (float)(other);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) + (float)(other);
 		}
 	}
 	return *this;
 }
 
-BA_Array BA_Array::Reduc(_ULL other, bool aNew)
+BA_Array BA_Array::Reduc(_LL other, bool aNew)
 {
 	if (type == 'l')
 	{
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) - (other);
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) - (other);
 		}
 	}
@@ -1765,37 +1765,37 @@ BA_Array BA_Array::Reduc(_ULL other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) - (float)(other);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) - (float)(other);
 		}
 	}
 	return *this;
 }
 
-BA_Array BA_Array::Mul(_ULL other, bool aNew)
+BA_Array BA_Array::Mul(_LL other, bool aNew)
 {
 	if (type == 'l')
 	{
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) * (other);
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) * (other);
 		}
 	}
@@ -1805,25 +1805,25 @@ BA_Array BA_Array::Mul(_ULL other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) * (float)(other);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) * (float)(other);
 		}
 	}
 	return *this;
 }
 
-BA_Array BA_Array::Devide(_ULL other, bool aNew)
+BA_Array BA_Array::Devide(_LL other, bool aNew)
 {
 	if (other == 0)
 	{
-		MyBA_Err("BA_Array BA_Array::Devide(_ULL other, bool aNew): other == 0,return *this", 1);
+		MyBA_Err("BA_Array BA_Array::Devide(_LL other, bool aNew): other == 0,return *this", 1);
 		return *this;
 	}
 	if (type == 'l')
@@ -1831,16 +1831,16 @@ BA_Array BA_Array::Devide(_ULL other, bool aNew)
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) / (other);
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) / (other);
 		}
 	}
@@ -1850,14 +1850,14 @@ BA_Array BA_Array::Devide(_ULL other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) / (float)(other);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) / (float)(other);
 		}
 	}
@@ -1871,17 +1871,17 @@ BA_Array BA_Array::Add(float other, bool aNew)
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) + (_ULL)(other);
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
+				*pt3 = (*pt1) + (_LL)(other);
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = (*pt1) + (_ULL)(other);
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
+				*pt1 = (*pt1) + (_LL)(other);
 		}
 	}
 	else//selfType == 'f'
@@ -1890,14 +1890,14 @@ BA_Array BA_Array::Add(float other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) + (other);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) + (other);
 		}
 	}
@@ -1911,17 +1911,17 @@ BA_Array BA_Array::Reduc(float other, bool aNew)
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) - (_ULL)(other);
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
+				*pt3 = (*pt1) - (_LL)(other);
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = (*pt1) - (_ULL)(other);
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
+				*pt1 = (*pt1) - (_LL)(other);
 		}
 	}
 	else//selfType == 'f'
@@ -1930,14 +1930,14 @@ BA_Array BA_Array::Reduc(float other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) - (other);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) - (other);
 		}
 	}
@@ -1951,17 +1951,17 @@ BA_Array BA_Array::Mul(float other, bool aNew)
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) * (_ULL)(other);
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
+				*pt3 = (*pt1) * (_LL)(other);
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = (*pt1) * (_ULL)(other);
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
+				*pt1 = (*pt1) * (_LL)(other);
 		}
 	}
 	else//selfType == 'f'
@@ -1970,14 +1970,14 @@ BA_Array BA_Array::Mul(float other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) * (other);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) * (other);
 		}
 	}
@@ -1996,17 +1996,17 @@ BA_Array BA_Array::Devide(float other, bool aNew)
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) / (_ULL)(other);
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
+				*pt3 = (*pt1) / (_LL)(other);
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = (*pt1) / (_ULL)(other);
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
+				*pt1 = (*pt1) / (_LL)(other);
 		}
 	}
 	else//selfType == 'f'
@@ -2015,14 +2015,14 @@ BA_Array BA_Array::Devide(float other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) / (other);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) / (other);
 		}
 	}
@@ -2046,7 +2046,7 @@ BA_Array BA_Array::MatMul(BA_Array other)
 		MyBA_Err("BA_Array BA_Array::Add(BA_Array other, bool aNew): dataShape[shapeLen-1] != other.dataShape[other.dataLen-2],return *this", 1);
 		return *this;
 	}
-	for (_ULL i = 0; i < shapeLen - 2; i++)
+	for (_LL i = 0; i < shapeLen - 2; i++)
 	{
 		if (dataShape[i] != other.dataShape[i])
 		{
@@ -2055,7 +2055,7 @@ BA_Array BA_Array::MatMul(BA_Array other)
 		}
 	}
 	float* pt1 = dataF, * pt2 = other.dataF;
-	for (_ULL i = 0; i < dataLen; i++, pt1++, pt2++)
+	for (_LL i = 0; i < dataLen; i++, pt1++, pt2++)
 		*pt1 = (*pt1) * (*pt2);
 	return *this;
 }
@@ -2067,17 +2067,17 @@ BA_Array BA_Array::Eq(float other, bool aNew)
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) == (_ULL)(other) ? 1 : 0;
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
+				*pt3 = (*pt1) == (_LL)(other) ? 1 : 0;
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = (*pt1) == (_ULL)(other) ? 1 : 0;
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
+				*pt1 = (*pt1) == (_LL)(other) ? 1 : 0;
 		}
 	}
 	else//selfType == 'f'
@@ -2086,14 +2086,14 @@ BA_Array BA_Array::Eq(float other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) == (other) ? 1 : 0;
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) == (other) ? 1 : 0;
 		}
 	}
@@ -2104,16 +2104,16 @@ BA_Array BA_Array::Sum(void)
 {
 	if (type == 'l')
 	{
-		_ULL* pt = dataL;
+		_LL* pt = dataL;
 		dataSumL = 0;
-		for (_ULL i = 0; i < dataLen; i++, pt++)
+		for (_LL i = 0; i < dataLen; i++, pt++)
 			dataSumL += *pt;
 	}
 	else//selfType == 'f'
 	{
 		float* pt = dataF;
 		dataSumF = 0.;
-		for (_ULL i = 0; i < dataLen; i++, pt++)
+		for (_LL i = 0; i < dataLen; i++, pt++)
 			dataSumF += *pt;
 	}
 	return *this;
@@ -2121,8 +2121,8 @@ BA_Array BA_Array::Sum(void)
 
 BA_Array BA_Array::Reshape(BA_Shape newShape, bool aNew)
 {
-	_ULL newShapeDataLen = 1;
-	for (_ULL i = 0; i < newShape.shapeLen; i++)
+	_LL newShapeDataLen = 1;
+	for (_LL i = 0; i < newShape.shapeLen; i++)
 		newShapeDataLen *= newShape.shape[i];
 	if (newShapeDataLen != dataLen)
 	{
@@ -2137,9 +2137,9 @@ BA_Array BA_Array::Reshape(BA_Shape newShape, bool aNew)
 		else
 		{
 			MyBA_Free(dataShape, mem);
-			dataShape = BALLOC_R(newShape.shapeLen, _ULL, mem);
+			dataShape = BALLOC_R(newShape.shapeLen, _LL, mem);
 			shapeLen = newShape.shapeLen;
-			for (_ULL i = 0; i < newShape.shapeLen; i++)
+			for (_LL i = 0; i < newShape.shapeLen; i++)
 				dataShape[i] = newShape.shape[i];
 		}
 	}
@@ -2153,17 +2153,17 @@ BA_Array BA_Array::Ge(float other, bool aNew)
 
 		if (aNew)
 		{
-			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_ULL)0);
-			_ULL* pt1 = dataL, * pt3 = ret.dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) >= (_ULL)(other) ? 1 : 0;
+			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (_LL)0);
+			_LL* pt1 = dataL, * pt3 = ret.dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
+				*pt3 = (*pt1) >= (_LL)(other) ? 1 : 0;
 			return ret;
 		}
 		else
 		{
-			_ULL* pt1 = dataL;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = (*pt1) >= (_ULL)(other) ? 1 : 0;
+			_LL* pt1 = dataL;
+			for (_LL i = 0; i < dataLen; i++, pt1++)
+				*pt1 = (*pt1) >= (_LL)(other) ? 1 : 0;
 		}
 	}
 	else//selfType == 'f'
@@ -2172,14 +2172,14 @@ BA_Array BA_Array::Ge(float other, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = (*pt1) >= (other) ? 1. : 0.;
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = (*pt1) >= (other) ? 1. : 0.;
 		}
 	}
@@ -2192,7 +2192,7 @@ BA_Array BA_Array::Seq(float from, float by)
 	{
 		float* pt1 = dataF;
 		float nowVal = from;
-		for (_ULL i = 0; i < dataLen; i++, pt1++, nowVal += by)
+		for (_LL i = 0; i < dataLen; i++, pt1++, nowVal += by)
 			*pt1 = nowVal;
 	}
 	else
@@ -2210,14 +2210,14 @@ BA_Array BA_Array::Func(float (*Func)(float* pt), bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = Func(pt1);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = Func(pt1);
 		}
 	}
@@ -2236,14 +2236,14 @@ BA_Array BA_Array::Maps(float(*MapFunc)(float* pt, void* p), void* p, bool aNew)
 		{
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++, pt3++)
+			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
 				*pt3 = MapFunc(pt1, p);
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
-			for (_ULL i = 0; i < dataLen; i++, pt1++)
+			for (_LL i = 0; i < dataLen; i++, pt1++)
 				*pt1 = MapFunc(pt1, p);
 		}
 	}
@@ -2258,10 +2258,33 @@ char* BA_Array::Str(bool toStr, bool printOut)
 {
 	char* pc = NULL;
 	printf("BA_Array: Len=%llu, Shape=[%s]\n", dataLen, "-");
-	for (_ULL idx = 0; idx < dataLen; idx++)
+	for (_LL idx = 0; idx < dataLen; idx++)
 	{
 		printf("%10.5f, ", dataF[idx]);
 	}
 	printf("\n");
 	return nullptr;
+}
+
+any BA_Array::operator[](_LL idx)
+{
+	if (idx < 0 && idx >= (-dataLen))
+	{
+		idx = dataLen + idx;
+	}
+	else if (idx < (-dataLen))
+	{
+		MyBA_Err("BA_Array BA_Array::operator[](_LL idx): idx < (-dataLen),return NAN;", 1);
+		return NAN;
+	}
+
+	if (type == 'f')
+		return dataF[idx];
+	else
+		return dataL[idx];
+}
+
+any BA_Array::operator()(_LL idx1, ...)
+{
+	return any();
 }
