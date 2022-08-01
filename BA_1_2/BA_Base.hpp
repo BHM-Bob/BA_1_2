@@ -278,6 +278,8 @@ public:
 	dictPair();
 	dictPair(const char* _key, any _data);
 	~dictPair();
+
+	void operator=(any _data);
 };
 class dict
 {
@@ -294,7 +296,7 @@ public:
 
 	bool HasKey(const char* key);
 	//Get the data to key
-	template <typename dataType> dataType GetData2Key(const char* key);
+	template <typename dataType> dataType Get(const char* key);
 	dict Put(const char* key, any data);
 	// del
 	bool Del(const char* key);
@@ -303,10 +305,8 @@ public:
 
 	// + 运算符重载, join tow dict
 	dict operator+(dict& other);
-	// [] 运算符重载, GetData2Key
-	// the way to call this func is unkown now
-	template <typename dataType>
-	dataType operator[](const char* key);
+	// [] 运算符重载, 获取键值对的引用，便于对键值对赋值
+	dictPair& operator[](const char* key);
 	// () 运算符重载, setVar via key
 	dict operator()(const char* _key, any _data);
 };
@@ -765,25 +765,33 @@ inline void list<dataType>::operator()(const char* name, dataType* newVar, bool 
 
 
 template<typename dataType>
-inline dataType dict::GetData2Key(const char* key)
+inline dataType dict::Get(const char* key)
 {
 	dictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (! strcmp(pd->key, key))
 			return any_cast<dataType>(pd->data);
 	PPWs("No Such Key: ", key);
-	//dataType errRet;
-	//return errRet; // C4700
-	//unkown return var !!!
+	// dataType NULL retrun
+	// if there is no func, C2512 will be caused
+	return dataType();
 }
 
-template<typename dataType>
-inline dataType dict::operator[](const char* key)
+inline dictPair& dict::operator[](const char* key)
 {
 	dictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (!strcmp(pd->key, key))
-			return any_cast<dataType>(pd->data);
+		{// has key, return the pair
+			dictPair& d = *pd;
+			return d;
+		}
+	// do not has the key, create the pair with 0LL data
+	// work with dictPair = operator func
+	this->Put(key, 0LL);
+	//return new pair
+	dictPair& d = *plast;
+	return d;
 }
 
 

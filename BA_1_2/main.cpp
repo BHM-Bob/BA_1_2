@@ -16,12 +16,12 @@ int main(int argc, char** argvs)
 	BA_Array b = BA_Array(BA_Shape(3, 90, 90, 90), "l");
 	BA_Array c = a * (b + 1LL);
 
-
 	dict d = dict();
-	d("k1", 8.9f);
-	d("k2", mstrdup("GGGKKK"));
-	float k1 = d.GetData2Key<float>("kk");
-	char* k2 = d.GetData2Key<char*>("k2");
+	d["k1"] = 8.9f;
+	d["k2"] = mstrdup("GGGKKK");
+	d["k3"] = a;
+	float k1 = d.Get<float>("kk");
+	char* k2 = d.Get<char*>("k2");
 
 	QUI ui("TEST");
 	ui.AddButt("exit", 1, NULL, NULL, NULL, (SDL_Surface*)(0x1));
@@ -30,3 +30,4 @@ int main(int argc, char** argvs)
 
 	return MyBA_Quit();
 }
+

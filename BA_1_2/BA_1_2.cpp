@@ -999,6 +999,12 @@ dictPair::~dictPair()
 {
 }
 
+void dictPair::operator=(any _data)
+{
+	data.reset();
+	data = _data;
+}
+
 dict::dict()
 {
 }
@@ -1093,12 +1099,6 @@ dict::~dict()
 //		ret->Put(p);
 //	return *ret;
 //}
-
-dict dict::operator()(const char* _key, any _data)
-{
-	this->Put(_key, _data);
-	return *this;
-}
 
 ////***********************************************************************************************************************
 
