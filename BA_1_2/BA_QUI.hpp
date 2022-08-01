@@ -12,6 +12,7 @@
 #include"BA_Base.hpp"
 #include"BA_UI.hpp"
 
+#define QUI_WIN_NULLSUR (SDL_Surface*)(0x1)
 
 SDL_Color* SetSDLCol(SDL_Color* col, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 SDL_Color* MakeSDLCol(List* mem, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
@@ -22,9 +23,13 @@ SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y);
 typedef struct QUI_butts QUI_butts;
 struct QUI_butts
 {
-	list<int>* events;//1 left ; 2 right
-	list<int>* statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
-	list<SDL_MyButton>* butts;//按钮列表
+	dict events;//1 left ; 2 right
+	dict statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
+	dict butts;//按钮列表
+	list<char> names;
+	//list<int>* events;
+	//list<int>* statue;
+	//list<SDL_MyButton>* butts;
 };
 
 
@@ -46,8 +51,7 @@ struct QUI_win
 	SDL_Event* peve;
 	clock_t time;
 	float FPS;
-	int exitbutt;//order
-	int titlebutt;//title
+	const char* exitButtName;
 	SDL_Rect* pre_title;
 };
 
@@ -87,9 +91,9 @@ public:
 	~QUI();
 
 	bool AddFont(const char* ppath, const char* name);
-	bool AddButt(const char* name, int charSize, SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg);
-	bool DelButt(const char* name);
-	bool DelButt(SDL_MyButton* pButt);
+	//name 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
+	bool AddButt(const char* _name, const char* _showWords, int charSize, SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg);
+	bool DelButt(const char* _name);
 	bool CheckButt();
 	bool CheckTitle();
 	bool Update(bool rendclear = true, bool copyTex = true);

@@ -81,14 +81,13 @@ QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
 	win->pre_win->h = winh;
 	win->pre_win->x = win->pre_win->y = 0;
 	win->FPS = 25.f;
-	win->exitbutt = -1;
-	win->titlebutt = -1;
 	fonts = BALLOC_R(1, QUI_fonts, mem);
 	butts = BALLOC_R(1, QUI_butts, mem);
 	fonts->fonts = new list< TTF_Font>;
-	butts->butts = new list< SDL_MyButton>;
-	butts->events = new list<int>;
-	butts->statue = new list<int>;
+	butts->butts = dict(true);
+	butts->events = dict(true);
+	butts->statue = dict(true);
+	butts->names = list<char>();
 
 	otherTex = new list< SDL_Texture>;
 	otherTexRe = new list< SDL_Rect>;
@@ -172,9 +171,13 @@ bool QUI::AddFont(const char* ppath, const char* name)
 	return false;
 }
 
-//实参指针直接利用，外部代码申请内存时需要使用QUI的mem
-bool QUI::AddButt(const char* name, int charSize, SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg)
+//name, showWords 会内部mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
+bool QUI::AddButt(const char* _name, const char* _showWords, int charSize, SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg)
 {
+	char* name = mstrdup(_name, mem);
+	if (!_showWords)
+		_showWords = _name;
+	char* showWords = mstrdup(_showWords, mem);
 	bool iscolor = 0;
 	if (!pos)
 		pos = MakeSDLRect(mem, win->pre_win->w, win->pre_win->h, 0, 0);
@@ -183,10 +186,10 @@ bool QUI::AddButt(const char* name, int charSize, SDL_Color* charCol, SDL_Color*
 		iscolor = 1;
 		if (pos->w < 0 || pos->h < 0)//自行根据字符串大小计算按钮大小
 		{
-			if (charSize == 0 || strlen(name) == 0)
+			if (charSize == 0 || strlen(showWords) == 0)
 				return 0;
 			if (pos->w < 0)
-				pos->w = strlen(name) * charSize;
+				pos->w = strlen(showWords) * charSize;
 			if (pos->h < 0)
 				pos->h = charSize;
 		}
@@ -200,25 +203,26 @@ bool QUI::AddButt(const char* name, int charSize, SDL_Color* charCol, SDL_Color*
 	int* _bgc = TypeDupR<int>(mem, 3, bgc->r, bgc->g, bgc->b);
 	int* _charCol = TypeDupR< int>(mem, 3, charCol->r, charCol->g, charCol->b);
 
-	SDL_MyButton* pButt = SDL_Create_MyButton(win->rend, 0, *pos, _bgc, name, fonts->pdefaultfont, charSize, _charCol, bg);
-	butts->butts->Put(pButt, name);
-	butts->statue->Put(TypeDupR<int>(mem, 1, 1), name);
+	SDL_MyButton* pButt = SDL_Create_MyButton(win->rend, 0, *pos, _bgc, showWords, fonts->pdefaultfont, charSize, _charCol, bg);
+	// just use char ptr
+	butts->butts[name] = pButt;
+	butts->statue[name] = 1;
+	butts->events[name] = 0;
+	butts->names.Put(name, name, true);
 	if (iscolor)
 		pButt->pct = MyUI_ColorSur_Init(pButt->back1);
 	SDL_RenderPresent(win->rend);
 	return true;
 }
 
-bool QUI::DelButt(const char* name)
+bool QUI::DelButt(const char* _name)
 {
-	SDL_MyButton* pButt = butts->butts->NameGet(name);
+	butts->butts.Del(_name);
+	butts->events.Del(_name);
+	butts->statue.Del(_name);
+	butts->names.Get(_name);
+	SDL_MyButton* pButt = butts->butts.Copy<SDL_MyButton*>(_name);
 	return SDL_Destroy_MyButton(pButt);
-}
-
-bool QUI::DelButt(SDL_MyButton* pButt)
-{
-	SDL_MyButton* _pButt = butts->butts->IndexGet(butts->butts->Index(pButt));
-	return SDL_Destroy_MyButton(_pButt);
 }
 
 bool QUI::CheckButt()
@@ -236,13 +240,12 @@ bool QUI::CheckButt()
 		Sint32 mx = win->peve->motion.x;
 		Sint32 my = win->peve->motion.y;
 		int x, y, w, h;
-		for (_LL a = 0; a < butts->butts->sumque; a++)
+		for (dictPair* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 		{
-			if (*(butts->statue->IndexCopy(a)) == 1)
+			if (butts->statue.Copy<int>(dp->key) == 1)
 			{
-				//butts->statue[a] = 0
-				(* (butts->statue))(a, TypeDupR(mem, 1, 0), false);
-				SDL_Rect re = butts->butts->IndexCopy(a)->re_butt;
+				butts->statue[dp->key] = 0;
+				SDL_Rect re = butts->butts.Copy<SDL_MyButton*>(dp->key)->re_butt;
 				x = re.x;
 				y = re.y;
 				w = re.w;
@@ -250,15 +253,9 @@ bool QUI::CheckButt()
 				if (mx > x && mx<x + w && my>y && my < y + h)
 				{
 					if (win->peve->button.button == SDL_BUTTON_LEFT)
-					{
-						//butt->events[a] = 1;
-						(*(butts->events))(a, TypeDupR(mem, 1, 1), false);
-					}
+						butts->events[dp->key] = 1;
 					else if (win->peve->button.button == SDL_BUTTON_RIGHT)
-					{
-						//butt->events[a] = 2;
-						(*(butts->events))(a, TypeDupR(mem, 1, 2), false);
-					}
+						butts->events[dp->key] = 2;
 				}
 			}
 		}
@@ -269,8 +266,6 @@ bool QUI::CheckButt()
 bool QUI::CheckTitle()
 {
 	SDL_Rect* pre = win->pre_title;
-	if ((pre == NULL) && (win->titlebutt != -1))
-		pre = &(butts->butts->IndexCopy(win->titlebutt)->re_butt);
 	Sint32 wx = 0, wy = 0, bx = 0, by = 0;
 	if ((pre != NULL) && (SDL_CheckPressOn_MyButton(pre, win->peve)))
 	{
@@ -303,11 +298,11 @@ bool QUI::Update(bool rendclear, bool copyTex)
 	if (copyTex)
 		SDL_RenderCopy(win->rend, win->pwinTex, NULL, NULL);
 	SDL_MyButton* pButt = NULL;
-	for (int a = 0; a < butts->butts->sumque; a++)
+	for (dictPair* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 	{
-		if (*(butts->statue->IndexCopy(a)) == 1)
+		if (butts->statue.Copy<int>(dp->key) == 1)
 		{
-			pButt = butts->butts->IndexCopy(a);
+			pButt = butts->butts.Copy<SDL_MyButton*>(dp->key);
 			if (pButt->pct != NULL)
 			{
 				MyUI_ColorSur_Update(pButt->pct);
@@ -321,8 +316,8 @@ bool QUI::Update(bool rendclear, bool copyTex)
 		}
 	}
 	for (int a = 0; a < otherTex->sumque; a++)
-		SDL_RenderCopy(win->rend, otherTex->IndexCopy(a),
-			NULL, otherTexRe->IndexCopy(a));
+		SDL_RenderCopy(win->rend, otherTex->Copy(a),
+			NULL, otherTexRe->Copy(a));
 	SDL_RenderPresent(win->rend);
 	return true;
 }
@@ -330,7 +325,7 @@ bool QUI::Update(bool rendclear, bool copyTex)
 bool QUI::PollQuit()
 {
 	this->CheckButt();
-	if ((win->exitbutt != -1) && *(butts->events->IndexCopy(win->exitbutt)) == 1)
+	if ((win->exitButtName) && butts->events.Copy<int>(win->exitButtName) == 1)
 		return 1;
 	return SDL_Poll_Quit(win->peve);
 }

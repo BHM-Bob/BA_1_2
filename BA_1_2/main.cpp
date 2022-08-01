@@ -10,6 +10,8 @@
 
 int main(int argc, char** argvs)
 {
+	// TODO : use id to cmp in list and dict
+
 	MyBA_Init();
 
 	BA_Array a = BA_Array(BA_Shape(3, 90, 90, 90), "rand");
@@ -20,11 +22,12 @@ int main(int argc, char** argvs)
 	d["k1"] = 8.9f;
 	d["k2"] = mstrdup("GGGKKK");
 	d["k3"] = a;
-	float k1 = d.Get<float>("kk");
-	char* k2 = d.Get<char*>("k2");
+	float k1 = d.Copy<float>("kk");
+	char* k2 = d.Copy<char*>("k2");
 
 	QUI ui("TEST");
-	ui.AddButt("exit", 1, NULL, NULL, NULL, (SDL_Surface*)(0x1));
+	ui.AddButt("exit", NULL, 1, NULL, NULL, NULL, QUI_WIN_NULLSUR);
+	ui.win->exitButtName = ui.butts->names.Copy("exit");
 	while(ui.PollQuit() == 0)
 		ui.Update();
 

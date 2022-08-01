@@ -310,13 +310,13 @@ void MyBA_Free(void* p, List* mem)
 	{
 		ListDot* pd = NULL;
 		_ULL js = 0;
-		for (void* pm = List_Copy(mem); pm != NULL; pm = List_Copy(mem), js++)
+		// from last to first
+		for (pd = mem->plast; pd; pd = pd->ppre)
 		{
-			if (pm == p)
+			if (pd->pdata == p)
 			{
-				pd = List_IndexDot(mem, js);//because the now could be a NULL and is actually the next
 				free(pd->pdata);
-				pd->pdata = (void*)0x1;
+				pd->pdata = BA_FREED_PTR;
 				break;
 			}
 		}
@@ -449,10 +449,13 @@ void gotoxy(int x, int y)//from https://blog.csdn.net/radjedef/article/details/7
 #endif // USE_WINDOWS
 
 
-char* mstrdup(const char* p)
+char* mstrdup(const char* p, List* mem)
 {
 	char* pret = _strdup(p);
-	List_Put(pba->mem, (void*)pret);
+	if (mem)
+		List_Put(mem, (void*)pret);
+	else
+		List_Put(pba->mem, (void*)pret);
 	return pret;
 }
 
@@ -989,9 +992,17 @@ dictPair::dictPair()
 {
 }
 
-dictPair::dictPair(const char* _key, any _data)
+dictPair::dictPair(const char* _key, any _data, bool _justUseKeyPtr)
 {
-	key = _strdup(_key);
+	if (_justUseKeyPtr)
+	{
+		_ULL id = (_ULL)_key;
+		key = (char*)_key;
+	}
+	else
+	{
+		key = _strdup(_key);
+	}
 	data = _data;
 }
 
@@ -1005,13 +1016,14 @@ void dictPair::operator=(any _data)
 	data = _data;
 }
 
-dict::dict()
+dict::dict(bool _justUseKeyPtr)
 {
+	justUseKeyPtr = _justUseKeyPtr;
 }
 
-dict::dict(const char* key, any data)
+dict::dict(const char* key, any data, bool _justUseKeyPtr)
 {
-	this->Put(key, data);
+	this->Put(key, data, _justUseKeyPtr);
 }
 
 bool dict::HasKey(const char* key)
@@ -1023,12 +1035,12 @@ bool dict::HasKey(const char* key)
 	return false;
 }
 
-dict dict::Put(const char* key, any data)
+dict dict::Put(const char* key, any data, bool _justUseKeyPtr)
 {
 	++sumque;
 	if (sumque == 1)
 	{
-		pfirst = new dictPair(key, data);
+		pfirst = new dictPair(key, data, _justUseKeyPtr);
 		if (pfirst == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);

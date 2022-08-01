@@ -70,8 +70,9 @@ D:\OpenCV\opencv\build\x64\vc15\lib
 #endif
 
 typedef unsigned long long _ULL;
-
 typedef long long _LL;
+
+#define BA_FREED_PTR (void*)0x1
 
 void PPIs(int n, ...);
 
@@ -119,7 +120,6 @@ void PPIs(int n, ...);
 #define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p != NULL; p = (type*)List_Get(pli))
 #define LIST_FORR(type,p,pli,opts) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli),opts)
 
-char* mstrdup(const char* p);
 int* intdup(int num, ...);
 _LL* lldup(int num, ...);
 _ULL* ULLdup(_ULL num, ...);
@@ -212,7 +212,7 @@ public:
 	listDot* ppre = NULL;
 
 	listDot();
-	listDot(dataType* _pdata, const char* _name = NULL);
+	listDot(dataType* _pdata, const char* _name = NULL, bool justUseNamePtr = false);
 	~listDot();
 };
 template <typename dataType>
@@ -239,12 +239,14 @@ public:
 	dataType* Copy();
 	dataType* Get();
 	//Get the index dot content,from 0
-	dataType* IndexCopy(_LL index);
+	dataType* Copy(_LL index);
 	//Copy the index dot content,from 0
-	dataType* IndexGet(_LL index);
+	dataType* Get(_LL index);
 	//Get the name dot content
-	dataType* NameGet(const char* name);
-	list<dataType> Put(dataType* pdata, const char* name = NULL);
+	dataType* Get(const char* name);
+	//Copy the name dot content
+	dataType* Copy(const char* name);
+	list<dataType> Put(dataType* pdata, const char* name = NULL, bool justUseNamePtr = false);
 	// end with a NULL
 	list<dataType> Gather(dataType* pData1, ...);
 	void Destroy(void);
@@ -276,7 +278,7 @@ public:
 	dictPair* ppre = NULL;
 
 	dictPair();
-	dictPair(const char* _key, any _data);
+	dictPair(const char* _key, any _data, bool _justUseKeyPtr = false);
 	~dictPair();
 
 	void operator=(any _data);
@@ -289,15 +291,17 @@ public:
 	dictPair* pfirst = NULL;
 	dictPair* plast = NULL;
 
+	bool justUseKeyPtr = false;
 
-	dict();
+
+	dict(bool _justUseKeyPtr = false);
 	// end with a NULL
-	dict(const char* key, any data);
+	dict(const char* key, any data, bool _justUseKeyPtr = false);
 
 	bool HasKey(const char* key);
 	//Get the data to key
-	template <typename dataType> dataType Get(const char* key);
-	dict Put(const char* key, any data);
+	template <typename dataType> dataType Copy(const char* key);
+	dict Put(const char* key, any data, bool _justUseKeyPtr = false);
 	// del
 	bool Del(const char* key);
 	void Destroy(void);
@@ -306,6 +310,7 @@ public:
 	// + 运算符重载, join tow dict
 	dict operator+(dict& other);
 	// [] 运算符重载, 获取键值对的引用，便于对键值对赋值
+	//use in obj justUseKeyPtr when create pair
 	dictPair& operator[](const char* key);
 	// () 运算符重载, setVar via key
 	dict operator()(const char* _key, any _data);
@@ -441,6 +446,7 @@ void MyBA_SafeMode(void);
 //***********************************************************************************************************************
 
 
+char* mstrdup(const char* p, List* mem = NULL);
 
 
 //***********************************************************************************************************************
@@ -490,11 +496,21 @@ listDot<dataType>::listDot()
 }
 
 template<typename dataType>
-inline listDot<dataType>::listDot(dataType* _pdata, const char* _name)
+inline listDot<dataType>::listDot(dataType* _pdata, const char* _name, bool justUseNamePtr)
 {
 	pdata = _pdata;
-	if(_name)
-		name = _strdup(_name);
+	if (_name)
+	{
+		if (justUseNamePtr)
+		{
+			_ULL id = (_ULL)_name;
+			name = (char*)_name;
+		}
+		else
+		{
+			name = _strdup(_name);
+		}
+	}
 }
 
 template<typename dataType>
@@ -577,7 +593,7 @@ dataType* list<dataType>::Get()
 }
 
 template<typename dataType>
-dataType* list<dataType>::IndexCopy(_LL index)
+dataType* list<dataType>::Copy(_LL index)
 {
 	if (index < 0)
 		return (dataType*)(0x1);
@@ -595,7 +611,7 @@ dataType* list<dataType>::IndexCopy(_LL index)
 }
 
 template<typename dataType>
-dataType* list<dataType>::IndexGet(_LL index)
+dataType* list<dataType>::Get(_LL index)
 {
 	listDot<dataType>* p = pfirst;
 	for (_LL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
@@ -607,7 +623,7 @@ dataType* list<dataType>::IndexGet(_LL index)
 }
 
 template<typename dataType>
-inline dataType* list<dataType>::NameGet(const char* name)
+inline dataType* list<dataType>::Get(const char* name)
 {
 	listDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
@@ -623,12 +639,24 @@ inline dataType* list<dataType>::NameGet(const char* name)
 }
 
 template<typename dataType>
-list<dataType> list<dataType>::Put(dataType* pdata, const char* name)
+inline dataType* list<dataType>::Copy(const char* name)
+{
+	if (!lastIndexDot)
+		lastIndexDot = pfirst;
+	listDot<dataType>* pd = lastIndexDot;
+	for (; pd; pd = pd->pnext)
+		if (pd->name && strcmp(pd->name, name) == 0)
+			return pd->pdata;
+	return (dataType*)0x1;
+}
+
+template<typename dataType>
+list<dataType> list<dataType>::Put(dataType* pdata, const char* name, bool justUseNamePtr)
 {
 	++sumque;
 	if (sumque == 1)
 	{
-		pfirst = new listDot<dataType>(pdata, name);
+		pfirst = new listDot<dataType>(pdata, name, justUseNamePtr);
 		if (pfirst == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
@@ -711,16 +739,20 @@ template<typename dataType>
 inline dataType* list<dataType>::operator[](const char* name)
 {
 	listDot<dataType>* pd = lastIndexDot;
+	if (!lastIndexDot)
+		lastIndexDot = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strcmp(pd->name, name) == 0)
 			return pd->pdata;
-	return NULL;
+	return (dataType*)0x1;
 }
 
 template<typename dataType>
 inline void list<dataType>::operator()(dataType* data, dataType* newVar, bool freeOld)
 {
 	listDot<dataType>* pd = lastIndexDot;
+	if (!lastIndexDot)
+		lastIndexDot = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->pdata == data)
 		{
@@ -748,6 +780,8 @@ template<typename dataType>
 inline void list<dataType>::operator()(const char* name, dataType* newVar, bool freeOld)
 {
 	listDot<dataType>* pd = lastIndexDot;
+	if (!lastIndexDot)
+		lastIndexDot = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strcmp(pd->name, name) == 0)
 		{
@@ -765,7 +799,7 @@ inline void list<dataType>::operator()(const char* name, dataType* newVar, bool 
 
 
 template<typename dataType>
-inline dataType dict::Get(const char* key)
+inline dataType dict::Copy(const char* key)
 {
 	dictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
@@ -777,6 +811,7 @@ inline dataType dict::Get(const char* key)
 	return dataType();
 }
 
+//use in obj justUseKeyPtr when create pair
 inline dictPair& dict::operator[](const char* key)
 {
 	dictPair* pd = pfirst;
@@ -788,7 +823,7 @@ inline dictPair& dict::operator[](const char* key)
 		}
 	// do not has the key, create the pair with 0LL data
 	// work with dictPair = operator func
-	this->Put(key, 0LL);
+	this->Put(key, 0LL, justUseKeyPtr);
 	//return new pair
 	dictPair& d = *plast;
 	return d;
