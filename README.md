@@ -14,6 +14,8 @@ Tiny log APIs
 Tiny GUI APIs  
 Tiny String APIs  
 Tiny List (based on void*)  
-Tiny Threads Pool  
+Tiny list (based on template)  
+Tiny dict (based on any class)  
+Tiny Threads Pool and Queue for Threads
 Tiny 1D Array (because do not support matmatul)  
 Tiny fc network (do not blame me)  
