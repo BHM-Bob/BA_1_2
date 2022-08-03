@@ -199,6 +199,8 @@ List* List_Gather(void* pData1, ...);
 List* List_Destroy(List* plist);
 
 //******************************************************************
+int StrCmpById(const char* ptr1, const char* ptr2);
+
 //High level List
 template <typename dataType>
 class listDot
@@ -225,14 +227,14 @@ public:
 	listDot<dataType>* plast = NULL;
 	listDot<dataType>* now = NULL;
 
+	_LL lastIndex = 0;
+	listDot<dataType>* lastIndexDot = NULL;
+
+	int (*strCmpFunc)(const char* ptr1, const char* ptr2) = strcmp;
 
 	list();
 	// end with a NULL
 	list(dataType* data1, ...);
-
-
-	_LL lastIndex = 0;
-	listDot<dataType>* lastIndexDot = NULL;
 
 	_LL GetNowIndex();
 	_LL Index(dataType* data);
@@ -243,9 +245,9 @@ public:
 	//Copy the index dot content,from 0
 	dataType* Get(_LL index);
 	//Get the name dot content
-	dataType* Get(const char* name);
+	dataType* Get(const char* name, bool justCmpNameById = false);
 	//Copy the name dot content
-	dataType* Copy(const char* name);
+	dataType* Copy(const char* name, bool justCmpNameById = false);
 	list<dataType> Put(dataType* pdata, const char* name = NULL, bool justUseNamePtr = false);
 	// end with a NULL
 	list<dataType> Gather(dataType* pData1, ...);
@@ -293,14 +295,15 @@ public:
 
 	bool justUseKeyPtr = false;
 
+	int (*strCmpFunc)(const char* ptr1, const char* ptr2) = strcmp;
 
 	dict(bool _justUseKeyPtr = false);
 	// end with a NULL
 	dict(const char* key, any data, bool _justUseKeyPtr = false);
 
-	bool HasKey(const char* key);
+	bool HasKey(const char* key, bool justCmpKeyById = false);
 	//Get the data to key
-	template <typename dataType> dataType Copy(const char* key);
+	template <typename dataType> dataType Copy(const char* key, bool justCmpKeyById = false);
 	dict Put(const char* key, any data, bool _justUseKeyPtr = false);
 	// del
 	bool Del(const char* key);
@@ -595,15 +598,17 @@ dataType* list<dataType>::Get()
 template<typename dataType>
 dataType* list<dataType>::Copy(_LL index)
 {
-	if (index < 0)
+	if (index > sumque-1 || index < -(sumque))
 		return (dataType*)(0x1);
+	if (index < 0 && index > -(sumque))
+		index = sumque + index;
 	if (!lastIndexDot)
 		lastIndexDot = pfirst;
 	listDot<dataType>* pd = lastIndexDot;
 	if (index > lastIndex)
-		for (_LL i = lastIndex; (i < index) && (pd != NULL); i++, pd = pd->pnext);
+		for (_LL i = lastIndex; i < index; i++, pd = pd->pnext);
 	else if (index < lastIndex)
-		for (_LL i = lastIndex; (i > index) && (pd != NULL); i--, pd = pd->ppre);
+		for (_LL i = lastIndex; i > index; i--, pd = pd->ppre);
 	//else//(index == lastIndex);
 	lastIndex = index;
 	lastIndexDot = pd;
@@ -623,11 +628,13 @@ dataType* list<dataType>::Get(_LL index)
 }
 
 template<typename dataType>
-inline dataType* list<dataType>::Get(const char* name)
+inline dataType* list<dataType>::Get(const char* name, bool justCmpNameById)
 {
+	if (justCmpNameById)
+		strCmpFunc = StrCmpById;
 	listDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
-		if (pd->name && strcmp(pd->name, name) == 0)
+		if (pd->name && strCmpFunc(pd->name, name) == 0)
 		{
 			pd->ppre->pnext = pd->pnext;
 			pd->pnext->ppre = pd->ppre;
@@ -639,13 +646,13 @@ inline dataType* list<dataType>::Get(const char* name)
 }
 
 template<typename dataType>
-inline dataType* list<dataType>::Copy(const char* name)
+inline dataType* list<dataType>::Copy(const char* name, bool justCmpNameById)
 {
-	if (!lastIndexDot)
-		lastIndexDot = pfirst;
-	listDot<dataType>* pd = lastIndexDot;
+	if (justCmpNameById)
+		strCmpFunc = StrCmpById;
+	listDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
-		if (pd->name && strcmp(pd->name, name) == 0)
+		if (pd->name && strCmpFunc(pd->name, name) == 0)
 			return pd->pdata;
 	return (dataType*)0x1;
 }
@@ -732,15 +739,13 @@ inline list<dataType> list<dataType>::operator+(list<dataType>& other)
 template<typename dataType>
 inline dataType* list<dataType>::operator[](_LL index)
 {
-	return this->IndexCopy(index);
+	return this->Copy(index);
 }
 
 template<typename dataType>
 inline dataType* list<dataType>::operator[](const char* name)
 {
-	listDot<dataType>* pd = lastIndexDot;
-	if (!lastIndexDot)
-		lastIndexDot = pfirst;
+	listDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strcmp(pd->name, name) == 0)
 			return pd->pdata;
@@ -750,9 +755,7 @@ inline dataType* list<dataType>::operator[](const char* name)
 template<typename dataType>
 inline void list<dataType>::operator()(dataType* data, dataType* newVar, bool freeOld)
 {
-	listDot<dataType>* pd = lastIndexDot;
-	if (!lastIndexDot)
-		lastIndexDot = pfirst;
+	listDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->pdata == data)
 		{
@@ -779,9 +782,7 @@ inline void list<dataType>::operator()(_LL index, dataType* newVar, bool freeOld
 template<typename dataType>
 inline void list<dataType>::operator()(const char* name, dataType* newVar, bool freeOld)
 {
-	listDot<dataType>* pd = lastIndexDot;
-	if (!lastIndexDot)
-		lastIndexDot = pfirst;
+	listDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strcmp(pd->name, name) == 0)
 		{
@@ -799,7 +800,7 @@ inline void list<dataType>::operator()(const char* name, dataType* newVar, bool 
 
 
 template<typename dataType>
-inline dataType dict::Copy(const char* key)
+inline dataType dict::Copy(const char* key, bool justCmpKeyById)
 {
 	dictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)

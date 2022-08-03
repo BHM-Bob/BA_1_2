@@ -988,6 +988,12 @@ List* List_Init(void)
 }
 //***********************************************************************************************************************
 
+
+int StrCmpById(const char* ptr1, const char* ptr2)
+{
+	return (ptr1 == ptr2) ? 0 : 1;
+}
+
 dictPair::dictPair()
 {
 }
@@ -1026,8 +1032,10 @@ dict::dict(const char* key, any data, bool _justUseKeyPtr)
 	this->Put(key, data, _justUseKeyPtr);
 }
 
-bool dict::HasKey(const char* key)
+bool dict::HasKey(const char* key, bool justCmpKeyById)
 {
+	if (justCmpKeyById)
+		strCmpFunc = StrCmpById;
 	dictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (!strcmp(pd->key, key))

@@ -300,9 +300,9 @@ bool QUI::Update(bool rendclear, bool copyTex)
 	SDL_MyButton* pButt = NULL;
 	for (dictPair* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 	{
-		if (butts->statue.Copy<int>(dp->key) == 1)
+		if (butts->statue.Copy<int>(dp->key, true) == 1)
 		{
-			pButt = butts->butts.Copy<SDL_MyButton*>(dp->key);
+			pButt = butts->butts.Copy<SDL_MyButton*>(dp->key, true);
 			if (pButt->pct != NULL)
 			{
 				MyUI_ColorSur_Update(pButt->pct);
@@ -325,7 +325,7 @@ bool QUI::Update(bool rendclear, bool copyTex)
 bool QUI::PollQuit()
 {
 	this->CheckButt();
-	if ((win->exitButtName) && butts->events.Copy<int>(win->exitButtName) == 1)
+	if ((win->exitButtName) && butts->events.Copy<int>(win->exitButtName, true) == 1)
 		return 1;
 	return SDL_Poll_Quit(win->peve);
 }
