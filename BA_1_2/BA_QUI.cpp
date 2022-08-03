@@ -59,6 +59,11 @@ SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y)
 	return SetSDLRect(pos, w, h, x, y);
 }
 
+int QUI_NULLButtEveFunc(void* pData, ...)
+{
+	return 0;
+}
+
 int QUI_Quit(void* pui_, int code, ...)
 {
 	QUI* pui = (QUI*)pui_;
@@ -84,10 +89,11 @@ QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
 	fonts = BALLOC_R(1, QUI_fonts, mem);
 	butts = BALLOC_R(1, QUI_butts, mem);
 	fonts->fonts = new list< TTF_Font>;
-	butts->butts = dict(true);
+	butts->butts = list<SDL_MyButton>();
 	butts->events = dict(true);
 	butts->statue = dict(true);
 	butts->names = list<char>();
+	butts->eveFunc = dict(true);
 
 	otherTex = new list< SDL_Texture>;
 	otherTexRe = new list< SDL_Rect>;
@@ -172,7 +178,9 @@ bool QUI::AddFont(const char* ppath, const char* name)
 }
 
 //name, showWords 会内部mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
-bool QUI::AddButt(const char* _name, const char* _showWords, int charSize, SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg)
+bool QUI::AddButt(const char* _name, const char* _showWords, int charSize,
+	SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg,
+	int (*eveFunc)(void* pData, ...))
 {
 	char* name = mstrdup(_name, mem);
 	if (!_showWords)
@@ -205,10 +213,11 @@ bool QUI::AddButt(const char* _name, const char* _showWords, int charSize, SDL_C
 
 	SDL_MyButton* pButt = SDL_Create_MyButton(win->rend, 0, *pos, _bgc, showWords, fonts->pdefaultfont, charSize, _charCol, bg);
 	// just use char ptr
-	butts->butts[name] = pButt;
+	butts->butts(name, pButt, false, true);
+	butts->names(name, name, false, true);
 	butts->statue[name] = 1;
 	butts->events[name] = 0;
-	butts->names.Put(name, name, true);
+	butts->eveFunc[name] = eveFunc ? eveFunc : QUI_NULLButtEveFunc;
 	if (iscolor)
 		pButt->pct = MyUI_ColorSur_Init(pButt->back1);
 	SDL_RenderPresent(win->rend);
@@ -217,11 +226,11 @@ bool QUI::AddButt(const char* _name, const char* _showWords, int charSize, SDL_C
 
 bool QUI::DelButt(const char* _name)
 {
-	butts->butts.Del(_name);
 	butts->events.Del(_name);
 	butts->statue.Del(_name);
+	butts->eveFunc.Del(_name);
 	butts->names.Get(_name);
-	SDL_MyButton* pButt = butts->butts.Copy<SDL_MyButton*>(_name);
+	SDL_MyButton* pButt = butts->butts.Get(_name);
 	return SDL_Destroy_MyButton(pButt);
 }
 
@@ -240,12 +249,12 @@ bool QUI::CheckButt()
 		Sint32 mx = win->peve->motion.x;
 		Sint32 my = win->peve->motion.y;
 		int x, y, w, h;
-		for (dictPair* dp = butts->butts.pfirst; dp; dp = dp->pnext)
+		for (listDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 		{
-			if (butts->statue.Copy<int>(dp->key) == 1)
+			if (butts->statue.Copy<int>(dp->name) == 1)
 			{
-				butts->statue[dp->key] = 0;
-				SDL_Rect re = butts->butts.Copy<SDL_MyButton*>(dp->key)->re_butt;
+				butts->statue[dp->name] = 0;
+				SDL_Rect re = dp->pdata->re_butt;
 				x = re.x;
 				y = re.y;
 				w = re.w;
@@ -253,9 +262,9 @@ bool QUI::CheckButt()
 				if (mx > x && mx<x + w && my>y && my < y + h)
 				{
 					if (win->peve->button.button == SDL_BUTTON_LEFT)
-						butts->events[dp->key] = 1;
+						butts->events[dp->name] = 1;
 					else if (win->peve->button.button == SDL_BUTTON_RIGHT)
-						butts->events[dp->key] = 2;
+						butts->events[dp->name] = 2;
 				}
 			}
 		}
@@ -291,18 +300,18 @@ bool QUI::CheckTitle()
 bool QUI::Update(bool rendclear, bool copyTex)
 {
 	for (float waitt = 1. / win->FPS;
-		(float)((float)clock() - win->time) / CLOCKS_PER_SEC < waitt; SDL_Delay(2));
+		(float)((float)clock() - win->time) / CLOCKS_PER_SEC < waitt; SDL_Delay(1));
 	win->time = clock();
 	if (rendclear)
 		SDL_RenderClear(win->rend);
 	if (copyTex)
 		SDL_RenderCopy(win->rend, win->pwinTex, NULL, NULL);
 	SDL_MyButton* pButt = NULL;
-	for (dictPair* dp = butts->butts.pfirst; dp; dp = dp->pnext)
+	for (listDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 	{
-		if (butts->statue.Copy<int>(dp->key, true) == 1)
+		if (butts->statue.Copy<int>(dp->name, true) == 1)
 		{
-			pButt = butts->butts.Copy<SDL_MyButton*>(dp->key, true);
+			pButt = butts->butts.Copy(dp->name, true);
 			if (pButt->pct != NULL)
 			{
 				MyUI_ColorSur_Update(pButt->pct);

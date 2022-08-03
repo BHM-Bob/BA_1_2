@@ -17,6 +17,7 @@
 #include<direct.h>
 #include<locale.h>
 #include<limits.h>
+#include<map>
 #include<math.h>
 #include<io.h>
 #include<iostream>
@@ -265,7 +266,7 @@ public:
 	// () 运算符重载, setVar via index
 	void operator()(_LL index, dataType* newVar, bool freeOld = true);
 	// () 运算符重载, setVar via name
-	void operator()(const char* name, dataType* newVar, bool freeOld = true);
+	void operator()(const char* name, dataType* newVar, bool freeOld = true, bool justUseNamePtr = false);
 };
 //******************************************************************
 //High level dict
@@ -762,8 +763,9 @@ inline void list<dataType>::operator()(dataType* data, dataType* newVar, bool fr
 			if (freeOld)
 				free(pd->pdata);
 			pd->pdata = newVar;
-			break;
+			return ;
 		}
+	this->Put(newVar);
 }
 
 template<typename dataType>
@@ -777,10 +779,11 @@ inline void list<dataType>::operator()(_LL index, dataType* newVar, bool freeOld
 			free(pd->pdata);
 		pd->pdata = newVar;
 	}
+	this->Put(newVar);
 }
 
 template<typename dataType>
-inline void list<dataType>::operator()(const char* name, dataType* newVar, bool freeOld)
+inline void list<dataType>::operator()(const char* name, dataType* newVar, bool freeOld, bool justUseNamePtr)
 {
 	listDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
@@ -789,8 +792,9 @@ inline void list<dataType>::operator()(const char* name, dataType* newVar, bool 
 			if (freeOld)
 				free(pd->pdata);
 			pd->pdata = newVar;
-			break;
+			return;
 		}
+	this->Put(newVar, name, justUseNamePtr);
 }
 
 

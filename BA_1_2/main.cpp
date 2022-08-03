@@ -26,8 +26,8 @@ int main(int argc, char** argvs)
 	char* k2 = d.Copy<char*>("k2");
 
 	QUI ui("TEST");
-	ui.AddButt("exit", NULL, 1, NULL, NULL, NULL, QUI_WIN_NULLSUR);
-	ui.win->exitButtName = ui.butts->names.Copy("exit");
+	ui.AddButt("toShowKey", " ", 20, NULL, NULL, NULL, QUI_WIN_NULLSUR);
+	ui.win->pre_title = &(ui.butts->butts["toShowKey"]->re_butt);
 	while(ui.PollQuit() == 0)
 		ui.Update();
 

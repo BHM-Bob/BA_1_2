@@ -25,11 +25,9 @@ struct QUI_butts
 {
 	dict events;//1 left ; 2 right
 	dict statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
-	dict butts;//按钮列表
-	list<char> names;
-	//list<int>* events;
-	//list<int>* statue;
-	//list<SDL_MyButton>* butts;
+	list<SDL_MyButton> butts;//按钮列表
+	list<char> names;//names
+	dict eveFunc;//events func
 };
 
 
@@ -73,6 +71,14 @@ struct QUI_set
 	SDL_Color col_exitbutt;
 };
 
+class QUI_Keys
+{
+public:
+	char nowKey = '\0';
+
+	void Update(SDL_Event* pEve);;
+};
+
 class QUI
 {
 public:
@@ -86,13 +92,16 @@ public:
 
 	List* mem = NULL;
 
-	QUI(const char* titlepc = "QUI", int winw = 800, int winh = 800, int winflags = 0, SDL_Color* bgc = NULL);
+	QUI(const char* titlepc = "QUI", int winw = 800, int winh = 800,
+		int winflags = 0, SDL_Color* bgc = NULL);
 	QUI();
 	~QUI();
 
 	bool AddFont(const char* ppath, const char* name);
 	//name 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
-	bool AddButt(const char* _name, const char* _showWords, int charSize, SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg);
+	bool AddButt(const char* _name, const char* _showWords, int charSize,
+		SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg,
+		int (*eveFunc)(void* pData, ...) = NULL);
 	bool DelButt(const char* _name);
 	bool CheckButt();
 	bool CheckTitle();

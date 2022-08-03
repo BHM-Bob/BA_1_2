@@ -41,7 +41,7 @@ public:
 	_LL dataLen;
 
 	_LL* dataShape;
-	int shapeLen;
+	_LL shapeLen;
 
 	List* mem;
 
