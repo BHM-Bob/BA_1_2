@@ -10,8 +10,6 @@
 
 int main(int argc, char** argvs)
 {
-	// TODO : use id to cmp in list and dict
-
 	MyBA_Init();
 
 	BA_Array a = BA_Array(BA_Shape(3, 90, 90, 90), "rand");
@@ -26,7 +24,8 @@ int main(int argc, char** argvs)
 	char* k2 = d.Copy<char*>("k2");
 
 	QUI ui("TEST");
-	ui.AddButt("toShowKey", " ", 20, NULL, NULL, NULL, QUI_WIN_NULLSUR);
+	ui.AddButt("toShowKey", " ", 20, NULL,
+		NULL, NULL, QUI_WIN_NULLSUR);
 	ui.win->pre_title = &(ui.butts->butts["toShowKey"]->re_butt);
 	while(ui.PollQuit() == 0)
 		ui.Update();

@@ -807,8 +807,10 @@ template<typename dataType>
 inline dataType dict::Copy(const char* key, bool justCmpKeyById)
 {
 	dictPair* pd = pfirst;
+	if (justCmpKeyById)
+		strCmpFunc = StrCmpById;
 	for (; pd; pd = pd->pnext)
-		if (! strcmp(pd->key, key))
+		if (!strCmpFunc(pd->key, key))
 			return any_cast<dataType>(pd->data);
 	PPWs("No Such Key: ", key);
 	// dataType NULL retrun

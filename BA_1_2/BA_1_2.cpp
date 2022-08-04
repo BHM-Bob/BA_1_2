@@ -1038,7 +1038,7 @@ bool dict::HasKey(const char* key, bool justCmpKeyById)
 		strCmpFunc = StrCmpById;
 	dictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
-		if (!strcmp(pd->key, key))
+		if (!strCmpFunc(pd->key, key))
 			return true;
 	return false;
 }

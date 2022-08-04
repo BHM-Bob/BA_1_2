@@ -59,11 +59,6 @@ SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y)
 	return SetSDLRect(pos, w, h, x, y);
 }
 
-int QUI_NULLButtEveFunc(void* pData, ...)
-{
-	return 0;
-}
-
 int QUI_Quit(void* pui_, int code, ...)
 {
 	QUI* pui = (QUI*)pui_;
@@ -90,10 +85,11 @@ QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
 	butts = BALLOC_R(1, QUI_butts, mem);
 	fonts->fonts = new list< TTF_Font>;
 	butts->butts = list<SDL_MyButton>();
+	butts->names = list<char>();
 	butts->events = dict(true);
 	butts->statue = dict(true);
-	butts->names = list<char>();
 	butts->eveFunc = dict(true);
+	butts->eveFuncData = dict(true);
 
 	otherTex = new list< SDL_Texture>;
 	otherTexRe = new list< SDL_Rect>;
@@ -180,7 +176,7 @@ bool QUI::AddFont(const char* ppath, const char* name)
 //name, showWords 会内部mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
 bool QUI::AddButt(const char* _name, const char* _showWords, int charSize,
 	SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg,
-	int (*eveFunc)(void* pData, ...))
+	int (*eveFunc)(void* pData, ...), void* eveFuncData)
 {
 	char* name = mstrdup(_name, mem);
 	if (!_showWords)
@@ -217,18 +213,60 @@ bool QUI::AddButt(const char* _name, const char* _showWords, int charSize,
 	butts->names(name, name, false, true);
 	butts->statue[name] = 1;
 	butts->events[name] = 0;
-	butts->eveFunc[name] = eveFunc ? eveFunc : QUI_NULLButtEveFunc;
+	if (eveFunc)
+	{
+		butts->eveFunc[name] = eveFunc;
+		butts->eveFuncData[name] = eveFuncData;
+	}
 	if (iscolor)
 		pButt->pct = MyUI_ColorSur_Init(pButt->back1);
 	SDL_RenderPresent(win->rend);
 	return true;
 }
 
+bool QUI::ChangeButtShowWords(const char* _name, const char* _showWords,
+	int charSize, SDL_Color* cc, SDL_Color* bgc, const char* fontName)
+{
+	SDL_MyButton* pbutt = butts->butts.Copy(_name, true);
+	free(pbutt->pc);
+	pbutt->pc = _strdup(_showWords);
+	if (fontName)
+		pbutt->pfont = fonts->fonts->Copy(fontName, true);
+	pbutt->charsize = charSize;
+	int* charcolor = cc ? (int*)TypeDupR(mem, 3, cc->r, cc->g, cc->b) : pbutt->charcolor;
+	SDL_Surface* pte = NULL;
+	SDL_DestroyTexture(*(pbutt->ppTex));
+	if (pbutt->back1 != NULL)
+	{
+		pte = pbutt->back1;
+	}
+	else if (bgc != NULL)
+	{
+		pte = SDL_CreateRGBSurface(0, pbutt->re_butt.w, pbutt->re_butt.h, 32, 0, 0, 0, 0);
+		SDL_FillRect(pte, NULL, SDL_MapRGB(pte->format, bgc->r, bgc->g, bgc->b));
+	}
+	else
+	{// null bg, only rewrite pc, get new tex
+		SDL_Color color = { charcolor[0],charcolor[1],charcolor[2] };
+		SDL_Surface* pte = TTF_RenderUTF8_Blended(pbutt->pfont, pbutt->pc, color);
+		*(pbutt->ppTex) = SDL_CreateTextureFromSurface(win->rend, pte);
+		SDL_RenderCopy(win->rend, *(pbutt->ppTex), NULL, &(pbutt->re_butt));
+		return pbutt;
+	}
+	*(pbutt->ppTex) = SDL_Get_Font_Texture(win->rend, pte, pbutt->pfont, charcolor, charSize, pbutt->pc, 0, 0);
+	SDL_RenderCopy(win->rend, *(pbutt->ppTex), NULL, &(pbutt->re_butt));
+	return pbutt;
+}
+
 bool QUI::DelButt(const char* _name)
 {
 	butts->events.Del(_name);
 	butts->statue.Del(_name);
-	butts->eveFunc.Del(_name);
+	if (butts->eveFunc.HasKey(_name))
+	{
+		butts->eveFunc.Del(_name);
+		butts->eveFuncData.Del(_name);
+	}
 	butts->names.Get(_name);
 	SDL_MyButton* pButt = butts->butts.Get(_name);
 	return SDL_Destroy_MyButton(pButt);
@@ -238,6 +276,8 @@ bool QUI::CheckButt()
 {
 	SDL_PollEvent(win->peve);
 	clock_t st = clock();
+	int (*eveFunc)(void* pData) = NULL;
+	void* eveFuncData = NULL;
 	if (win->peve->type == SDL_MOUSEBUTTONDOWN)
 	{
 		for (SDL_PollEvent(win->peve); win->peve->type != SDL_MOUSEBUTTONUP;
@@ -253,7 +293,7 @@ bool QUI::CheckButt()
 		{
 			if (butts->statue.Copy<int>(dp->name) == 1)
 			{
-				butts->statue[dp->name] = 0;
+				butts->events[dp->name] = 0;
 				SDL_Rect re = dp->pdata->re_butt;
 				x = re.x;
 				y = re.y;
@@ -262,9 +302,18 @@ bool QUI::CheckButt()
 				if (mx > x && mx<x + w && my>y && my < y + h)
 				{
 					if (win->peve->button.button == SDL_BUTTON_LEFT)
+					{
 						butts->events[dp->name] = 1;
+						if (butts->eveFunc.HasKey(dp->name))
+						{
+							eveFunc = butts->eveFunc.Copy<int (*)(void* pData)>(dp->name, true);
+							eveFunc(butts->eveFuncData.Copy<void* > (dp->name, true));
+						}
+					}
 					else if (win->peve->button.button == SDL_BUTTON_RIGHT)
+					{
 						butts->events[dp->name] = 2;
+					}
 				}
 			}
 		}
