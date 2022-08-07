@@ -162,7 +162,7 @@ void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
 {
     List* mem = List_Init();
     BA_String* text = (BA_String*)getQ.ThrGet(&m);
-    balist<char>* splitResult = text->Splitx(" \n.,\"'?![]():;");
+    balist<char>* splitResult = text->Splitx(" ,.\n\"'?!;:@`#$%^&*()+=/\r\t()[]{}<>");
     balist<_ULL>* tree = (balist<_ULL>*)data;
     string* str = new string();
     _ULL hashV = 0;
@@ -175,8 +175,7 @@ void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
         hashV = strHash(*str);
         count = TypeDupR(NULL, 1, 1ULL);
         m.lock();
-        tree->Insert(count, hashV, BA_Test_WordsCount_HashCol,
-            p, true);
+    //    tree->Insert(count, hashV, BA_Test_WordsCount_HashCol, p, true);
         m.unlock();
     }
     sig.ThrPut(NULL, &m);
@@ -184,9 +183,10 @@ void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
 
 void BA_Test_WordsCount(void)
 {
-    _ULL sumThreads = 8;
+    _ULL sumThreads = 4;
     balist<_ULL>* tree = new balist<_ULL>();
-    MyThreadsPool tp = MyThreadsPool(sumThreads, BA_Test_WordsCount_SubThr, (void*)tree);
+    MyThreadsPool tp = MyThreadsPool(sumThreads,
+        BA_Test_WordsCount_SubThr, (void*)tree);
     BA_String text = BA_String(
         ReadTXT("E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter (complete works).txt"));
     BA_String* subStr = NULL;
@@ -196,13 +196,15 @@ void BA_Test_WordsCount(void)
         tp.PutTask(subStr, &m);
     }
     List* result = tp.LoopToQuit(&m);
-    FILE* pf = NULL;
-    fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
-    for (balistDot<_ULL>* pd = tree->pfirst; pd; pd = pd->pnext)
-        fprintf(pf, "%s,%llu\n", pd->name, *(pd->pdata));
-    fclose(pf);
-    PPT();
-    _SIS_;
+    //FILE* pf = NULL;
+    //fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
+    //if (pf)
+    //{
+    //    for (balistDot<_ULL>* pd = tree->pfirst; pd; pd = pd->pnext)
+    //        fprintf(pf, "%s,%llu\n", pd->name, *(pd->pdata));
+    //    fclose(pf);
+    //}
+    tp.Destroy(&m);
 }
 
 

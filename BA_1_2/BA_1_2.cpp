@@ -17,7 +17,7 @@ MyBA* pba;
 
 float MyBA_Ver(void)
 {
-	return 1.3401f;
+	return 1.3621f;
 	/*
 	* 1.1000 : 1.1.0.0 :2020年08月15日：MyUI, MyDir(in C)
 	* 1.2000 : 1.2.0.0 :2021年03月28日：MyBA, List
@@ -37,6 +37,7 @@ float MyBA_Ver(void)
 	* 1.3401 : 2.5.0.1 :2022年07月26日: 添加list(使用template)；修改部分注释
 	* 1.3501 : 2.6.0.1 :2022年07月31日: 添加QUI；修改部分注释
 	* 1.3600 : 2.7.0.0 :2022年07月31日: 添加dict(使用any & template), 修改MakeSDLCol和MakeSDLRect参数mem为NULL时行为
+	* 1.3621 : 2.7.2.1 :2022年08月07日: 将Que和balist合并；修复BA_String::Splitx bug；修改部分注释
 	*/
 }
 

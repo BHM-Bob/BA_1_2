@@ -231,6 +231,7 @@ public:
 	balistDot<dataType>* pfirst = NULL;
 	balistDot<dataType>* plast = NULL;
 	balistDot<dataType>* now = NULL;
+	balistDot<dataType>* medium = NULL;
 
 	_LL lastIndex = 0;
 	balistDot<dataType>* lastIndexDot = NULL;
@@ -686,24 +687,23 @@ void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
 	const char* name, bool justUseNamePtr)
 {
 	balistDot<dataType>* pOriDot = NULL;
+	balistDot<dataType>* pNowDot = new balistDot<dataType>(pdata, name, justUseNamePtr);
+	pNowDot->usage = hashKey;
 	++sumque;
-	if (sumque == 1)
+	if (sumque == 1)// init as first
 	{
-		balistDot<dataType>* pNowDot = new balistDot<dataType>(pdata, name, justUseNamePtr);
-		pNowDot->usage = hashKey;
-		pfirst = pNowDot;
-		plast = pfirst;
+		medium = now = plast = pfirst = pNowDot;
 		pfirst->pnext = pfirst->ppre = NULL;
 	}
-	else if (pfirst->usage > hashKey)
+	else if (pfirst->usage > hashKey)// insert as first
 	{
-		balistDot<dataType>* pNowDot = new balistDot<dataType>(pdata, name, justUseNamePtr);
-		pNowDot->usage = hashKey;
 		pNowDot->pnext = pfirst;
 		pfirst->ppre = pNowDot;
 		pfirst = pNowDot;
+		if (!medium->pnext)//not the last
+			medium = medium->pnext;
 	}
-	else
+	else// insert as medium
 	{
 		for (pOriDot = pfirst; pOriDot; pOriDot = pOriDot->pnext)
 		{// insert between pte2 and pte2->pnext
@@ -715,8 +715,6 @@ void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
 				return hashCollisionFunc(pOriDot, pdata);
 			// NO else;
 		}
-		balistDot<dataType>* pNowDot = new balistDot<dataType>(pdata, name, justUseNamePtr);
-		pNowDot->usage = hashKey;
 		// now <=> ori->pnext
 		if (pOriDot->pnext)
 			pOriDot->pnext->ppre = pNowDot;
@@ -967,12 +965,12 @@ inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(mutex* m)
 	}
 	for (_ULL idx = 0; idx < sumThreads; idx++)
 	{
-		printf("\r%s: waiting to join subThreads: %llu / %llu  --  %8.3f",
-			name, sumTasksTillNow, sumTasks,
-			(float)(clock() - st) / CLOCKS_PER_SEC);
 		while (getDataQues[idx].ThrSize(m) > 0)
 			List_Put(retList, getDataQues[idx].ThrGet(m));
 		ppThs[idx]->join();
+		printf("\r%s: waiting to join subThreads: %llu / %llu  --  %8.3f",
+			name, sumTasksTillNow, sumTasks,
+			(float)(clock() - st) / CLOCKS_PER_SEC);
 	}
 	return retList;
 }
@@ -984,8 +982,6 @@ inline void MyThreadsPool<dataTypePut, dataTypeGet>::Destroy(mutex* m)
 	List_Destroy(mem);
 	delete[] getDataQues;
 	delete[] putDataQues;
-	delete sig;
-	return nullptr;
 }
 
 
