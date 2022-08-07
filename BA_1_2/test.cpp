@@ -201,14 +201,14 @@ void BA_Test_WordsCount(void)
         tp.PutTask(subStr, &m);
     }
     List* result = tp.LoopToQuit(&m);
-    //FILE* pf = NULL;
-    //fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
-    //if (pf)
-    //{
-    //    for (balistDot<_ULL>* pd = tree->pfirst; pd; pd = pd->pnext)
-    //        fprintf(pf, "%s,%llu\n", pd->name, *(pd->pdata));
-    //    fclose(pf);
-    //}
+    FILE* pf = NULL;
+    fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
+    if (pf)
+    {
+        for (balistDot<_ULL>* pd = tree->pfirst; pd; pd = pd->pnext)
+            fprintf(pf, "%s,%llu\n", pd->name, *(pd->pdata));
+        fclose(pf);
+    }
     tp.Destroy(&m);
 }
 

@@ -726,6 +726,8 @@ void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
 					return hashCollisionFunc(pOriDot, pNowDot);
 				// NO else;
 			}
+			if (medium->pnext)// move to last
+				medium = medium->pnext;
 		}
 		else// if(hashKey < medium->usage)// insert as medium->pre
 		{
@@ -737,6 +739,8 @@ void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
 					return hashCollisionFunc(pOriDot, pNowDot);
 				// NO else;
 			}
+			if (medium->ppre)// move to first
+				medium = medium->ppre;
 		}
 		// now <=> ori->pnext
 		if(pOriDot)
