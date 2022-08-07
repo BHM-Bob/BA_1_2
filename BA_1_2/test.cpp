@@ -149,23 +149,23 @@ void BA_Array_Test2(void)
 //    }
 //}
 
-void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, _ULL* pNowData)
+void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, balistDot<_ULL>* p2)
 {
     (*(p1->pdata))++;
-    free(pNowData);
+    delete p2;
 }
 
 mutex m;
 
 void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
-    balist<char>& putQ, balist<bool>& sig, void* data)
+    balist<char>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
 {
     List* mem = List_Init();
     BA_String* text = (BA_String*)getQ.ThrGet(&m);
     balist<char>* splitResult = text->Splitx(" ,.\n\"'?!;:@`#$%^&*()+=/\r\t()[]{}<>");
     balist<_ULL>* tree = (balist<_ULL>*)data;
     string* str = new string();
-    _ULL hashV = 0;
+    _ULL hashV = 0, nowIdx = 0;
     _ULL* count = NULL;
     std::hash<std::string> strHash;
     for(char* p = splitResult->Copy(); p; p = splitResult->Copy())
@@ -175,10 +175,15 @@ void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
         hashV = strHash(*str);
         count = TypeDupR(NULL, 1, 1ULL);
         m.lock();
-    //    tree->Insert(count, hashV, BA_Test_WordsCount_HashCol, p, true);
+        tree->Insert(count, hashV, BA_Test_WordsCount_HashCol, p, true);
         m.unlock();
+
+        nowIdx = splitResult->GetNowIndex();
+        if (nowIdx % 10000 == 0)
+            proc.ThrPut(TypeDupR(mem, 1, 100.f * nowIdx / splitResult->sumque), &m);
     }
     sig.ThrPut(NULL, &m);
+    MyBA_Free_R(mem);
 }
 
 void BA_Test_WordsCount(void)

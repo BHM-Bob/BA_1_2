@@ -132,7 +132,8 @@ float* floatdupS(_ULL num, ...);
 
 void JDT(_ULL now, _ULL sum);
 
-void gotoxy(int x, int y);
+void SetConsoleCursor(int x, int y);
+COORD GetConsoleCursor(void);
 
 char* StringAdd_L(const char* pstr, ...);//end with NULL
 char* StringAdd_S(const char* pstr, ...);//end with NULL
@@ -258,7 +259,7 @@ public:
 		const char* name = NULL, bool justUseNamePtr = false);
 	// use dot::usage as hash key to insert a data between two hash dot
 	void Insert(dataType* pdata, _LL hashKey,
-		void (*hashCollisionFunc)(balistDot<dataType>* pOriDot, dataType* pNowData),
+		void (*hashCollisionFunc)(balistDot<dataType>* pOriDot, balistDot<dataType>* pNowDot),
 		const char* name = NULL, bool justUseNamePtr = false);
 	// multi threads
 	void ThrPut(dataType* pdata, mutex* m,
@@ -352,14 +353,16 @@ public:
 	balist<bool> sig = balist<bool>();
 	balist<dataTypePut>* putDataQues = NULL;
 	balist<dataTypeGet>* getDataQues = NULL;
+	balist<float>* procQues = NULL;
 	_ULL quePtr = 0;
 	char* name = NULL;
 	thread** ppThs = NULL;
+	COORD pos = COORD();
 
 	List* mem = List_Init();
 
 	MyThreadsPool(_ULL _sumThreads,
-		void (*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<bool>&, void*),
+		void (*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<float>&, balist<bool>&, void*),
 		void* otherData = NULL, const char* _name = NULL);
 
 	void PutTask(dataTypePut* pData, mutex* m);
@@ -683,7 +686,7 @@ balist<dataType> balist<dataType>::Put(dataType* pdata, const char* name, bool j
 
 template<typename dataType>
 void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
-	void (*hashCollisionFunc)(balistDot<dataType>* pOriDot, dataType* pNowData),
+	void (*hashCollisionFunc)(balistDot<dataType>* pOriDot, balistDot<dataType>* pNowDot),
 	const char* name, bool justUseNamePtr)
 {
 	balistDot<dataType>* pOriDot = NULL;
@@ -695,28 +698,48 @@ void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
 		medium = now = plast = pfirst = pNowDot;
 		pfirst->pnext = pfirst->ppre = NULL;
 	}
-	else if (pfirst->usage > hashKey)// insert as first
+	else if (hashKey < pfirst->usage)// insert as first
 	{
 		pNowDot->pnext = pfirst;
 		pfirst->ppre = pNowDot;
 		pfirst = pNowDot;
-		if (!medium->pnext)//not the last
+		if (medium->ppre)// move to first
+			medium = medium->ppre;
+	}
+	else if (plast->usage < hashKey)// insert as last
+	{
+		pNowDot->ppre = plast;
+		plast->pnext = pNowDot;
+		plast = pNowDot;
+		if (medium->pnext)// move to last
 			medium = medium->pnext;
 	}
 	else// insert as medium
 	{
-		for (pOriDot = pfirst; pOriDot; pOriDot = pOriDot->pnext)
-		{// insert between pte2 and pte2->pnext
-			if (pOriDot->pnext && (pOriDot->usage < hashKey && hashKey < pOriDot->pnext->usage))
-				break;
-			else if (pOriDot->pnext == NULL)
-				break;
-			else if(pOriDot->usage == hashKey)
-				return hashCollisionFunc(pOriDot, pdata);
-			// NO else;
+		if (hashKey >= medium->usage)// insert as medium->next
+		{
+			for (pOriDot = medium; pOriDot; pOriDot = pOriDot->pnext)
+			{
+				if (pOriDot->usage < hashKey && hashKey < pOriDot->pnext->usage)
+					break;
+				else if (pOriDot->usage == hashKey)
+					return hashCollisionFunc(pOriDot, pNowDot);
+				// NO else;
+			}
+		}
+		else// if(hashKey < medium->usage)// insert as medium->pre
+		{
+			for (pOriDot = medium; pOriDot; pOriDot = pOriDot->ppre)
+			{
+				if (pOriDot->usage < hashKey && hashKey < pOriDot->pnext->usage)
+					break;
+				else if (pOriDot->usage == hashKey)
+					return hashCollisionFunc(pOriDot, pNowDot);
+				// NO else;
+			}
 		}
 		// now <=> ori->pnext
-		if (pOriDot->pnext)
+		if(pOriDot)
 			pOriDot->pnext->ppre = pNowDot;
 		pNowDot->pnext = pOriDot->pnext;
 		// ori <=> now
@@ -912,12 +935,14 @@ inline badictPair& badict::operator[](const char* key)
 
 template<typename dataTypePut, typename dataTypeGet>
 MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_ULL _sumThreads,
-	void(*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<bool>&, void*), void* otherData, const char* _name)
+	void(*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&,
+		balist<float>&, balist<bool>&, void*), void* otherData, const char* _name)
 {
 	sumThreads = _sumThreads;
 	ppThs = BALLOC_R(_sumThreads, thread*, mem);
 	putDataQues = new balist< dataTypePut>[_sumThreads];
 	getDataQues = new balist< dataTypeGet>[_sumThreads];
+	procQues = new balist< float>[_sumThreads];
 	//pF = _pF;
 	if (!_name)
 		name = mstrdup("MyThreadsPool", mem);
@@ -926,7 +951,7 @@ MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_ULL _sumThreads,
 	for (_ULL i = 0; i < sumThreads; i++)
 	{
 		ppThs[i] = new thread(_pF, i, ref(putDataQues[i]),
-			ref(getDataQues[i]), ref(sig), otherData);
+			ref(getDataQues[i]), ref(procQues[i]), ref(sig), otherData);
 	}
 }
 
@@ -949,14 +974,23 @@ inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(mutex* m)
 		putDataQues[idx].ThrPut((dataTypePut*)0x1, m);
 	_ULL sumTasksTillNow = 0;
 	float st = (float)clock();
+	float* hisProc = BALLOC_R(sumThreads, float, mem);
+	pos = GetConsoleCursor();
 	while (sig.ThrSize(m) < sumThreads)
 	{
 		sumTasksTillNow = 0;
 		for (_ULL idx = 0; idx < sumThreads; idx++)
 			sumTasksTillNow += putDataQues[idx].ThrSize(m);
-		printf("\r%s: subThreads working: %llu / %llu  --  %8.3f",
-			name, sumTasksTillNow, sumTasks,
-			(float)(clock() - st) / CLOCKS_PER_SEC);
+
+		SetConsoleCursor(pos.X, pos.Y);
+		printf("%20s: subThreads working: %5llu / %5llu  --  %8.3f sec\n",
+			name, sumTasksTillNow, sumTasks, (float)(clock() - st) / CLOCKS_PER_SEC);
+		for (_ULL idx = 0; idx < sumThreads; idx++)
+		{
+			hisProc[idx] = procQues[idx].ThrSize(m) > 0 ?
+				*(procQues[idx].ThrGet(m)) : hisProc[idx];
+			printf("subThreads %llu : %6.3f %%        \n", idx, hisProc[idx]);
+		}
 
 		for (_ULL idx = 0; idx < sumThreads; idx++)
 			while (getDataQues[idx].ThrSize(m) > 0)
@@ -968,7 +1002,7 @@ inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(mutex* m)
 		while (getDataQues[idx].ThrSize(m) > 0)
 			List_Put(retList, getDataQues[idx].ThrGet(m));
 		ppThs[idx]->join();
-		printf("\r%s: waiting to join subThreads: %llu / %llu  --  %8.3f",
+		printf("\r%s: waiting to join subThreads: %llu / %llu  --  %8.3f sec",
 			name, sumTasksTillNow, sumTasks,
 			(float)(clock() - st) / CLOCKS_PER_SEC);
 	}
@@ -982,6 +1016,7 @@ inline void MyThreadsPool<dataTypePut, dataTypeGet>::Destroy(mutex* m)
 	List_Destroy(mem);
 	delete[] getDataQues;
 	delete[] putDataQues;
+	delete[] procQues;
 }
 
 

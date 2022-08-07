@@ -23,9 +23,9 @@ BA_Array BA_Array_GetTest();
 void BA_Dir_Test(void);
 void BA_Plot_Test(void);
 void BA_ThreadPool_Test(void);
-void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, _ULL* pNowData);
-void BA_Test_WordsCount_SubThr(_ULL id, balist<char>& getQ,
-    balist<char>& putQ, balist<char>& sig, void* data);
+void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, balistDot<_ULL>* p2);
+void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
+    balist<char>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
 void BA_Test_WordsCount(void);
 
 #endif

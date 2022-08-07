@@ -438,17 +438,25 @@ void PPIs(int n, ...)
 	printf("\n");
 }
 
-#ifdef USE_WINDOWS
-
-void gotoxy(int x, int y)//from https://blog.csdn.net/radjedef/article/details/79028329
+//https://blog.csdn.net/radjedef/article/details/79028329
+void SetConsoleCursor(int x, int y)
 {
 	COORD pos = { x,y };
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);// 获取标准输出设备句柄
 	SetConsoleCursorPosition(hOut, pos);//两个参数分别是指定哪个窗体，具体位置
 }
 
-#endif // USE_WINDOWS
-
+//https://blog.csdn.net/m0_51819222/article/details/118099067
+COORD GetConsoleCursor(void)
+{
+	COORD coordScreen = { 0, 0 }; //光标位置
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+		coordScreen.X = csbi.dwCursorPosition.X;
+		coordScreen.Y = csbi.dwCursorPosition.Y;
+	}
+	return coordScreen; //光标位置
+}
 
 char* mstrdup(const char* p, List* mem)
 {
