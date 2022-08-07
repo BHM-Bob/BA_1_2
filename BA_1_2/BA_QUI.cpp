@@ -83,16 +83,17 @@ QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
 	win->FPS = 25.f;
 	fonts = BALLOC_R(1, QUI_fonts, mem);
 	butts = BALLOC_R(1, QUI_butts, mem);
-	fonts->fonts = new list< TTF_Font>;
-	butts->butts = list<SDL_MyButton>();
-	butts->names = list<char>();
-	butts->events = dict(true);
-	butts->statue = dict(true);
-	butts->eveFunc = dict(true);
-	butts->eveFuncData = dict(true);
+	fonts->fonts = new balist< TTF_Font>;
+	butts->butts = balist<SDL_MyButton>();
+	butts->names = balist<char>();
+	butts->events = badict(true);
+	butts->statue = badict(true);
+	butts->eveFunc = badict(true);
+	butts->eveFuncData = badict(true);
+	keys = new QUI_Keys();
 
-	otherTex = new list< SDL_Texture>;
-	otherTexRe = new list< SDL_Rect>;
+	otherTex = new balist< SDL_Texture>;
+	otherTexRe = new balist< SDL_Rect>;
 
 	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
 	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
@@ -289,16 +290,15 @@ bool QUI::CheckButt()
 		Sint32 mx = win->peve->motion.x;
 		Sint32 my = win->peve->motion.y;
 		int x, y, w, h;
-		for (listDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
+		for (balistDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 		{
 			if (butts->statue.Copy<int>(dp->name) == 1)
 			{
 				butts->events[dp->name] = 0;
-				SDL_Rect re = dp->pdata->re_butt;
-				x = re.x;
-				y = re.y;
-				w = re.w;
-				h = re.h;
+				x = dp->pdata->re_butt.x;
+				y = dp->pdata->re_butt.y;
+				w = dp->pdata->re_butt.w;
+				h = dp->pdata->re_butt.h;
 				if (mx > x && mx<x + w && my>y && my < y + h)
 				{
 					if (win->peve->button.button == SDL_BUTTON_LEFT)
@@ -351,12 +351,13 @@ bool QUI::Update(bool rendclear, bool copyTex)
 	for (float waitt = 1. / win->FPS;
 		(float)((float)clock() - win->time) / CLOCKS_PER_SEC < waitt; SDL_Delay(1));
 	win->time = clock();
+	keys->Update(win->peve);
 	if (rendclear)
 		SDL_RenderClear(win->rend);
 	if (copyTex)
 		SDL_RenderCopy(win->rend, win->pwinTex, NULL, NULL);
 	SDL_MyButton* pButt = NULL;
-	for (listDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
+	for (balistDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 	{
 		if (butts->statue.Copy<int>(dp->name, true) == 1)
 		{
@@ -386,4 +387,19 @@ bool QUI::PollQuit()
 	if ((win->exitButtName) && butts->events.Copy<int>(win->exitButtName, true) == 1)
 		return 1;
 	return SDL_Poll_Quit(win->peve);
+}
+
+void QUI_Keys::Update(SDL_Event* pEve)
+{
+	//SDL_PollEvent(pEve);
+	//if (pEve->type == SDL_KEYDOWN)
+	//{
+	//	if (nowKey != pEve->key.keysym.sym)
+	//	{
+	//		nowKey = pEve->key.keysym.sym;
+	//		changed = true;
+	//		PPC(nowKey);
+	//	}
+	//	
+	//}
 }

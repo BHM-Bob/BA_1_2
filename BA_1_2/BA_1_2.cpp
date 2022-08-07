@@ -994,11 +994,11 @@ int StrCmpById(const char* ptr1, const char* ptr2)
 	return (ptr1 == ptr2) ? 0 : 1;
 }
 
-dictPair::dictPair()
+badictPair::badictPair()
 {
 }
 
-dictPair::dictPair(const char* _key, any _data, bool _justUseKeyPtr)
+badictPair::badictPair(const char* _key, any _data, bool _justUseKeyPtr)
 {
 	if (_justUseKeyPtr)
 	{
@@ -1012,43 +1012,43 @@ dictPair::dictPair(const char* _key, any _data, bool _justUseKeyPtr)
 	data = _data;
 }
 
-dictPair::~dictPair()
+badictPair::~badictPair()
 {
 }
 
-void dictPair::operator=(any _data)
+void badictPair::operator=(any _data)
 {
 	data.reset();
 	data = _data;
 }
 
-dict::dict(bool _justUseKeyPtr)
+badict::badict(bool _justUseKeyPtr)
 {
 	justUseKeyPtr = _justUseKeyPtr;
 }
 
-dict::dict(const char* key, any data, bool _justUseKeyPtr)
+badict::badict(const char* key, any data, bool _justUseKeyPtr)
 {
 	this->Put(key, data, _justUseKeyPtr);
 }
 
-bool dict::HasKey(const char* key, bool justCmpKeyById)
+bool badict::HasKey(const char* key, bool justCmpKeyById)
 {
 	if (justCmpKeyById)
 		strCmpFunc = StrCmpById;
-	dictPair* pd = pfirst;
+	badictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (!strCmpFunc(pd->key, key))
 			return true;
 	return false;
 }
 
-dict dict::Put(const char* key, any data, bool _justUseKeyPtr)
+badict badict::Put(const char* key, any data, bool _justUseKeyPtr)
 {
 	++sumque;
 	if (sumque == 1)
 	{
-		pfirst = new dictPair(key, data, _justUseKeyPtr);
+		pfirst = new badictPair(key, data, _justUseKeyPtr);
 		if (pfirst == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
@@ -1062,7 +1062,7 @@ dict dict::Put(const char* key, any data, bool _justUseKeyPtr)
 	}
 	else
 	{
-		dictPair* pte = new dictPair(key, data);
+		badictPair* pte = new badictPair(key, data);
 		if (pte == NULL)
 		{
 			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
@@ -1079,9 +1079,9 @@ dict dict::Put(const char* key, any data, bool _justUseKeyPtr)
 	return *this;
 }
 
-bool dict::Del(const char* key)
+bool badict::Del(const char* key)
 {
-	dictPair* pd = pfirst;
+	badictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (!strcmp(pd->key, key))
 		{
@@ -1095,16 +1095,16 @@ bool dict::Del(const char* key)
 	return false;
 }
 
-void dict::Destroy(void)
+void badict::Destroy(void)
 {
-	for (dictPair* p = pfirst, *pn = NULL; p; p = pn)
+	for (badictPair* p = pfirst, *pn = NULL; p; p = pn)
 	{
 		free(p->key);
 		delete p;
 	}
 }
 
-dict::~dict()
+badict::~badict()
 {
 }
 
@@ -1120,160 +1120,6 @@ dict::~dict()
 //	return *ret;
 //}
 
-////***********************************************************************************************************************
-
-MyThreadQueue::MyThreadQueue(void) {}
-
-bool MyThreadQueue::Put(void* _pData, mutex* m)
-{
-	m->lock();
-	++(sumque);
-	if (sumque == 1)
-	{
-		pfirst = MCALLOC(1, MyThreadQue);
-		if (pfirst == NULL)
-		{
-			PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return False");
-			m->unlock();
-			return false;
-		}
-		else
-		{
-			now = plast = pfirst;
-			pfirst->pnext = pfirst->ppre = NULL;
-			pfirst->pdata = _pData;
-			pfirst->idx = sumque - 1;
-			m->unlock();
-			return true;
-		}
-	}
-	MyThreadQue* pte = MCALLOC(1, MyThreadQue);
-	if (pte == NULL)
-	{
-		PPW("int MyThreadQueue::Put(void* pData): BALLOC_R(1, MyThreadQue, mem) == NULL, return -1");
-		m->unlock();
-		return false;
-	}
-	else
-	{
-		pte->ppre = plast;
-		pte->pnext = NULL;
-		plast->pnext = pte;
-		plast = pte;
-		pte->pdata = _pData;
-		pte->idx = sumque - 1;
-		m->unlock();
-		return true;
-	}
-}
-
-void* MyThreadQueue::Get(mutex* m)
-{
-MyThreadQueue_Label_A:
-	m->lock();
-	MyThreadQue* pret = pfirst;
-	if (sumque == 1)
-	{
-		now = pfirst = plast = NULL;
-	}
-	else if (sumque == 0 || (!pfirst))
-	{
-		m->unlock();
-		Sleep(100);
-		goto MyThreadQueue_Label_A;
-	}
-	else
-	{
-		if (now == pfirst)
-			now = pfirst->pnext;
-		MyThreadQue* pte = pfirst->pnext;
-		pte->ppre = NULL;
-		pfirst = pte;
-	}
-	--sumque;
-	void* pdata = pret->pdata;
-	free(pret);
-	m->unlock();
-	return pdata;
-}
-
-_ULL MyThreadQueue::Size(mutex* m)
-{
-	m->lock();
-	_ULL ret = sumque;
-	m->unlock();
-	return ret;
-}
-
-MyThreadsPool::MyThreadsPool(void) {}
-
-MyThreadsPool::MyThreadsPool(_ULL _sumThreads,
-	void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*),
-	void* _otherData, const char* _name)
-{
-	sumThreads = _sumThreads;
-	ppThs = BALLOC_R(_sumThreads, thread*, mem);
-	putDataQues = BALLOC_R(_sumThreads, MyThreadQueue, mem);
-	getDataQues = BALLOC_R(_sumThreads, MyThreadQueue, mem);
-	//pF = _pF;
-	if (!_name)
-		name = _strdup("MyThreadsPool");
-	else
-		name = _strdup(_name);
-	for (_ULL i = 0; i < sumThreads; i++)
-	{
-		ppThs[i] = new thread(_pF, i, ref(putDataQues[i]),
-			ref(getDataQues[i]), ref(sig), _otherData);
-	}
-}
-
-void MyThreadsPool::PutTask(void* pData, mutex* m)
-{
-	if (!putDataQues[quePtr].Put(pData, m))
-		PPW("void MyThreadsPool::PutTask(void* pData, mutex* m): !putDataQues[quePtr].Put(pData, m)");
-	quePtr = ((quePtr + 1) < sumThreads) ? (quePtr + 1) : 0;
-	sumTasks += 1;
-}
-
-//be sure that all tasks sended, this func will
-//send 'wait to quit' signal to every que,
-//and start to loop waiting
-List* MyThreadsPool::LoopToQuit(mutex* m, void* quitSig)
-{
-	List* retList = List_Init();
-	for (_ULL idx = 0; idx < sumThreads; idx++)
-		putDataQues[idx].Put(quitSig, m);
-	_ULL sumTasksTillNow = 0;
-	float st = (float)clock();
-	while (sig.Size(m) < sumThreads)
-	{
-		sumTasksTillNow = 0;
-		for (_ULL idx = 0; idx < sumThreads; idx++)
-			sumTasksTillNow += putDataQues[idx].Size(m);
-		printf("\r%s: %llu / %llu  --  %8.3f",
-			name, sumTasksTillNow, sumTasks,
-			(float)(clock() - st) / CLOCKS_PER_SEC);
-
-		for (_ULL idx = 0; idx < sumThreads; idx++)
-			while (getDataQues[idx].Size(m) > 0)
-				List_Put(retList, getDataQues[idx].Get(m));
-		Sleep(1000);
-	}
-	for (_ULL idx = 0; idx < sumThreads; idx++)
-	{
-		while (getDataQues[idx].Size(m) > 0)
-			List_Put(retList, getDataQues[idx].Get(m));
-		ppThs[idx]->join();
-	}
-	return retList;
-}
-
-void* MyThreadsPool::Destroy(mutex* m)
-{
-	MyBA_Free_R(mem);
-	List_Destroy(mem);
-	return nullptr;
-}
 
 
 //***********************************************************************************************************************

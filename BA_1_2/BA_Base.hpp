@@ -15,9 +15,10 @@
 #include<ctype.h>
 #include<conio.h>
 #include<direct.h>
+#include<functional>
 #include<locale.h>
 #include<limits.h>
-#include<map>
+//#include<map>
 #include<math.h>
 #include<io.h>
 #include<iostream>
@@ -202,40 +203,43 @@ List* List_Destroy(List* plist);
 //******************************************************************
 int StrCmpById(const char* ptr1, const char* ptr2);
 
+//NOTICE: is it 100% safe that put lock opt into MyThreadQueue?
+// may be there are many threads try to get the putDataQues[quePtr]
+// try to get the mem block of putDataQues[quePtr]
 //High level List
 template <typename dataType>
-class listDot
+class balistDot
 {
 public:
 	dataType* pdata = NULL;
 	char* name = NULL;
 	_LL idx = 0;//from 0
-	_ULL usage = 0;//for some open use
-	listDot* pnext = NULL;
-	listDot* ppre = NULL;
+	_LL usage = 0;//for some open use
+	balistDot* pnext = NULL;
+	balistDot* ppre = NULL;
 
-	listDot();
-	listDot(dataType* _pdata, const char* _name = NULL, bool justUseNamePtr = false);
-	~listDot();
+	balistDot();
+	balistDot(dataType* _pdata, const char* _name = NULL, bool justUseNamePtr = false);
+	~balistDot();
 };
 template <typename dataType>
-class list
+class balist
 {
 public:
 	_LL tik = 0;//标识符，区分List，或者用来储存一些ID信息
 	_LL sumque = 0;
-	listDot<dataType>* pfirst = NULL;
-	listDot<dataType>* plast = NULL;
-	listDot<dataType>* now = NULL;
+	balistDot<dataType>* pfirst = NULL;
+	balistDot<dataType>* plast = NULL;
+	balistDot<dataType>* now = NULL;
 
 	_LL lastIndex = 0;
-	listDot<dataType>* lastIndexDot = NULL;
+	balistDot<dataType>* lastIndexDot = NULL;
 
 	int (*strCmpFunc)(const char* ptr1, const char* ptr2) = strcmp;
 
-	list();
+	balist();
 	// end with a NULL
-	list(dataType* data1, ...);
+	balist(dataType* data1, ...);
 
 	_LL GetNowIndex();
 	_LL Index(dataType* data);
@@ -249,14 +253,26 @@ public:
 	dataType* Get(const char* name, bool justCmpNameById = false);
 	//Copy the name dot content
 	dataType* Copy(const char* name, bool justCmpNameById = false);
-	list<dataType> Put(dataType* pdata, const char* name = NULL, bool justUseNamePtr = false);
+	balist<dataType> Put(dataType* pdata,
+		const char* name = NULL, bool justUseNamePtr = false);
+	// use dot::usage as hash key to insert a data between two hash dot
+	void Insert(dataType* pdata, _LL hashKey,
+		void (*hashCollisionFunc)(balistDot<dataType>* pOriDot, dataType* pNowData),
+		const char* name = NULL, bool justUseNamePtr = false);
+	// multi threads
+	void ThrPut(dataType* pdata, mutex* m,
+		const char* name = NULL, bool justUseNamePtr = false);
+	// multi threads
+	dataType* ThrGet(mutex* m);
+	// multi threads
+	_LL ThrSize(mutex* m);
 	// end with a NULL
-	list<dataType> Gather(dataType* pData1, ...);
+	balist<dataType> Gather(dataType* pData1, ...);
 	void Destroy(void);
-	~list();
+	~balist();
 
-	// + 运算符重载, join tow list
-	list<dataType> operator+(list<dataType>& other);
+	// + 运算符重载, join tow balist
+	balist<dataType> operator+(balist<dataType>& other);
 	// [] 运算符重载, IndexCopy
 	dataType* operator[](_LL index);
 	// [] 运算符重载, NameCopy
@@ -269,118 +285,85 @@ public:
 	void operator()(const char* name, dataType* newVar, bool freeOld = true, bool justUseNamePtr = false);
 };
 //******************************************************************
-//High level dict
-class dictPair
+//High level badict
+class badictPair
 {
 public:
 	char* key = NULL;
 	any data;
 	_LL idx = 0;//from 0
 	_ULL usage = 0;//for some open use
-	dictPair* pnext = NULL;
-	dictPair* ppre = NULL;
+	badictPair* pnext = NULL;
+	badictPair* ppre = NULL;
 
-	dictPair();
-	dictPair(const char* _key, any _data, bool _justUseKeyPtr = false);
-	~dictPair();
+	badictPair();
+	badictPair(const char* _key, any _data, bool _justUseKeyPtr = false);
+	~badictPair();
 
 	void operator=(any _data);
 };
-class dict
+class badict
 {
 public:
 	_LL tik = 0;//标识符，区分List，或者用来储存一些ID信息
 	_LL sumque = 0;
-	dictPair* pfirst = NULL;
-	dictPair* plast = NULL;
+	badictPair* pfirst = NULL;
+	badictPair* plast = NULL;
 
 	bool justUseKeyPtr = false;
 
 	int (*strCmpFunc)(const char* ptr1, const char* ptr2) = strcmp;
 
-	dict(bool _justUseKeyPtr = false);
+	badict(bool _justUseKeyPtr = false);
 	// end with a NULL
-	dict(const char* key, any data, bool _justUseKeyPtr = false);
+	badict(const char* key, any data, bool _justUseKeyPtr = false);
 
 	bool HasKey(const char* key, bool justCmpKeyById = false);
 	//Get the data to key
 	template <typename dataType> dataType Copy(const char* key, bool justCmpKeyById = false);
-	dict Put(const char* key, any data, bool _justUseKeyPtr = false);
+	badict Put(const char* key, any data, bool _justUseKeyPtr = false);
 	// del
 	bool Del(const char* key);
 	void Destroy(void);
-	~dict();
+	~badict();
 
-	// + 运算符重载, join tow dict
-	dict operator+(dict& other);
+	// + 运算符重载, join tow badict
+	badict operator+(badict& other);
 	// [] 运算符重载, 获取键值对的引用，便于对键值对赋值
 	//use in obj justUseKeyPtr when create pair
-	dictPair& operator[](const char* key);
+	badictPair& operator[](const char* key);
 	// () 运算符重载, setVar via key
-	dict operator()(const char* _key, any _data);
+	badict operator()(const char* _key, any _data);
 };
 
 
-
-//***********************************************************************************************************************
-//NOTICE: is it 100% safe that put lock opt into MyThreadQueue?
-// may be there are many threads try to get the putDataQues[quePtr]
-// try to get the mem block of putDataQues[quePtr]
-// ?????????????????????????????????????????????
-typedef struct MyThreadQue MyThreadQue;
-struct MyThreadQue//FIFO node
-{
-	_ULL idx = 0;//from 0
-	_ULL usage = 0;//for some open use
-	MyThreadQue* pnext = NULL;
-	MyThreadQue* ppre = NULL;
-	void* pdata = NULL;
-	int state = 0;//from 0, thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-};
-
-class MyThreadQueue//FIFO
-{
-public:
-	_ULL sumque = 0;
-	MyThreadQue* now = NULL;
-	MyThreadQue* pfirst = NULL;
-	MyThreadQue* plast = NULL;
-	int state = 0;//from 0, thrd_success thrd_timedout thrd_busy thrd_nomem thrd_error
-
-	MyThreadQueue(void);
-	bool Put(void* _pData, mutex* m);
-	void* Get(mutex* m);
-	_ULL Size(mutex* m);
-};
-////***********************************************************************************************************************
 
 //***********************************************************************************************************************
 //void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*)
 //id, getQ, putQ, sig, data
+
+template<typename dataTypePut, typename dataTypeGet>
 class MyThreadsPool
 {
 public:
 	_ULL sumThreads = 0;
 	_ULL sumTasks = 0;
-	MyThreadQueue sig = MyThreadQueue();
-	MyThreadQueue* putDataQues = NULL;
-	MyThreadQueue* getDataQues = NULL;
+	balist<bool> sig = balist<bool>();
+	balist<dataTypePut>* putDataQues = NULL;
+	balist<dataTypeGet>* getDataQues = NULL;
 	_ULL quePtr = 0;
 	char* name = NULL;
 	thread** ppThs = NULL;
 
 	List* mem = List_Init();
 
-	//void (*pF)(MyThreadQueue*, MyThreadQueue*, MyThreadQueue, void*) = NULL;
-
-	MyThreadsPool(void);
 	MyThreadsPool(_ULL _sumThreads,
-		void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*),
-		void* otherData, const char* _name = NULL);
+		void (*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<bool>&, void*),
+		void* otherData = NULL, const char* _name = NULL);
 
-	void PutTask(void* pData, mutex* m);
-	List* LoopToQuit(mutex* m, void* quitSig);
-	void* Destroy(mutex* m);
+	void PutTask(dataTypePut* pData, mutex* m);
+	List* LoopToQuit(mutex* m);
+	void Destroy(mutex* m);
 };
 
 //***********************************************************************************************************************
@@ -427,6 +410,7 @@ struct MyBA
 	void (*PutLog)(const char* pc);
 };
 extern MyBA* pba;
+void MyBA_Context(const char* nowFuncName);
 float MyBA_GetUsedTime(void);
 void MyBA_Init(void);
 void MyBA_PutLog(const char* pc);
@@ -465,7 +449,8 @@ char* mstrdup(const char* p, List* mem = NULL);
 //***********************************************************************************************************************
 
 
-//int* pi = typeDupR<int>(mem, 2, 99, 99);
+//_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
+// if mem == NULL, use MCALLOC
 template<typename dataType>
 dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
 {
@@ -495,12 +480,12 @@ dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
 
 
 template<typename dataType>
-listDot<dataType>::listDot()
+balistDot<dataType>::balistDot()
 {
 }
 
 template<typename dataType>
-inline listDot<dataType>::listDot(dataType* _pdata, const char* _name, bool justUseNamePtr)
+inline balistDot<dataType>::balistDot(dataType* _pdata, const char* _name, bool justUseNamePtr)
 {
 	pdata = _pdata;
 	if (_name)
@@ -518,17 +503,17 @@ inline listDot<dataType>::listDot(dataType* _pdata, const char* _name, bool just
 }
 
 template<typename dataType>
-listDot<dataType>::~listDot()
+balistDot<dataType>::~balistDot()
 {
 }
 
 template<typename dataType>
-list<dataType>::list()
+balist<dataType>::balist()
 {
 }
 
 template<typename dataType>
-list<dataType>::list(dataType* data1, ...)
+balist<dataType>::balist(dataType* data1, ...)
 {
 	va_list parg;
 	va_start(parg, data1);
@@ -539,7 +524,7 @@ list<dataType>::list(dataType* data1, ...)
 }
 
 template<typename dataType>
-_LL list<dataType>::GetNowIndex()
+_LL balist<dataType>::GetNowIndex()
 {
 	if (now == NULL)
 		return sumque;
@@ -548,9 +533,9 @@ _LL list<dataType>::GetNowIndex()
 }
 
 template<typename dataType>
-_LL list<dataType>::Index(dataType* data)
+_LL balist<dataType>::Index(dataType* data)
 {
-	listDot<dataType>* pd = pfirst;
+	balistDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->pdata == data)
 			return (_LL)(pd->idx);
@@ -558,7 +543,7 @@ _LL list<dataType>::Index(dataType* data)
 }
 
 template<typename dataType>
-dataType* list<dataType>::Copy()
+dataType* balist<dataType>::Copy()
 {
 	if (now == NULL)//Get the signal
 	{
@@ -571,9 +556,9 @@ dataType* list<dataType>::Copy()
 }
 
 template<typename dataType>
-dataType* list<dataType>::Get()
+dataType* balist<dataType>::Get()
 {
-	listDot<dataType>* pret = pfirst;
+	balistDot<dataType>* pret = pfirst;
 	if (sumque == 1)
 	{
 		now = pfirst = plast = NULL;
@@ -586,7 +571,7 @@ dataType* list<dataType>::Get()
 	{
 		if (now == pfirst)
 			now = pfirst->pnext;
-		ListDot* pte = pfirst->pnext;
+		balistDot< dataType>* pte = pfirst->pnext;
 		pte->ppre = NULL;
 		pfirst = pte;
 	}
@@ -597,7 +582,7 @@ dataType* list<dataType>::Get()
 }
 
 template<typename dataType>
-dataType* list<dataType>::Copy(_LL index)
+dataType* balist<dataType>::Copy(_LL index)
 {
 	if (index > sumque-1 || index < -(sumque))
 		return (dataType*)(0x1);
@@ -605,7 +590,7 @@ dataType* list<dataType>::Copy(_LL index)
 		index = sumque + index;
 	if (!lastIndexDot)
 		lastIndexDot = pfirst;
-	listDot<dataType>* pd = lastIndexDot;
+	balistDot<dataType>* pd = lastIndexDot;
 	if (index > lastIndex)
 		for (_LL i = lastIndex; i < index; i++, pd = pd->pnext);
 	else if (index < lastIndex)
@@ -617,9 +602,9 @@ dataType* list<dataType>::Copy(_LL index)
 }
 
 template<typename dataType>
-dataType* list<dataType>::Get(_LL index)
+dataType* balist<dataType>::Get(_LL index)
 {
-	listDot<dataType>* p = pfirst;
+	balistDot<dataType>* p = pfirst;
 	for (_LL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
 	p->ppre->pnext = p->pnext;
 	p->pnext->ppre = p->ppre;
@@ -629,11 +614,11 @@ dataType* list<dataType>::Get(_LL index)
 }
 
 template<typename dataType>
-inline dataType* list<dataType>::Get(const char* name, bool justCmpNameById)
+inline dataType* balist<dataType>::Get(const char* name, bool justCmpNameById)
 {
 	if (justCmpNameById)
 		strCmpFunc = StrCmpById;
-	listDot<dataType>* pd = pfirst;
+	balistDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strCmpFunc(pd->name, name) == 0)
 		{
@@ -647,11 +632,11 @@ inline dataType* list<dataType>::Get(const char* name, bool justCmpNameById)
 }
 
 template<typename dataType>
-inline dataType* list<dataType>::Copy(const char* name, bool justCmpNameById)
+inline dataType* balist<dataType>::Copy(const char* name, bool justCmpNameById)
 {
 	if (justCmpNameById)
 		strCmpFunc = StrCmpById;
-	listDot<dataType>* pd = pfirst;
+	balistDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strCmpFunc(pd->name, name) == 0)
 			return pd->pdata;
@@ -659,29 +644,29 @@ inline dataType* list<dataType>::Copy(const char* name, bool justCmpNameById)
 }
 
 template<typename dataType>
-list<dataType> list<dataType>::Put(dataType* pdata, const char* name, bool justUseNamePtr)
+balist<dataType> balist<dataType>::Put(dataType* pdata, const char* name, bool justUseNamePtr)
 {
 	++sumque;
 	if (sumque == 1)
 	{
-		pfirst = new listDot<dataType>(pdata, name, justUseNamePtr);
+		pfirst = new balistDot<dataType>(pdata, name, justUseNamePtr);
 		if (pfirst == NULL)
 		{
-			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+			MyBA_Err("List* List_Put(List* pbalist, void* pdata): MCALLOC(1, ListDot) == NULL, return pbalist", 1);
 		}
 		else
 		{
-			plast = pfirst;
+			now = plast = pfirst;
 			pfirst->pnext = pfirst->ppre = NULL;
 			pfirst->idx = sumque - 1;
 		}
 	}
 	else
 	{
-		listDot<dataType>* pte = new listDot<dataType>(pdata, name);
+		balistDot<dataType>* pte = new balistDot<dataType>(pdata, name);
 		if (pte == NULL)
 		{
-			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+			MyBA_Err("List* List_Put(List* pbalist, void* pdata): MCALLOC(1, ListDot) == NULL, return pbalist", 1);
 		}
 		else
 		{
@@ -696,7 +681,91 @@ list<dataType> list<dataType>::Put(dataType* pdata, const char* name, bool justU
 }
 
 template<typename dataType>
-list<dataType> list<dataType>::Gather(dataType* pData1, ...)
+void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
+	void (*hashCollisionFunc)(balistDot<dataType>* pOriDot, dataType* pNowData),
+	const char* name, bool justUseNamePtr)
+{
+	balistDot<dataType>* pOriDot = NULL;
+	++sumque;
+	if (sumque == 1)
+	{
+		balistDot<dataType>* pNowDot = new balistDot<dataType>(pdata, name, justUseNamePtr);
+		pNowDot->usage = hashKey;
+		pfirst = pNowDot;
+		plast = pfirst;
+		pfirst->pnext = pfirst->ppre = NULL;
+	}
+	else if (pfirst->usage > hashKey)
+	{
+		balistDot<dataType>* pNowDot = new balistDot<dataType>(pdata, name, justUseNamePtr);
+		pNowDot->usage = hashKey;
+		pNowDot->pnext = pfirst;
+		pfirst->ppre = pNowDot;
+		pfirst = pNowDot;
+	}
+	else
+	{
+		for (pOriDot = pfirst; pOriDot; pOriDot = pOriDot->pnext)
+		{// insert between pte2 and pte2->pnext
+			if (pOriDot->pnext && (pOriDot->usage < hashKey && hashKey < pOriDot->pnext->usage))
+				break;
+			else if (pOriDot->pnext == NULL)
+				break;
+			else if(pOriDot->usage == hashKey)
+				return hashCollisionFunc(pOriDot, pdata);
+			// NO else;
+		}
+		balistDot<dataType>* pNowDot = new balistDot<dataType>(pdata, name, justUseNamePtr);
+		pNowDot->usage = hashKey;
+		// now <=> ori->pnext
+		if (pOriDot->pnext)
+			pOriDot->pnext->ppre = pNowDot;
+		pNowDot->pnext = pOriDot->pnext;
+		// ori <=> now
+		pOriDot->pnext = pNowDot;
+		pNowDot->ppre = pOriDot;
+	}
+}
+
+template<typename dataType>
+void balist<dataType>::ThrPut(dataType* pdata, mutex* m, const char* name, bool justUseNamePtr)
+{
+	m->lock();
+	this->Put(pdata, name, justUseNamePtr);
+	m->unlock();
+}
+
+template<typename dataType>
+dataType* balist<dataType>::ThrGet(mutex* m)
+{
+	dataType* ret = NULL;
+balist_Label_A:
+	m->lock();
+	if (sumque == 0 || (!pfirst))
+	{
+		m->unlock();
+		Sleep(100);
+		goto balist_Label_A;
+	}
+	else
+	{
+		ret = this->Get();
+	}
+	m->unlock();
+	return ret;
+}
+
+template<typename dataType>
+_LL balist<dataType>::ThrSize(mutex* m)
+{
+	m->lock();
+	_LL ret = sumque;
+	m->unlock();
+	return ret;
+}
+
+template<typename dataType>
+balist<dataType> balist<dataType>::Gather(dataType* pData1, ...)
 {
 	va_list parg;
 	va_start(parg, pData1);
@@ -708,9 +777,9 @@ list<dataType> list<dataType>::Gather(dataType* pData1, ...)
 }
 
 template<typename dataType>
-void list<dataType>::Destroy(void)
+void balist<dataType>::Destroy(void)
 {
-	for (listDot<dataType>* p = pfirst, *pn = NULL; p; p = pn)
+	for (balistDot<dataType>* p = pfirst, *pn = NULL; p; p = pn)
 	{
 		pn = p->pnext;
 		free(p->name);
@@ -719,15 +788,15 @@ void list<dataType>::Destroy(void)
 }
 
 template<typename dataType>
-inline list<dataType>::~list()
+inline balist<dataType>::~balist()
 {
 
 }
 
 template<typename dataType>
-inline list<dataType> list<dataType>::operator+(list<dataType>& other)
+inline balist<dataType> balist<dataType>::operator+(balist<dataType>& other)
 {
-	list<dataType>* ret = new list<dataType>;
+	balist<dataType>* ret = new balist<dataType>;
 	this->now = this->pfirst;
 	for (dataType* p = this.Copy(); p; p = other.Copy())
 		ret->Put(p);
@@ -738,15 +807,15 @@ inline list<dataType> list<dataType>::operator+(list<dataType>& other)
 }
 
 template<typename dataType>
-inline dataType* list<dataType>::operator[](_LL index)
+inline dataType* balist<dataType>::operator[](_LL index)
 {
 	return this->Copy(index);
 }
 
 template<typename dataType>
-inline dataType* list<dataType>::operator[](const char* name)
+inline dataType* balist<dataType>::operator[](const char* name)
 {
-	listDot<dataType>* pd = pfirst;
+	balistDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strcmp(pd->name, name) == 0)
 			return pd->pdata;
@@ -754,9 +823,9 @@ inline dataType* list<dataType>::operator[](const char* name)
 }
 
 template<typename dataType>
-inline void list<dataType>::operator()(dataType* data, dataType* newVar, bool freeOld)
+inline void balist<dataType>::operator()(dataType* data, dataType* newVar, bool freeOld)
 {
-	listDot<dataType>* pd = pfirst;
+	balistDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->pdata == data)
 		{
@@ -769,9 +838,9 @@ inline void list<dataType>::operator()(dataType* data, dataType* newVar, bool fr
 }
 
 template<typename dataType>
-inline void list<dataType>::operator()(_LL index, dataType* newVar, bool freeOld)
+inline void balist<dataType>::operator()(_LL index, dataType* newVar, bool freeOld)
 {
-	listDot< dataType>* pd = pfirst;
+	balistDot< dataType>* pd = pfirst;
 	for (_LL i = 0; (i < index) && (pd != NULL); i++, pd = pd->pnext);
 	if (pd)
 	{
@@ -783,9 +852,9 @@ inline void list<dataType>::operator()(_LL index, dataType* newVar, bool freeOld
 }
 
 template<typename dataType>
-inline void list<dataType>::operator()(const char* name, dataType* newVar, bool freeOld, bool justUseNamePtr)
+inline void balist<dataType>::operator()(const char* name, dataType* newVar, bool freeOld, bool justUseNamePtr)
 {
-	listDot<dataType>* pd = pfirst;
+	balistDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strcmp(pd->name, name) == 0)
 		{
@@ -804,9 +873,9 @@ inline void list<dataType>::operator()(const char* name, dataType* newVar, bool 
 
 
 template<typename dataType>
-inline dataType dict::Copy(const char* key, bool justCmpKeyById)
+inline dataType badict::Copy(const char* key, bool justCmpKeyById)
 {
-	dictPair* pd = pfirst;
+	badictPair* pd = pfirst;
 	if (justCmpKeyById)
 		strCmpFunc = StrCmpById;
 	for (; pd; pd = pd->pnext)
@@ -819,28 +888,105 @@ inline dataType dict::Copy(const char* key, bool justCmpKeyById)
 }
 
 //use in obj justUseKeyPtr when create pair
-inline dictPair& dict::operator[](const char* key)
+inline badictPair& badict::operator[](const char* key)
 {
-	dictPair* pd = pfirst;
+	badictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (!strcmp(pd->key, key))
 		{// has key, return the pair
-			dictPair& d = *pd;
+			badictPair& d = *pd;
 			return d;
 		}
 	// do not has the key, create the pair with 0LL data
-	// work with dictPair = operator func
+	// work with badictPair = operator func
 	this->Put(key, 0LL, justUseKeyPtr);
 	//return new pair
-	dictPair& d = *plast;
+	badictPair& d = *plast;
 	return d;
 }
 
 
 
+//***********************************************************************************************************************
+//***********************************************************************************************************************
 
 
 
+template<typename dataTypePut, typename dataTypeGet>
+MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_ULL _sumThreads,
+	void(*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<bool>&, void*), void* otherData, const char* _name)
+{
+	sumThreads = _sumThreads;
+	ppThs = BALLOC_R(_sumThreads, thread*, mem);
+	putDataQues = new balist< dataTypePut>[_sumThreads];
+	getDataQues = new balist< dataTypeGet>[_sumThreads];
+	//pF = _pF;
+	if (!_name)
+		name = mstrdup("MyThreadsPool", mem);
+	else
+		name = mstrdup(_name, mem);
+	for (_ULL i = 0; i < sumThreads; i++)
+	{
+		ppThs[i] = new thread(_pF, i, ref(putDataQues[i]),
+			ref(getDataQues[i]), ref(sig), otherData);
+	}
+}
+
+template<typename dataTypePut, typename dataTypeGet>
+inline void MyThreadsPool<dataTypePut, dataTypeGet>::PutTask(dataTypePut* pData, mutex* m)
+{
+	putDataQues[quePtr].ThrPut(pData, m);
+	quePtr = ((quePtr + 1) < sumThreads) ? (quePtr + 1) : 0;
+	sumTasks += 1;
+}
+
+//be sure that all tasks sended, this func will
+//send 'wait to quit' signal to every que,
+//and start to loop waiting
+template<typename dataTypePut, typename dataTypeGet>
+inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(mutex* m)
+{
+	List* retList = List_Init();
+	for (_ULL idx = 0; idx < sumThreads; idx++)
+		putDataQues[idx].ThrPut((dataTypePut*)0x1, m);
+	_ULL sumTasksTillNow = 0;
+	float st = (float)clock();
+	while (sig.ThrSize(m) < sumThreads)
+	{
+		sumTasksTillNow = 0;
+		for (_ULL idx = 0; idx < sumThreads; idx++)
+			sumTasksTillNow += putDataQues[idx].ThrSize(m);
+		printf("\r%s: subThreads working: %llu / %llu  --  %8.3f",
+			name, sumTasksTillNow, sumTasks,
+			(float)(clock() - st) / CLOCKS_PER_SEC);
+
+		for (_ULL idx = 0; idx < sumThreads; idx++)
+			while (getDataQues[idx].ThrSize(m) > 0)
+				List_Put(retList, getDataQues[idx].ThrGet(m));
+		Sleep(1000);
+	}
+	for (_ULL idx = 0; idx < sumThreads; idx++)
+	{
+		printf("\r%s: waiting to join subThreads: %llu / %llu  --  %8.3f",
+			name, sumTasksTillNow, sumTasks,
+			(float)(clock() - st) / CLOCKS_PER_SEC);
+		while (getDataQues[idx].ThrSize(m) > 0)
+			List_Put(retList, getDataQues[idx].ThrGet(m));
+		ppThs[idx]->join();
+	}
+	return retList;
+}
+
+template<typename dataTypePut, typename dataTypeGet>
+inline void MyThreadsPool<dataTypePut, dataTypeGet>::Destroy(mutex* m)
+{
+	MyBA_Free_R(mem);
+	List_Destroy(mem);
+	delete[] getDataQues;
+	delete[] putDataQues;
+	delete sig;
+	return nullptr;
+}
 
 
 

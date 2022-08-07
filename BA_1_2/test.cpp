@@ -2,6 +2,7 @@
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
 #include"BA_UI.hpp"
+#include"BA_QUI.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
 #include"BA_Test.hpp"
@@ -35,6 +36,15 @@ void BA_Dir_Test(void)
 void BA_String_Test(void)
 {
 	PPSS(BA_String("GGGKKtKHHHtGGGKKKBtBBHHeHJJJ").Replace("HHH", NULL).pc);
+
+    balist<char>* result = BA_String("1234...56789").Splitx("2.");
+    for (char* p = result->Copy(); p; p = result->Copy())
+        PPS(p);
+
+    char nts1[] = "Test";
+    char nts2[] = "Test";
+    std::string str1(nts1);
+    std::string str2(nts2);
 }
 
 float BA_ArrayTest_1(float* p)
@@ -71,72 +81,128 @@ void BA_Array_Test2(void)
     PPF(t3.dataF[t3.dataLen - 2]);
 }
 
-void BA_ThreadPool_Test_workFunc(_ULL id, MyThreadQueue& getQ, MyThreadQueue& putQ,
-    MyThreadQueue& sig, void* data)
+//void BA_ThreadPool_Test_workFunc(_ULL id, MyThreadQueue& getQ, MyThreadQueue& putQ,
+//    MyThreadQueue& sig, void* data)
+//{
+//    List* pData = NULL;
+//    SequencesSimiCacuer seqCacuer = SequencesSimiCacuer();
+//    _ULL* seqAIdx = NULL, * seqBIdx = NULL;
+//    BA_String* seqA = NULL, * seqB = NULL;
+//    while (true)
+//    {
+//        //pData = (List*)getQ.Get(&m);
+//        if (pData == (List*)0x1)
+//            break;
+//        seqAIdx = (_ULL*)List_Index(pData, 0);
+//        seqA = (BA_String*)List_Index(pData, 1);
+//        seqBIdx = (_ULL*)List_Index(pData, 2);
+//        seqB = (BA_String*)List_Index(pData, 3);
+//        //putQ.Put((void*)lldup(5, *seqAIdx, seqA->len, *seqBIdx, seqB->len,
+//        //    seqCacuer.CacuSequencesSimilarity2(seqA, seqB)), &m);
+//        free(seqA->pc);
+//        free(seqB->pc);
+//    }
+//    //sig.Put(NULL, &m);
+//}
+//
+//void BA_ThreadPool_Test(void)
+//{
+//    char* seqPath = mstrdup("D:\\AI\\DataSet\\AlphaMedia\\rna2img\\seq\\RNASeqs.txt");
+//    char* resultPath = mstrdup("D:\\AI\\DataSet\\AlphaMedia\\rna2img\\seq\\result2.txt");
+//    List* rnaSeqs = BA_String(ReadTXT(seqPath, 8592246)).Split("\n");
+//    BA_String* seqA = NULL, * seqB = NULL;
+//    MyThreadsPool tp = MyThreadsPool(8, BA_ThreadPool_Test_workFunc, NULL);
+//    _ULL seqAIdx = 0, seqBIdx = 1, mainIndent = 50;
+//    _ULL sumLoaded = 0, sumMainSeq = rnaSeqs->sumque / mainIndent + 1,
+//        sumWaitseq = rnaSeqs->sumque - sumMainSeq, sumLoad = sumMainSeq * sumWaitseq;
+//    while (seqAIdx < rnaSeqs->sumque)
+//    {
+//        seqA = new BA_String((char*)rnaSeqs->Index(rnaSeqs, seqAIdx));
+//        seqB = new BA_String((char*)rnaSeqs->Index(rnaSeqs, seqBIdx));
+//        //tp.PutTask((void*)List_Gather((void*)ULLdup(1, seqAIdx), (void*)seqA,
+//        //    (void*)ULLdup(1, seqBIdx), (void*)seqB), &m);
+//        sumLoaded++;
+//        seqBIdx = ((seqBIdx + 1) % mainIndent == 0) ? (seqBIdx + 2) : (seqBIdx + 1);
+//        if (seqBIdx >= rnaSeqs->sumque)
+//        {
+//            seqAIdx += mainIndent;
+//            seqBIdx = 1;
+//        }
+//        if (sumLoaded % 100 == 0)
+//            printf("\r%llu / %llu", sumLoaded, sumLoad);
+//    }
+//    //List* result = tp.LoopToQuit(&m, (void*)0x1);
+//    //tp.Destroy(&m);
+//    //PPU(result->sumque);
+//    FILE* pf = NULL;
+//    if (fopen_s(&pf, resultPath, "w") == 0)
+//    {
+//        //LIST_FORS(_LL, p, result)
+//        //{// seqAIdx | seqALen | seqBIdx | seqBLen | Simi
+//        //    fprintf(pf, "%4lld | %4lld | %4lld | %4lld | %4lld\n",
+//        //        p[0], p[1], p[2], p[3], p[4]);
+//        //}
+//    }
+//    else if (pf)
+//    {
+//        fclose(pf);
+//    }
+//}
+
+void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, _ULL* pNowData)
 {
-    List* pData = NULL;
-    SequencesSimiCacuer seqCacuer = SequencesSimiCacuer();
-    _ULL* seqAIdx = NULL, * seqBIdx = NULL;
-    BA_String* seqA = NULL, * seqB = NULL;
-    while (true)
-    {
-        //pData = (List*)getQ.Get(&m);
-        if (pData == (List*)0x1)
-            break;
-        seqAIdx = (_ULL*)List_Index(pData, 0);
-        seqA = (BA_String*)List_Index(pData, 1);
-        seqBIdx = (_ULL*)List_Index(pData, 2);
-        seqB = (BA_String*)List_Index(pData, 3);
-        //putQ.Put((void*)lldup(5, *seqAIdx, seqA->len, *seqBIdx, seqB->len,
-        //    seqCacuer.CacuSequencesSimilarity2(seqA, seqB)), &m);
-        free(seqA->pc);
-        free(seqB->pc);
-    }
-    //sig.Put(NULL, &m);
+    (*(p1->pdata))++;
+    free(pNowData);
 }
 
-void BA_ThreadPool_Test(void)
+mutex m;
+
+void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
+    balist<char>& putQ, balist<bool>& sig, void* data)
 {
-    char* seqPath = mstrdup("D:\\AI\\DataSet\\AlphaMedia\\rna2img\\seq\\RNASeqs.txt");
-    char* resultPath = mstrdup("D:\\AI\\DataSet\\AlphaMedia\\rna2img\\seq\\result2.txt");
-    List* rnaSeqs = BA_String(ReadTXT(seqPath, 8592246)).Split("\n");
-    BA_String* seqA = NULL, * seqB = NULL;
-    MyThreadsPool tp = MyThreadsPool(8, BA_ThreadPool_Test_workFunc, NULL);
-    _ULL seqAIdx = 0, seqBIdx = 1, mainIndent = 50;
-    _ULL sumLoaded = 0, sumMainSeq = rnaSeqs->sumque / mainIndent + 1,
-        sumWaitseq = rnaSeqs->sumque - sumMainSeq, sumLoad = sumMainSeq * sumWaitseq;
-    while (seqAIdx < rnaSeqs->sumque)
+    List* mem = List_Init();
+    BA_String* text = (BA_String*)getQ.ThrGet(&m);
+    balist<char>* splitResult = text->Splitx(" \n.,\"'?![]():;");
+    balist<_ULL>* tree = (balist<_ULL>*)data;
+    string* str = new string();
+    _ULL hashV = 0;
+    _ULL* count = NULL;
+    std::hash<std::string> strHash;
+    for(char* p = splitResult->Copy(); p; p = splitResult->Copy())
     {
-        seqA = new BA_String((char*)rnaSeqs->Index(rnaSeqs, seqAIdx));
-        seqB = new BA_String((char*)rnaSeqs->Index(rnaSeqs, seqBIdx));
-        //tp.PutTask((void*)List_Gather((void*)ULLdup(1, seqAIdx), (void*)seqA,
-        //    (void*)ULLdup(1, seqBIdx), (void*)seqB), &m);
-        sumLoaded++;
-        seqBIdx = ((seqBIdx + 1) % mainIndent == 0) ? (seqBIdx + 2) : (seqBIdx + 1);
-        if (seqBIdx >= rnaSeqs->sumque)
-        {
-            seqAIdx += mainIndent;
-            seqBIdx = 1;
-        }
-        if (sumLoaded % 100 == 0)
-            printf("\r%llu / %llu", sumLoaded, sumLoad);
+        delete str;
+        str = new string(p);
+        hashV = strHash(*str);
+        count = TypeDupR(NULL, 1, 1ULL);
+        m.lock();
+        tree->Insert(count, hashV, BA_Test_WordsCount_HashCol,
+            p, true);
+        m.unlock();
     }
-    //List* result = tp.LoopToQuit(&m, (void*)0x1);
-    //tp.Destroy(&m);
-    //PPU(result->sumque);
+    sig.ThrPut(NULL, &m);
+}
+
+void BA_Test_WordsCount(void)
+{
+    _ULL sumThreads = 8;
+    balist<_ULL>* tree = new balist<_ULL>();
+    MyThreadsPool tp = MyThreadsPool(sumThreads, BA_Test_WordsCount_SubThr, (void*)tree);
+    BA_String text = BA_String(
+        ReadTXT("E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter (complete works).txt"));
+    BA_String* subStr = NULL;
+    for (_ULL i = 0, stepLen = text.len / sumThreads; i < sumThreads; i++)
+    {
+        subStr = text(i * stepLen, (i == sumThreads-1) ? text.len : (i + 1) * stepLen);
+        tp.PutTask(subStr, &m);
+    }
+    List* result = tp.LoopToQuit(&m);
     FILE* pf = NULL;
-    if (fopen_s(&pf, resultPath, "w") == 0)
-    {
-        //LIST_FORS(_LL, p, result)
-        //{// seqAIdx | seqALen | seqBIdx | seqBLen | Simi
-        //    fprintf(pf, "%4lld | %4lld | %4lld | %4lld | %4lld\n",
-        //        p[0], p[1], p[2], p[3], p[4]);
-        //}
-    }
-    else if (pf)
-    {
-        fclose(pf);
-    }
+    fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
+    for (balistDot<_ULL>* pd = tree->pfirst; pd; pd = pd->pnext)
+        fprintf(pf, "%s,%llu\n", pd->name, *(pd->pdata));
+    fclose(pf);
+    PPT();
+    _SIS_;
 }
 
 

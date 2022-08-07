@@ -22,5 +22,10 @@ float BA_ArrayTest_1(float* p);
 BA_Array BA_Array_GetTest();
 void BA_Dir_Test(void);
 void BA_Plot_Test(void);
+void BA_ThreadPool_Test(void);
+void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, _ULL* pNowData);
+void BA_Test_WordsCount_SubThr(_ULL id, balist<char>& getQ,
+    balist<char>& putQ, balist<char>& sig, void* data);
+void BA_Test_WordsCount(void);
 
 #endif

@@ -12,6 +12,9 @@
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
 
+// TODO : add utf-8, unicode, ANSI support
+// https://blog.csdn.net/flushhip/article/details/82836867
+
 class BA_String
 {
 public:
@@ -36,14 +39,19 @@ public:
 	BA_String Replace(const char* _pc, const char* newStr);
 	List* Split(BA_String string);
 	List* Split(const char* _pc);
-	List* Splitx(BA_String string);
-	List* Splitx(const char* _pc);
+	//BALLOC_R
+	balist<char>* Splitx(BA_String string);
+	//BALLOC_R
+	balist<char>* Splitx(const char* _pc);
 	//return the multi char* of pos
 	List* Find(BA_String string);
 	//return the multi char* of pos
 	List* Find(const char* _pc);
 
 	void Destroy(void);
+
+	// () 运算符重载, setVar via index
+	BA_String* operator()(_LL index1, _LL index2);
 };
 
 char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite);

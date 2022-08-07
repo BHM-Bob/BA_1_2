@@ -279,6 +279,15 @@ void BA_String::Destroy(void)
 		free(pc);
 }
 
+BA_String* BA_String::operator()(_LL index1, _LL index2)
+{
+	BA_String* ret = new BA_String();
+	ret->len = index2 - index1;
+	ret->pc = BALLOC_R(ret->len + 1, char, ret->mem);
+	strncpy_s(ret->pc, ret->len+1, pc + index1, ret->len);
+	return ret;
+}
+
 BA_String BA_String::Repeat(_ULL times)
 {
 	_ULL oldLen = len;
@@ -496,8 +505,10 @@ List* BA_String::Split(const char* _pc)
 	return pret;
 }
 
+//返回pc中出现delimiters的字符的偏移量,from 0
+//会对pc进行地址偏移操作，修改pc值
 _ULL* BA_String_Splitx_FindOnce(char* pc, const char* delimiters)
-{//返回相对pc的偏移量,from 0
+{
 	BALLOCS_S(_ULL, psite, 1, NULL, );
 	for (*psite = 0; *pc != '\0'; (*psite)++, pc++)
 		if (strchr(delimiters, *pc) != NULL)
@@ -505,56 +516,64 @@ _ULL* BA_String_Splitx_FindOnce(char* pc, const char* delimiters)
 	return NULL;
 }
 
-List* BA_String::Splitx(BA_String string)
+balist<char>* BA_String::Splitx(const char* _pc)
 {
-	if (string.pc == NULL || *(string.pc) == '\0' || pc == NULL || len == 0 || *pc == '\0')
-		return (List*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
-
-	_ULL* psite = NULL;
-	char* pte = pc;
-	List* pli = List_Init();
-	for (psite = BA_String_Splitx_FindOnce(pte, string.pc); psite != NULL; psite = BA_String_Splitx_FindOnce(pte, string.pc))
-	{
-		pte += *psite + 1;
-		List_Put(pli, (void*)psite);
-	}
-	List_Put(pli, &(len));
-	List* pret = List_Init();
-	char* pcte = NULL;
-	pte = pc;
-	LIST_FORG(_ULL, p, pli)
-	{
-		pcte = BALLOC_R(*p + 1, char, mem);
-		strncat_s(pcte, *p + 1, pte, *p);
-		pte += *p + 1;
-		List_Put(pret, (void*)pcte);
-	}
-	return pret;
-}
-
-List* BA_String::Splitx(const char* _pc)
-{
-	if (_pc  == NULL || *_pc == '\0' || pc==NULL || len==0 || *pc == '\0')
-		return (List*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL",1);
+	if (_pc == NULL || *_pc == '\0' || pc == NULL || len == 0 || *pc == '\0')
+		return (balist<char>*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
 
 	_ULL* psite = NULL;
 	char* pte = pc;
 	List* pli = List_Init();
 	for (psite = BA_String_Splitx_FindOnce(pte, _pc); psite != NULL; psite = BA_String_Splitx_FindOnce(pte, _pc))
 	{
-		pte += *psite+1;
+		//if the first chr of pte is in delimiters, *psite is 0
+		pte += *psite + 1;
 		List_Put(pli, (void*)psite);
 	}
 	List_Put(pli, &(len));
-	List* pret = List_Init();
+	balist<char>* pret = new balist<char>();
 	char* pcte = NULL;
 	pte = pc;
 	LIST_FORG(_ULL, p, pli)
 	{
-		pcte = BALLOC_R(*p+1, char, mem);
-		strncat_s(pcte, *p+1, pte, *p);
+		if (*p > 0)
+		{
+			pcte = BALLOC_R(*p + 1, char, mem);
+			strncpy_s(pcte, *p + 1, pte, *p);
+			pret->Put(pcte);
+		}
 		pte += *p + 1;
-		List_Put(pret, (void*)pcte);
+	}
+	return pret;
+}
+
+balist<char>* BA_String::Splitx(BA_String string)
+{
+	if (string.pc == NULL || *(string.pc) == '\0' || pc == NULL || len == 0 || *pc == '\0')
+		return (balist<char>*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
+
+	_ULL* psite = NULL;
+	char* pte = pc;
+	List* pli = List_Init();
+	for (psite = BA_String_Splitx_FindOnce(pte, string.pc); psite != NULL; psite = BA_String_Splitx_FindOnce(pte, string.pc))
+	{
+		//if the first chr of pte is in delimiters, *psite is 0
+		pte += *psite + 1;
+		List_Put(pli, (void*)psite);
+	}
+	List_Put(pli, &(len));
+	balist<char>* pret = new balist<char>();
+	char* pcte = NULL;
+	pte = pc;
+	LIST_FORG(_ULL, p, pli)
+	{
+		if (*p > 0)
+		{
+			pcte = BALLOC_R(*p + 1, char, mem);
+			strncpy_s(pcte, *p + 1, pte, *p);
+			pret->Put(pcte);
+		}
+		pte += *p + 1;
 	}
 	return pret;
 }

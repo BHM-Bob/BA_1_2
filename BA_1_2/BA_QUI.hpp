@@ -23,12 +23,12 @@ SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y);
 typedef struct QUI_butts QUI_butts;
 struct QUI_butts
 {
-	dict events;//1 left ; 2 right
-	dict statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
-	list<SDL_MyButton> butts;//按钮列表
-	list<char> names;//names
-	dict eveFunc;// int (*)(void* pData);
-	dict eveFuncData;// void*
+	badict events;//1 left ; 2 right
+	badict statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
+	balist<SDL_MyButton> butts;//按钮列表
+	balist<char> names;//names
+	badict eveFunc;// int (*)(void* pData);
+	badict eveFuncData;// void*
 };
 
 
@@ -58,7 +58,7 @@ typedef struct QUI_fonts QUI_fonts;
 struct QUI_fonts
 {
 	TTF_Font* pdefaultfont;//"C:\\Windows\\Fonts\\simkai.ttf"
-	list< TTF_Font>* fonts;
+	balist< TTF_Font>* fonts;
 };
 
 typedef struct QUI_set QUI_set;
@@ -76,6 +76,7 @@ class QUI_Keys
 {
 public:
 	char nowKey = '\0';
+	bool changed = false;
 
 	void Update(SDL_Event* pEve);
 };
@@ -87,9 +88,10 @@ public:
 	QUI_butts* butts = NULL;
 	QUI_fonts* fonts = NULL;
 	QUI_set* set = NULL;//Settings
+	QUI_Keys* keys = NULL;//keybord
 
-	list< SDL_Texture>* otherTex = NULL;
-	list< SDL_Rect>* otherTexRe = NULL;
+	balist< SDL_Texture>* otherTex = NULL;
+	balist< SDL_Rect>* otherTexRe = NULL;
 
 	List* mem = NULL;
 

@@ -20,25 +20,6 @@ _ULL  Get_File_Size(FILE* pf)
 	fseek(pf, 0, SEEK_SET);
 	return end - begin;
 }
-
-char* ReadTXT(const char* path)
-{
-    FILE* pf = NULL;
-    if (fopen_s(&pf, path, "r") == 0)
-    {
-        _ULL size = Get_File_Size(pf);
-        BALLOCS_L(char, pc, size + 1, NULL, );
-        fread(pc, 1, size, pf);
-        fclose(pf);
-        return pc;
-    }
-    else
-    {
-        if (!pf)
-            fclose(pf);
-        return (char*)MyBA_Errs(1, "ReadTXT: Err to open index_file:", path, " ,return NULL", NULL);
-    }
-}
 char* ReadTXT(const char* path, _ULL loadSize)
 {
     FILE* pf = NULL;
@@ -47,6 +28,8 @@ char* ReadTXT(const char* path, _ULL loadSize)
         _ULL size = Get_File_Size(pf);
         if (loadSize > size)
             return (char*)MyBA_Errs(1, "ReadTXT: loadSize > size:", path, " ,return NULL", NULL);
+        if (loadSize == 0)
+            loadSize = size;
         BALLOCS_L(char, pc, loadSize + 1, NULL, );
         fread(pc, 1, loadSize, pf);
         fclose(pf);

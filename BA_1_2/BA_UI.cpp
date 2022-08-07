@@ -154,15 +154,7 @@ SDL_Texture* SDL_Get_Font_Texture(SDL_Renderer* prend, SDL_Surface* pscr, TTF_Fo
 	}
 	SDL_Rect Box = { x,  y,  (int)strlen(pc) * Size ,  Size };
 
-	int i = MultiByteToWideChar(CP_ACP, 0, pc, -1, NULL, 0);
-	wchar_t* pte1 = MCALLOC(strlen(pc) + 1, wchar_t);
-	MultiByteToWideChar(CP_ACP, 0, pc, -1, pte1, i);
-	i = WideCharToMultiByte(CP_UTF8, 0, pte1, -1, NULL, 0, NULL, NULL);
-	char* pte2 = MCALLOC(strlen(pc) + 1, char);
-	WideCharToMultiByte(CP_UTF8, 0, pte1, -1, pte2, i, NULL, NULL);
-	SDL_Surface* pte = TTF_RenderUTF8_Blended(pfont, pte2, color);
-	free(pte1);
-	free(pte2);
+	SDL_Surface* pte = TTF_RenderUTF8_Blended(pfont, pc, color);
 	SDL_Texture* pTex = NULL;
 	if (pte == NULL)
 		return (SDL_Texture*)MyBA_Errs(0, "SDL_Get_Font_Texture: Can't blended Surface with text:", pc, ", skip", NULL);
