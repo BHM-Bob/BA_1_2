@@ -41,7 +41,7 @@ void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultP
 				printf("\rseqAIdx:%4llu seqBIdx:%4llu sumQue:%4llu  %5.4f s / seq-seq",
 					seqAIdx, seqBDot->idx, rnaSeqs->sumque, pba->GUT() / 50.0);
 			seqB.ReLoad((char*)seqBDot->pdata);
-			result->Put(result, (void*)lldup(5, seqAIdx, seqA.len, seqBDot->idx, seqB.len,
+			result->Put(result, (void*)TypeDupR(NULL, 5, seqAIdx, seqA.len, seqBDot->idx, seqB.len,
 				seqCacuer.CacuSequencesSimilarity2(seqA, seqB)));
 		}
 	}

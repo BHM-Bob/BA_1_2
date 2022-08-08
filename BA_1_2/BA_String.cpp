@@ -10,44 +10,6 @@
 #include"BA_Base.hpp"
 #include"BA_String.hpp"
 
-char* StrAdd_S(const char* pstr, ...)//end with NULL
-{
-	va_list parg;
-	va_start(parg, pstr);
-	_ULL sumlen = 1;
-	List* plist = List_Init();
-	sumlen += strlen(pstr);
-	plist->Put(plist, (void*)pstr);
-	for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
-	{
-		sumlen += strlen(p);
-		plist->Put(plist, (void*)p);
-	}
-	BALLOCS_S(char, pret, sumlen, NULL, );
-	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
-		strcat_s(pret, sumlen, p);
-	return pret;
-}
-
-char* StrAdd_L(const char* pstr, ...)//end with NULL
-{
-	va_list parg;
-	va_start(parg, pstr);
-	_ULL sumlen = 1;
-	List* plist = List_Init();
-	sumlen += strlen(pstr);
-	plist->Put(plist, (void*)pstr);
-	for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
-	{
-		sumlen += strlen(p);
-		plist->Put(plist, (void*)p);
-	}
-	BALLOCS_S(char, pret, sumlen, NULL, );
-	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
-		strcat_s(pret, sumlen, p);
-	return pret;
-}
-
 char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite)
 {
 	if ((pc == NULL) && (*pc == '\0'))
@@ -187,6 +149,25 @@ char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, uns
 		}
 	}
 	return NULL;
+}
+
+char* StrAdd(List* mem, const char* pstr, ...)
+{
+	va_list parg;
+	va_start(parg, pstr);
+	_ULL sumlen = 1;
+	List* plist = List_Init();
+	sumlen += strlen(pstr);
+	plist->Put(plist, (void*)pstr);
+	for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
+	{
+		sumlen += strlen(p);
+		plist->Put(plist, (void*)p);
+	}
+	BALLOCS_R(char, pret, sumlen, mem, NULL, );
+	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
+		strcat_s(pret, sumlen, p);
+	return pret;
 }
 
 BA_String::BA_String(void)

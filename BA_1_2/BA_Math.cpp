@@ -699,9 +699,9 @@ LOFE_Model* LOFE_CompileModel_PutChain(LOFE_Model* model, LOFE_Chain* chain, _UL
 					for (_ULL k = 0; k < chain->sumchaindot; k++)
 					{
 						if (LOFE_CompileModel_QueryAdr(chain->pchain[k], (void*)(pt->w + j)) != -1)
-							List_Put(pt->subchain[t]->wchain[j], (void*)(ULLdup(1, k)));
+							List_Put(pt->subchain[t]->wchain[j], (void*)(TypeDupR(model->mem, 1, k)));
 						if (LOFE_CompileModel_QueryAdr(chain->pchain[k], (void*)(pt->b + j)) != -1)
-							List_Put(pt->subchain[t]->bchain[j], (void*)(ULLdup(1, k)));
+							List_Put(pt->subchain[t]->bchain[j], (void*)(TypeDupR(model->mem, 1, k)));
 					}
 				}
 			}
@@ -786,7 +786,7 @@ LOFE_Model* LOFE_CompileModel_W(LOFE_Model* model, LOFE_Chain* chain)
 
 LOFE_Model* LOFE_CompileModel_B(LOFE_Model* model, LOFE_Chain* chain)
 {
-	_ULL* bias = ULLdup(1, chain->sumwchaindot);
+	_ULL* bias = TypeDupR(model->mem, 1, chain->sumwchaindot);
 	LOFE_Tensor* pt = NULL;
 	float* pb = NULL;
 	float* pw = NULL;

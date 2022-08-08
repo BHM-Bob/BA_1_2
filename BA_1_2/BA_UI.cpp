@@ -288,13 +288,13 @@ SDL_MyButton* SDL_Create_MyButton(SDL_Renderer* rend, Uint32 Format, SDL_Rect re
 	if (back != NULL)
 	{
 		pbutt->back1 = back;
-		*ppTex = SDL_Get_Font_Texture(rend, back, pfont, intdup(3, charcolor[0], charcolor[1], charcolor[2]), charsize, pc, 0, 0);
+		*ppTex = SDL_Get_Font_Texture(rend, back, pfont, TypeDupR(NULL, 3, charcolor[0], charcolor[1], charcolor[2]), charsize, pc, 0, 0);
 	}
 	else if (backcolor != NULL)
 	{
 		pte = SDL_CreateRGBSurface(0, (pbutt->re_butt).w, (pbutt->re_butt).h, 32, 0, 0, 0, 0);
 		SDL_FillRect(pte, NULL, SDL_MapRGB(pte->format, backcolor[0], backcolor[1], backcolor[2]));
-		*ppTex = SDL_Get_Font_Texture(rend, pte, pfont, intdup(3, charcolor[0], charcolor[1], charcolor[2]), charsize, pc, 0, 0);
+		*ppTex = SDL_Get_Font_Texture(rend, pte, pfont, TypeDupR(NULL, 3, charcolor[0], charcolor[1], charcolor[2]), charsize, pc, 0, 0);
 	}
 	else
 	{
@@ -370,7 +370,7 @@ SDL_MyButton* SDL_Rewrite_MyButton(SDL_MyButton* pbutt, SDL_Renderer* rend, int 
 		SDL_RenderCopy(rend, *(pbutt->ppTex), NULL, &(pbutt->re_butt));
 		return pbutt;
 	}
-	*(pbutt->ppTex) = SDL_Get_Font_Texture(rend, pte, pfont, intdup(3, charcolor[0], charcolor[1], charcolor[2]), charsize, pc, 0, 0);
+	*(pbutt->ppTex) = SDL_Get_Font_Texture(rend, pte, pfont, TypeDupR(NULL, 3, charcolor[0], charcolor[1], charcolor[2]), charsize, pc, 0, 0);
 	SDL_RenderCopy(rend, *(pbutt->ppTex), NULL, &(pbutt->re_butt));
 	return pbutt;
 }
@@ -382,7 +382,7 @@ SDL_MyButton* SDL_ChangeBack_MyButton(SDL_MyButton* pbutt, SDL_Renderer* rend, i
 	if (back != NULL && *back != NULL)
 	{
 		pte = pbutt->back1 = *back;
-		*(pbutt->ppTex) = SDL_Get_Font_Texture(rend, pte, pbutt->pfont, intdup(3, pbutt->charcolor[0], pbutt->charcolor[1], pbutt->charcolor[2]), pbutt->charsize, pbutt->pc, 0, 0);
+		*(pbutt->ppTex) = SDL_Get_Font_Texture(rend, pte, pbutt->pfont, TypeDupR(NULL, 3, pbutt->charcolor[0], pbutt->charcolor[1], pbutt->charcolor[2]), pbutt->charsize, pbutt->pc, 0, 0);
 
 	}
 	else if (backcolor != NULL)
@@ -390,7 +390,7 @@ SDL_MyButton* SDL_ChangeBack_MyButton(SDL_MyButton* pbutt, SDL_Renderer* rend, i
 		pte = SDL_CreateRGBSurface(0, pbutt->re_butt.w, pbutt->re_butt.h, 32, 0, 0, 0, 0);
 		for (int a = 0; a < 3; pbutt->backcolor[a] = backcolor[a], a++);
 		SDL_FillRect(pte, NULL, SDL_MapRGB(pte->format, pbutt->backcolor[0], pbutt->backcolor[1], pbutt->backcolor[2]));
-		*(pbutt->ppTex) = SDL_Get_Font_Texture(rend, pte, pbutt->pfont, intdup(3, pbutt->charcolor[0], pbutt->charcolor[1], pbutt->charcolor[2]), pbutt->charsize, pbutt->pc, 0, 0);
+		*(pbutt->ppTex) = SDL_Get_Font_Texture(rend, pte, pbutt->pfont, TypeDupR(NULL, 3, pbutt->charcolor[0], pbutt->charcolor[1], pbutt->charcolor[2]), pbutt->charsize, pbutt->pc, 0, 0);
 
 	}
 	else
@@ -537,7 +537,7 @@ MyTextInput* SDL_Input_MyTextInput(SDL_Renderer* rend, MyTextInput* ptext)
 						return ptext;
 					}
 				A:;		    	SDL_FillRect(sur, &Box, SDL_MapRGB(sur->format, ptext->backcolor[0], ptext->backcolor[1], ptext->backcolor[2]));
-					*(ptext->ppTex) = SDL_Get_Font_Texture(rend, sur, ptext->pfont, intdup(3, ptext->charcolor[0], ptext->charcolor[1], ptext->charcolor[2]), ptext->charsize, ptext->pc + (cx >= mc ? cx - mc : 0), ptext->edgingwidth, ptext->edgingwidth);
+					*(ptext->ppTex) = SDL_Get_Font_Texture(rend, sur, ptext->pfont, TypeDupR(NULL, 3, ptext->charcolor[0], ptext->charcolor[1], ptext->charcolor[2]), ptext->charsize, ptext->pc + (cx >= mc ? cx - mc : 0), ptext->edgingwidth, ptext->edgingwidth);
 					SDL_RenderCopy(rend, *(ptext->ppTex), NULL, &(ptext->re_text));
 					SDL_RenderPresent(rend);
 				}
@@ -565,7 +565,7 @@ MyTextInput* SDL_Input_MyTextInput(SDL_Renderer* rend, MyTextInput* ptext)
 					return ptext;
 				}
 			B:;		    	SDL_FillRect(sur, &Box, SDL_MapRGB(sur->format, ptext->backcolor[0], ptext->backcolor[1], ptext->backcolor[2]));
-				*(ptext->ppTex) = SDL_Get_Font_Texture(rend, sur, ptext->pfont, intdup(3, ptext->charcolor[0], ptext->charcolor[1], ptext->charcolor[2]), ptext->charsize, ptext->pc + (cx >= mc ? cx - mc : 0), ptext->edgingwidth, ptext->edgingwidth);
+				*(ptext->ppTex) = SDL_Get_Font_Texture(rend, sur, ptext->pfont, TypeDupR(NULL, 3, ptext->charcolor[0], ptext->charcolor[1], ptext->charcolor[2]), ptext->charsize, ptext->pc + (cx >= mc ? cx - mc : 0), ptext->edgingwidth, ptext->edgingwidth);
 				gx = (cx >= mc ? mc : cx) * (ptext->charsize) + ptext->edgingwidth;
 				SDL_SetRenderDrawColor(rend, 0, 0, 0, 0);
 				SDL_RenderDrawLine(rend, gx + ptext->re_text.x, ptext->re_text.y, gx + ptext->re_text.x, ptext->re_text.y + ptext->re_text.h);
@@ -607,7 +607,7 @@ MyTextInput* SDL_Rewrite_MyTextInput(MyTextInput* ptext, SDL_Renderer* rend, int
 		pte = SDL_CreateRGBSurface(0, ptext->re_text.w, ptext->re_text.h, 32, 0, 0, 0, 0);
 		SDL_FillRect(pte, NULL, SDL_MapRGB(pte->format, backcolor[0], backcolor[1], backcolor[2]));
 	}
-	*(ptext->ppTex) = SDL_Get_Font_Texture(rend, pte, pfont, intdup(3, charcolor[0], charcolor[1], charcolor[2]), charsize, pc, 0, 0);
+	*(ptext->ppTex) = SDL_Get_Font_Texture(rend, pte, pfont, TypeDupR(NULL, 3, charcolor[0], charcolor[1], charcolor[2]), charsize, pc, 0, 0);
 	SDL_RenderCopy(rend, *(ptext->ppTex), NULL, &(ptext->re_text));
 	return ptext;
 }

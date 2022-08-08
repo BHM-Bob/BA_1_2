@@ -2,17 +2,17 @@
 
 BA_Plot::BA_Plot(const char* _name, float (*_MapFunc)(float x, float y))
 {
-	this->Make_BA_Plot(_name, _MapFunc, 10, 10, 2, intdup(3, 255, 255, 255));
+	this->Make_BA_Plot(_name, _MapFunc, 10, 10, 2, TypeDupR(NULL, 3, 255, 255, 255));
 }
 
 BA_Plot::BA_Plot(const char* _name, float (*_MapFunc)(float x, float y), float _l)
 {
-	this->Make_BA_Plot(_name, _MapFunc, _l, _l, 2, intdup(3, 255, 255, 255));
+	this->Make_BA_Plot(_name, _MapFunc, _l, _l, 2, TypeDupR(NULL, 3, 255, 255, 255));
 }
 
 BA_Plot::BA_Plot(const char* _name, float (*_MapFunc)(float x, float y), float _xlim, float _ylim)
 {
-	this->Make_BA_Plot(_name, _MapFunc, _xlim, _ylim, 2, intdup(3, 255, 255, 255));
+	this->Make_BA_Plot(_name, _MapFunc, _xlim, _ylim, 2, TypeDupR(NULL, 3, 255, 255, 255));
 }
 
 BA_Plot::BA_Plot(const char* _name, float (*_MapFunc)(float x, float y), float _xlim, float _ylim, int* backg)

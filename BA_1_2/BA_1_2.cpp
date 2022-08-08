@@ -427,17 +427,6 @@ void JDT(_ULL now, _ULL sum)
 	printf("\r[-Done %5.1f%%,%7.2f s--Need%7.2f s-]         ", a, sec, (float)((sec / a) * (100.0 - a)));
 }
 
-void PPIs(int n, ...)
-{
-	printf("\n");
-	va_list parg;
-	va_start(parg, n);
-	for (int a = 0, b = 0; b < n; printf(" %d ", a), b++)
-		a = va_arg(parg, int);
-	va_end(parg);
-	printf("\n");
-}
-
 //https://blog.csdn.net/radjedef/article/details/79028329
 void SetConsoleCursor(int x, int y)
 {
@@ -468,86 +457,20 @@ char* mstrdup(const char* p, List* mem)
 	return pret;
 }
 
-int* intdup(int num, ...)
-{
-	BALLOCS_L(int, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (int a = 0; a < num; a++)
-		pret[a] = va_arg(parg, int);
-	va_end(parg);
-	return pret;
-}
-
-_LL* lldup(int num, ...)
-{
-	BALLOCS_L(_LL, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (int a = 0; a < num; a++)
-		pret[a] = va_arg(parg, _LL);
-	va_end(parg);
-	return pret;
-}
-
-_ULL* ULLdup(_ULL num, ...)
-{
-	BALLOCS_L(_ULL, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (int a = 0; a < num; a++)
-		pret[a] = va_arg(parg, _ULL);
-	va_end(parg);
-	return pret;
-}
-
-float* floatdup(_ULL num, ...)
-{
-	BALLOCS_L(float, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (_ULL a = 0; a < num; a++)
-		pret[a] = (float)va_arg(parg, double);
-	va_end(parg);
-	return pret;
-}
-
-int* intdupS(int num, ...)
-{
-	BALLOCS_S(int, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (int a = 0; a < num; a++)
-		pret[a] = va_arg(parg, int);
-	va_end(parg);
-	return pret;
-}
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//!!! IT HAS PROBLEMS !!!!!!!
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!
-_ULL* ULLdupS(_ULL num, ...)
-{
-	BALLOCS_S(_ULL, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	_ULL j = 0;
-	for (_ULL a = 0; a < num; a++)
-		pret[a] = va_arg(parg, _ULL);
-	va_end(parg);
-	return pret;
-}
-
-float* floatdupS(_ULL num, ...)
-{
-	BALLOCS_S(float, pret, num, NULL, );
-	va_list parg;
-	va_start(parg, num);
-	for (_ULL a = 0; a < num; a++)
-		pret[a] = (float)va_arg(parg, double);
-	va_end(parg);
-	return pret;
-}
+////!!!!!!!!!!!!!!!!!!!!!!!!!!!
+////!!! IT HAS PROBLEMS !!!!!!!
+////!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//_ULL* ULLdupS(_ULL num, ...)
+//{
+//	BALLOCS_S(_ULL, pret, num, NULL, );
+//	va_list parg;
+//	va_start(parg, num);
+//	_ULL j = 0;
+//	for (_ULL a = 0; a < num; a++)
+//		pret[a] = va_arg(parg, _ULL);
+//	va_end(parg);
+//	return pret;
+//}
 
 char* Get_Time_Without_L(void)
 {
@@ -663,69 +586,6 @@ char* Num_To_Char(const char* ptype, ...)
 	va_end(parg);
 	return preturn;
 }
-
-bool Frees(char* ptype, ...)
-{
-	va_list parg;
-	va_start(parg, ptype);
-	if (strcmp(ptype, "int") == 0)
-	{
-		int* pte = NULL;
-		for (; (pte = va_arg(parg, int*)) != NULL; pte = NULL)
-			free(pte);
-	}
-	else if (strcmp(ptype, "long") == 0)
-	{
-		long* pte = NULL;
-		for (; (pte = va_arg(parg, long*)) != NULL; pte = NULL)
-			free(pte);
-	}
-	else if (strcmp(ptype, "unsigned long long") == 0)
-	{
-		unsigned long long* pte = NULL;
-		for (; (pte = va_arg(parg, unsigned long long*)) != NULL; pte = NULL)
-			free(pte);
-	}
-	else if (strcmp(ptype, "float") == 0)
-	{
-		float* pte = NULL;
-		for (; (pte = va_arg(parg, float*)) != NULL; pte = NULL)
-			free(pte);
-	}
-	else if (strcmp(ptype, "double") == 0)
-	{
-		double* pte = NULL;
-		for (; (pte = va_arg(parg, double*)) != NULL; pte = NULL)
-			free(pte);
-	}
-	else if (strcmp(ptype, "char") == 0)
-	{
-		char* pte = NULL;
-		for (; (pte = va_arg(parg, char*)) != NULL; pte = NULL)
-			free(pte);
-	}
-	else if (strcmp(ptype, "void") == 0)
-	{
-		void* pte = NULL;
-		for (; (pte = va_arg(parg, void*)) != NULL; pte = NULL)
-			free(pte);
-	}
-	/*	else if(strcmp(ptype,"int") == 0 )
-		{
-			int* pte = va_arg(parg,int*);
-				for( ; (pte = va_arg(parg,int*)) != NULL ; )
-					free(pte);
-		}
-		}*/
-	else
-	{
-		va_end(parg);
-		MyBA_Errs(1, "Frees:Can't match the type of", ptype, NULL);
-		return 1;
-	}
-	va_end(parg);
-	return 0;
-};
 
 char* StringAdd_L(const char* pstr, ...)//end with NULL
 {
@@ -1132,18 +992,4 @@ badict::~badict()
 
 
 //***********************************************************************************************************************
-
-#ifdef USE_WINDOWS
-char* GBK_To_UTF8(const char* pc)
-{
-	int i = MultiByteToWideChar(CP_ACP, 0, pc, -1, NULL, 0);
-	wchar_t* pte1 = MCALLOC(strlen(pc) + 1, wchar_t);
-	MultiByteToWideChar(CP_ACP, 0, pc, -1, pte1, i);
-	i = WideCharToMultiByte(CP_UTF8, 0, pte1, -1, NULL, 0, NULL, NULL);
-	char* pte2 = MCALLOC(strlen(pc) + 1, char);
-	WideCharToMultiByte(CP_UTF8, 0, pte1, -1, pte2, i, NULL, NULL);
-	free(pte1);
-	return pte2;
-}
-#endif
-//***********************************************************************************************************************
+//*******************************************************************************************************************

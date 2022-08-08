@@ -76,8 +76,6 @@ typedef long long _LL;
 
 #define BA_FREED_PTR (void*)0x1
 
-void PPIs(int n, ...);
-
 #define PPT() printf("\nTime now : In %s\n, %s at line %lu ,<%s> <%.10f s>,\n",__FILE__, __func__,__LINE__,Get_Time_Without_S(),(float)( (float)(clock())/CLOCKS_PER_SEC))
 #define PPI(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%d>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
 #define PPL(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%lld>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
@@ -109,26 +107,14 @@ void PPIs(int n, ...);
 #define BALLOC_R(num,type,pli) (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli);
 #define BALLOCS_R(type,ret,num,pli,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli);if((ret) == NULL){err_opts;return err_ret;}
 
-#define STOPIF(a,string,...) {if(a){ printf("\nIn %s at line %lu\n, "#string"\n",__func__,__LINE__);__VA_ARGS__;}}
-
 #define _Get_File_Size(n,pf) unsigned long long n = 0ULL;{fseek(pf,0,SEEK_END);n = ftell(pf);fseek(pf,0,SEEK_SET);};
 
-#define _strcat_s(a,b,c,d) {if(strcat_s(a,b,c) != 0){PPW("Can't strcat_s");PPS(a);PPS(c);return d;}}
-
-#define _CHECKP_(p) {if((p) == NULL){PPW("NULL Pointer");_SIS_;}}
+#define _CHECKP_(p, opts) {if((p) == NULL){PPW("NULL Pointer");opts;}}
 
 #define LIST_FOR(p,pli) for(void* p = List_Copy(pli); p != NULL; p = List_Copy(pli))
 #define LIST_FORS(type,p,pli) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli))
 #define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p != NULL; p = (type*)List_Get(pli))
 #define LIST_FORR(type,p,pli,opts) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli),opts)
-
-int* intdup(int num, ...);
-_LL* lldup(int num, ...);
-_ULL* ULLdup(_ULL num, ...);
-float* floatdup(_ULL num, ...);
-int* intdupS(int num, ...);
-_ULL* ULLdupS(_ULL num, ...);
-float* floatdupS(_ULL num, ...);
 
 void JDT(_ULL now, _ULL sum);
 
@@ -148,13 +134,12 @@ char* Get_Time_S(void);
 
 char* Get_Time_For_File_Name(char char_to_replace_unspport_char);
 
-char* Num_To_Char(const char* ptype, ...);
 // ... 表示被换的数字变量
+char* Num_To_Char(const char* ptype, ...);
 
-bool Frees(char* ptype, ...);
 // ... Must end with a NULL
-
-char* GBK_To_UTF8(const char* pc);
+template<typename dataType>
+bool Frees(dataType * p1, ...);
 
 //***********************************************************************************************************************
 typedef struct ListDot ListDot;//先进先出
@@ -451,6 +436,19 @@ char* mstrdup(const char* p, List* mem = NULL);
 //***********************************************************************************************************************
 //***********************************************************************************************************************
 //***********************************************************************************************************************
+
+
+template<typename dataType>
+bool Frees(dataType* p1, ...)
+{
+	va_list parg;
+	va_start(parg, p1);
+	dataType* pte = p1;
+	for (; pte; pte = va_arg(parg, dataType*))
+		free(pte);
+	va_end(parg);
+	return 0;
+};
 
 
 //_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
