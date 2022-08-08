@@ -421,6 +421,13 @@ void MyBA_SafeMode(void);
 
 
 char* mstrdup(const char* p, List* mem = NULL);
+//_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
+// if mem == NULL, use MCALLOC
+// DO NOT USE AS FLOAT
+template<typename dataType>
+dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...);
+// floatDup using double
+float* floatDup(List* mem, _ULL num, ...);
 
 
 //***********************************************************************************************************************

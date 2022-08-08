@@ -427,6 +427,28 @@ void JDT(_ULL now, _ULL sum)
 	printf("\r[-Done %5.1f%%,%7.2f s--Need%7.2f s-]         ", a, sec, (float)((sec / a) * (100.0 - a)));
 }
 
+float* floatDup(List* mem, _ULL num, ...)
+{
+	float* pret = NULL;
+	if (mem)
+	{
+		pret = BALLOC_R(num, float, mem);
+	}
+	else
+	{
+		pret = MCALLOC(num, float);
+	}
+	if (pret)
+	{
+		va_list parg;
+		va_start(parg, num);
+		for (_ULL a = 0; a < num; a++)
+			pret[a] = (float)va_arg(parg, double);
+		va_end(parg);
+	}
+	return pret;
+}
+
 //https://blog.csdn.net/radjedef/article/details/79028329
 void SetConsoleCursor(int x, int y)
 {
