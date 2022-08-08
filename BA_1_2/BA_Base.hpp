@@ -77,13 +77,9 @@ typedef long long _LL;
 #define BA_FREED_PTR (void*)0x1
 
 #define PPT() printf("\nTime now : In %s\n, %s at line %lu ,<%s> <%.10f s>,\n",__FILE__, __func__,__LINE__,Get_Time_Without_S(),(float)( (float)(clock())/CLOCKS_PER_SEC))
-#define PPI(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%d>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
-#define PPL(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%lld>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
-#define PPD(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%le>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
-#define PPF(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%f>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
-#define PPU(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%llu>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
-#define PPC(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%c>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+#define PPX(p) cout << "\n <" << (float)( (float)(clock())/CLOCKS_PER_SEC) << " s>In " << __FILE__ << ", " << __func__ << " at line " << __LINE__ << " ," << #p << " is <" << p << ">\n" << endl;
 #define PPP(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%p>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
+// do not cacu it's len
 #define PPSS(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%s>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
 //this str can not contan any ++ opts, because ti will use twice in this define line
 #define PPS(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%s>,It's size is %llu\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p),strlen(p))
@@ -111,10 +107,10 @@ typedef long long _LL;
 
 #define _CHECKP_(p, opts) {if((p) == NULL){PPW("NULL Pointer");opts;}}
 
-#define LIST_FOR(p,pli) for(void* p = List_Copy(pli); p != NULL; p = List_Copy(pli))
-#define LIST_FORS(type,p,pli) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli))
-#define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p != NULL; p = (type*)List_Get(pli))
-#define LIST_FORR(type,p,pli,opts) for(type* p = (type*)List_Copy(pli); p != NULL; p = (type*)List_Copy(pli),opts)
+#define LIST_FOR(p,pli) for(void* p = List_Copy(pli); p; p = List_Copy(pli))
+#define LIST_FORS(type,p,pli) for(type* p = (type*)List_Copy(pli); p; p = (type*)List_Copy(pli))
+#define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p; p = (type*)List_Get(pli))
+#define LIST_FORR(type,p,pli,opts) for(type* p = (type*)List_Copy(pli); p; p = (type*)List_Copy(pli),opts)
 
 void JDT(_ULL now, _ULL sum);
 
@@ -240,7 +236,8 @@ public:
 	dataType* Get(const char* name, bool justCmpNameById = false);
 	//Copy the name dot content
 	dataType* Copy(const char* name, bool justCmpNameById = false);
-	balist<dataType> Put(dataType* pdata,
+	// put as plast
+	void Put(dataType* pdata,
 		const char* name = NULL, bool justUseNamePtr = false);
 	// use dot::usage as hash key to insert a data between two hash dot
 	void Insert(dataType* pdata, _LL hashKey,
@@ -646,7 +643,7 @@ inline dataType* balist<dataType>::Copy(const char* name, bool justCmpNameById)
 }
 
 template<typename dataType>
-balist<dataType> balist<dataType>::Put(dataType* pdata, const char* name, bool justUseNamePtr)
+void balist<dataType>::Put(dataType* pdata, const char* name, bool justUseNamePtr)
 {
 	++sumque;
 	if (sumque == 1)
@@ -679,7 +676,6 @@ balist<dataType> balist<dataType>::Put(dataType* pdata, const char* name, bool j
 			pte->idx = sumque - 1;
 		}
 	}
-	return *this;
 }
 
 template<typename dataType>
