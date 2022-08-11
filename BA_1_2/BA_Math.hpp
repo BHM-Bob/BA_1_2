@@ -101,6 +101,7 @@ public:
 	template<typename dataType>
 	BA_Array operator/(dataType other);
 	any operator[](_LL idx);
+	any operator[](_ULL idx);
 	any operator()(_LL idx1, ...);
 
 };

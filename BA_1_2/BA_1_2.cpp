@@ -469,13 +469,12 @@ COORD GetConsoleCursor(void)
 	return coordScreen; //光标位置
 }
 
+// if mem == NULL, do not record
 char* mstrdup(const char* p, List* mem)
 {
 	char* pret = _strdup(p);
 	if (mem)
 		List_Put(mem, (void*)pret);
-	else
-		List_Put(pba->mem, (void*)pret);
 	return pret;
 }
 

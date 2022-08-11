@@ -78,7 +78,6 @@ typedef long long _LL;
 
 #define PPT() printf("\nTime now : In %s\n, %s at line %lu ,<%s> <%.10f s>,\n",__FILE__, __func__,__LINE__,Get_Time_Without_S(),(float)( (float)(clock())/CLOCKS_PER_SEC))
 #define PPX(p) cout << "\n <" << (float)( (float)(clock())/CLOCKS_PER_SEC) << " s>In " << __FILE__ << ", " << __func__ << " at line " << __LINE__ << " ," << #p << " is <" << p << ">\n" << endl;
-#define PPP(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%p>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
 // do not cacu it's len
 #define PPSS(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%s>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
 //this str can not contan any ++ opts, because ti will use twice in this define line
@@ -420,14 +419,12 @@ void MyBA_SafeMode(void);
 //***********************************************************************************************************************
 
 
+// if mem == NULL, do not record
 char* mstrdup(const char* p, List* mem = NULL);
 //_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
 // if mem == NULL, use MCALLOC
-// DO NOT USE AS FLOAT
 template<typename dataType>
 dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...);
-// floatDup using double
-float* floatDup(List* mem, _ULL num, ...);
 
 
 //***********************************************************************************************************************
@@ -474,8 +471,12 @@ dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
 		pret[0] = firstData;
 		va_list parg;
 		va_start(parg, firstData);
-		for (_ULL a = 1; a < num; a++)
-			pret[a] = (dataType)va_arg(parg, dataType);
+		if(typeid(dataType) == typeid(float))
+			for (_ULL a = 1; a < num; a++)
+				pret[a] = (dataType)va_arg(parg, double);
+		else
+			for (_ULL a = 1; a < num; a++)
+				pret[a] = (dataType)va_arg(parg, dataType);
 		va_end(parg);
 	}
 	return pret;

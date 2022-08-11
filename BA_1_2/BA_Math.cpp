@@ -2284,6 +2284,14 @@ any BA_Array::operator[](_LL idx)
 		return dataL[idx];
 }
 
+any BA_Array::operator[](_ULL idx)
+{
+	if (type == 'f')
+		return dataF[idx];
+	else
+		return dataL[idx];
+}
+
 any BA_Array::operator()(_LL idx1, ...)
 {
 	return any();
