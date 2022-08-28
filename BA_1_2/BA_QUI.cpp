@@ -85,8 +85,8 @@ QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
 	fonts->fonts = new balist< TTF_Font>;
 	butts->butts = balist<SDL_MyButton>();
 	butts->names = balist<char>();
-	butts->events = badict(true);
-	butts->statue = badict(true);
+	butts->events = balist<int>();
+	butts->statue = balist<int>();
 	butts->eveFunc = badict(true);
 	butts->eveFuncData = badict(true);
 	keys = new QUI_Keys();
@@ -204,8 +204,8 @@ bool QUI::AddButt(const char* _name, const char* _showWords, int charSize,
 	// just use char ptr
 	butts->butts(name, pButt, false, true);
 	butts->names(name, name, false, true);
-	butts->statue[name] = 1;
-	butts->events[name] = 0;
+	butts->statue(name, TypeDupR(mem, 1, 1), false, true);
+	butts->events(name, TypeDupR(mem, 1, 0), false, true);
 	if (eveFunc)
 	{
 		butts->eveFunc[name] = eveFunc;
@@ -253,8 +253,8 @@ bool QUI::ChangeButtShowWords(const char* _name, const char* _showWords,
 
 bool QUI::DelButt(const char* _name)
 {
-	butts->events.Del(_name, false);
-	butts->statue.Del(_name, false);
+	MyBA_Free(butts->events.Get(_name, false, false), mem);
+	MyBA_Free(butts->statue.Get(_name, false, false), mem);
 	if (butts->eveFunc.HasKey(_name))
 	{
 		butts->eveFunc.Del(_name, false);
@@ -284,9 +284,9 @@ bool QUI::CheckButt()
 		int x, y, w, h;
 		for (balistDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 		{
-			if (butts->statue.Copy<int>(dp->name) == 1)
+			if (*(butts->statue.Copy(dp->name)) == 1)
 			{
-				butts->events[dp->name] = 0;
+				*(butts->events.Copy(dp->name)) = 0;
 				x = dp->pdata->re_butt.x;
 				y = dp->pdata->re_butt.y;
 				w = dp->pdata->re_butt.w;
@@ -295,7 +295,7 @@ bool QUI::CheckButt()
 				{
 					if (win->peve->button.button == SDL_BUTTON_LEFT)
 					{
-						butts->events[dp->name] = 1;
+						*(butts->events.Copy(dp->name)) = 1;
 						if (butts->eveFunc.HasKey(dp->name))
 						{
 							eveFunc = butts->eveFunc.Copy<int (*)(void* pData)>(dp->name, true);
@@ -304,7 +304,7 @@ bool QUI::CheckButt()
 					}
 					else if (win->peve->button.button == SDL_BUTTON_RIGHT)
 					{
-						butts->events[dp->name] = 2;
+						*(butts->events.Copy(dp->name)) = 2;
 					}
 				}
 			}
@@ -351,7 +351,7 @@ bool QUI::Update(bool rendclear, bool copyTex)
 	SDL_MyButton* pButt = NULL;
 	for (balistDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
 	{
-		if (butts->statue.Copy<int>(dp->name, true) == 1)
+		if (*(butts->statue.Copy(dp->name)) == 1)
 		{
 			pButt = butts->butts.Copy(dp->name, true);
 			if (pButt->pct != NULL)
@@ -375,8 +375,8 @@ bool QUI::Update(bool rendclear, bool copyTex)
 
 bool QUI::PollQuit()
 {
-	this->CheckButt();
-	if ((win->exitButtName) && butts->events.Copy<int>(win->exitButtName, true) == 1)
+	this->CheckButt(); 
+	if ((win->exitButtName) && *(butts->events.Copy(win->exitButtName)) == 1)
 		return 1;
 	return SDL_Poll_Quit(win->peve);
 }

@@ -23,8 +23,8 @@ SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y);
 typedef struct QUI_butts QUI_butts;
 struct QUI_butts
 {
-	badict events;//1 left ; 2 right
-	badict statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
+	balist<int> events;//1 left ; 2 right
+	balist<int> statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
 	balist<SDL_MyButton> butts;//按钮列表
 	balist<char> names;//names
 	badict eveFunc;// int (*)(void* pData);
