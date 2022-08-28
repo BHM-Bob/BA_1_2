@@ -25,6 +25,22 @@ double abs_d(double a)
 	return a;
 }
 
+// [start, end)
+_LL BA_Rand(_LL start, _LL end)
+{
+	return start + rand() % (end - start);
+}
+
+// [start, end)
+_LL* BA_Rand(_LL start, _LL end, _LL len, List* mem)
+{
+	mem = mem ? mem : pba->LTmem;
+	BALLOCS_R(_LL, ret, len, mem, NULL, );
+	for (_LL i = 0; i < len; i++)
+		ret[i] = BA_Rand(start, end);
+	return ret;
+}
+
 int* MyBA_Zeros_AllocD(int* ret, int* shape, int dims, int nowdim)
 {
 	ret = (int*)calloc(shape[nowdim], sizeof(int));

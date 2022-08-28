@@ -879,6 +879,15 @@ List* List_Init(void)
 //***********************************************************************************************************************
 
 
+BA_Base::BA_Base(_ULL idx, const char* name)
+{
+	__idx__ = idx;
+	if (name)
+		__name__ = mstrdup(name, mem);
+}
+
+//***********************************************************************************************************************
+
 int StrCmpById(const char* ptr1, const char* ptr2)
 {
 	return (ptr1 == ptr2) ? 0 : 1;
@@ -969,16 +978,33 @@ badict badict::Put(const char* key, any data, bool _justUseKeyPtr)
 	return *this;
 }
 
-bool badict::Del(const char* key)
+bool badict::Del(const char* key, bool freeKey)
 {
 	badictPair* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (!strcmp(pd->key, key))
 		{
-			pd->ppre->pnext = pd->pnext;
-			pd->pnext->ppre = pd->ppre;
-			free(pd->key);
+			if (pd == pfirst)
+			{
+				pfirst = pd->pnext;
+				if(pd->pnext)
+					pd->pnext->ppre = NULL;
+			}
+			else if (pd == plast)
+			{
+				plast = pd->ppre;
+				if(pd->ppre)
+					pd->ppre->pnext = NULL;
+			}
+			else
+			{
+				pd->ppre->pnext = pd->pnext;
+				pd->pnext->ppre = pd->ppre;
+			}
+			if(freeKey)
+				free(pd->key);
 			delete pd;
+			--sumque;
 			return true;
 		}
 	PPWs("No Such Key: ", key);

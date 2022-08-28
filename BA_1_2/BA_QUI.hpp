@@ -97,11 +97,11 @@ public:
 
 	QUI(const char* titlepc = "QUI", int winw = 800, int winh = 800,
 		int winflags = 0, SDL_Color* bgc = NULL);
-	QUI();
 	~QUI();
 
 	bool AddFont(const char* ppath, const char* name);
 	// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
+	//bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
 	bool AddButt(const char* _name, const char* _showWords, int charSize,
 		SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg,
 		int (*eveFunc)(void* pData, ...) = NULL, void* eveFuncData = NULL);

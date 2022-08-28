@@ -14,7 +14,7 @@
 char* StringWrite(FILE* pf, char* pc);
 
 //BALLOC_S
-char* StringRead(FILE* pf);
+char* StringRead(FILE* pf, List* mem = NULL);
 
 unsigned long long  Get_File_Size(FILE* pf);
 

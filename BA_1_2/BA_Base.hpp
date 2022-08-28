@@ -111,6 +111,8 @@ typedef long long _LL;
 #define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p; p = (type*)List_Get(pli))
 #define LIST_FORR(type,p,pli,opts) for(type* p = (type*)List_Copy(pli); p; p = (type*)List_Copy(pli),opts)
 
+#define FORI(start, end) for(_LL i = start; i < end; i++)
+
 void JDT(_ULL now, _ULL sum);
 
 void SetConsoleCursor(int x, int y);
@@ -182,6 +184,25 @@ List* List_Gather(void* pData1, ...);
 List* List_Destroy(List* plist);
 
 //******************************************************************
+//******************************************************************
+ 
+class BA_Base
+{
+public:
+
+
+	List* mem = List_Init();
+
+	char* __name__ = NULL;
+	_ULL __len__ = 0;
+	_ULL __idx__ = 0;
+
+	BA_Base(_ULL idx = 0, const char* name = NULL);
+
+};
+
+ 
+//******************************************************************
 int StrCmpById(const char* ptr1, const char* ptr2);
 
 //NOTICE: is it 100% safe that put lock opt into MyThreadQueue?
@@ -232,7 +253,7 @@ public:
 	//Copy the index dot content,from 0
 	dataType* Get(_LL index);
 	//Get the name dot content
-	dataType* Get(const char* name, bool justCmpNameById = false);
+	dataType* Get(const char* name, bool justCmpNameById = false, bool freeName = true);
 	//Copy the name dot content
 	dataType* Copy(const char* name, bool justCmpNameById = false);
 	// put as plast
@@ -306,7 +327,7 @@ public:
 	template <typename dataType> dataType Copy(const char* key, bool justCmpKeyById = false);
 	badict Put(const char* key, any data, bool _justUseKeyPtr = false);
 	// del
-	bool Del(const char* key);
+	bool Del(const char* key, bool freeKey = true);
 	void Destroy(void);
 	~badict();
 
@@ -621,18 +642,38 @@ dataType* balist<dataType>::Get(_LL index)
 }
 
 template<typename dataType>
-inline dataType* balist<dataType>::Get(const char* name, bool justCmpNameById)
+inline dataType* balist<dataType>::Get(const char* name, bool justCmpNameById, bool freeName)
 {
 	if (justCmpNameById)
 		strCmpFunc = StrCmpById;
+	else
+		strCmpFunc = strcmp;
 	balistDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strCmpFunc(pd->name, name) == 0)
 		{
-			pd->ppre->pnext = pd->pnext;
-			pd->pnext->ppre = pd->ppre;
+			if (pd == pfirst)
+			{
+				pfirst = pd->pnext;
+				if (pd->pnext)
+					pd->pnext->ppre = NULL;
+			}
+			else if (pd == plast)
+			{
+				plast = pd->ppre;
+				if (pd->ppre)
+					pd->ppre->pnext = NULL;
+			}
+			else
+			{
+				pd->ppre->pnext = pd->pnext;
+				pd->pnext->ppre = pd->ppre;
+			}
+			if(pd->name && freeName)
+				free(pd->name);
 			dataType* pret = pd->pdata;
 			delete pd;
+			--sumque;
 			return pret;
 		}
 	return NULL;
@@ -643,6 +684,8 @@ inline dataType* balist<dataType>::Copy(const char* name, bool justCmpNameById)
 {
 	if (justCmpNameById)
 		strCmpFunc = StrCmpById;
+	else
+		strCmpFunc = strcmp;
 	balistDot<dataType>* pd = pfirst;
 	for (; pd; pd = pd->pnext)
 		if (pd->name && strCmpFunc(pd->name, name) == 0)
@@ -905,6 +948,8 @@ inline dataType badict::Copy(const char* key, bool justCmpKeyById)
 	badictPair* pd = pfirst;
 	if (justCmpKeyById)
 		strCmpFunc = StrCmpById;
+	else
+		strCmpFunc = strcmp;
 	for (; pd; pd = pd->pnext)
 		if (!strCmpFunc(pd->key, key))
 			return any_cast<dataType>(pd->data);

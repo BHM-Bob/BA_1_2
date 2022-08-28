@@ -71,8 +71,7 @@ QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
 	mem = List_Init();
 
 	win = BALLOC_R(1, QUI_win, mem);
-	win->titlepc = _strdup(titlepc);
-	mem->Put(mem, (void*)(win->titlepc));
+	win->titlepc = mstrdup(titlepc, mem);
 	win->peve = BALLOC_R(1, SDL_Event, mem);
 	win->winw = winw;
 	win->winh = winh;
@@ -143,17 +142,9 @@ QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
 		SDL_RenderPresent(win->rend);
 		win->time = clock();
 
-		List_Put(pba->exitFunc, (void*)QUI_Quit);
-		List_Put(pba->exitFuncData, (void*)this);
+		MyBA_AtQuit(QUI_Quit, (void*)this);
 	}
 
-}
-
-QUI::QUI()
-{
-	mem = List_Init();
-	SDL_Color* bgc = MakeSDLCol(mem, 255, 255, 255, 255);
-	*this = QUI("QUI", 800, 800, 0, bgc);
 }
 
 QUI::~QUI()
@@ -175,6 +166,7 @@ bool QUI::AddFont(const char* ppath, const char* name)
 }
 
 //name, showWords 会内部mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
+//bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
 bool QUI::AddButt(const char* _name, const char* _showWords, int charSize,
 	SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg,
 	int (*eveFunc)(void* pData, ...), void* eveFuncData)
@@ -182,7 +174,7 @@ bool QUI::AddButt(const char* _name, const char* _showWords, int charSize,
 	char* name = mstrdup(_name, mem);
 	if (!_showWords)
 		_showWords = _name;
-	char* showWords = mstrdup(_showWords, mem);
+	char* showWords = _strdup(_showWords);
 	bool iscolor = 0;
 	if (!pos)
 		pos = MakeSDLRect(mem, win->pre_win->w, win->pre_win->h, 0, 0);
@@ -261,15 +253,15 @@ bool QUI::ChangeButtShowWords(const char* _name, const char* _showWords,
 
 bool QUI::DelButt(const char* _name)
 {
-	butts->events.Del(_name);
-	butts->statue.Del(_name);
+	butts->events.Del(_name, false);
+	butts->statue.Del(_name, false);
 	if (butts->eveFunc.HasKey(_name))
 	{
-		butts->eveFunc.Del(_name);
-		butts->eveFuncData.Del(_name);
+		butts->eveFunc.Del(_name, false);
+		butts->eveFuncData.Del(_name, false);
 	}
-	butts->names.Get(_name);
-	SDL_MyButton* pButt = butts->butts.Get(_name);
+	butts->names.Get(_name, false, false);
+	SDL_MyButton* pButt = butts->butts.Get(_name, false, false);
 	return SDL_Destroy_MyButton(pButt);
 }
 

@@ -735,8 +735,7 @@ MyUI* MyUI_Init(const char* titlepc, int winw, int winh, int winflags, int* colo
 	SDL_RenderPresent(pui->win->rend);
 	pui->win->time = clock();
 
-	List_Put(pba->exitFunc, (void*)MyUI_Quit);
-	List_Put(pba->exitFuncData, (void*)pui);
+	MyBA_AtQuit(MyUI_Quit, (void*)pui);
 
 	return pui;
 }

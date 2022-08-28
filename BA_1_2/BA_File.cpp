@@ -93,7 +93,7 @@ char* StringWrite(FILE* pf, char* pc)
 	return pc;
 }
 
-char* StringRead(FILE* pf)
+char* StringRead(FILE* pf, List* mem)
 {
 	_ULL* plen = MCALLOC(1, _ULL);
     if (plen != NULL)
@@ -104,17 +104,18 @@ char* StringRead(FILE* pf)
 		    free(plen);
 		    return NULL;
 	    }
-	    char* pc = BALLOC_S(*plen + 1, char);
+        mem = mem ? mem : pba->STmem;
+	    char* pc = BALLOC_R(*plen + 1, char, mem);
         if (pc != NULL)
 	        fread(pc, sizeof(char), *plen, pf);
         else
-            PPW("char* StringWrite(FILE* pf, char* pc):Err to alloc mem, return NULL");
+            PPW("char* StringRead(FILE* pf):Err to alloc mem, return NULL");
 	    free(plen);
 	    return pc;
     }
     else
     {
-        PPW("char* StringWrite(FILE* pf, char* pc):Err to alloc mem, return NULL");
+        PPW("char* StringRead(FILE* pf):Err to alloc mem, return NULL");
         return NULL;
     }
 }
