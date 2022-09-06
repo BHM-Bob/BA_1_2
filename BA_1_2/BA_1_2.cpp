@@ -112,6 +112,7 @@ void MyBA_Init(void)
 		}
 	}
 	srand(time(NULL));
+	pba->randomEngine.seed(time(NULL));
 }
 
 void MyBA_PutLog(const char* pc)
@@ -269,11 +270,14 @@ int MyBA_Quit(int retVal)
 		pdata;
 		pdata = List_CopyDot(pba->exitFuncData), pfunc = List_CopyDot(pba->exitFunc))
 	{
-		exitFunc = (int (*)(void* data, int code, ...))(pfunc->pdata);
-		if (exitFunc(pdata->pdata, 0) != 0)
+		if (pfunc->pdata != (void*)0x1)
 		{
-			MyBA_Errs(1, "int MyBA_Quit(int retVal): exitFunc(pdata, 0) != 0, func No.",
-				Num_To_Char("llu", pdata->idx), " err!", NULL);
+			exitFunc = (int (*)(void* data, int code, ...))(pfunc->pdata);
+			if (exitFunc(pdata->pdata, 0) != 0)
+			{
+				MyBA_Errs(1, "int MyBA_Quit(int retVal): exitFunc(pdata, 0) != 0, func No.",
+					Num_To_Char("llu", pdata->idx), " err!", NULL);
+			}
 		}
 	}
 
@@ -294,7 +298,7 @@ void MyBA_Free_R(List* pli)
 {
 	if (pli != NULL)
 	{
-		for (void* pm = List_Copy(pli); pm != NULL; pm = List_Copy(pli))
+		for (void* pm = List_Get(pli); pm != NULL; pm = List_Get(pli))
 			if (pm != (void*)0x1)
 				free(pm);
 		pli->now = pli->pfirst;
@@ -333,7 +337,7 @@ void MyBA_FreeInstance(void)
 {
 	if (pba->STmem != NULL)
 	{
-		for (void* pm = List_Copy(pba->STmem); pm != NULL; pm = List_Copy(pba->STmem))
+		for (void* pm = List_Get(pba->STmem); pm != NULL; pm = List_Get(pba->STmem))
 			if (pm != (void*)0x1)
 				free(pm);
 		pba->STmem->now = pba->STmem->pfirst;
@@ -506,6 +510,20 @@ char* Get_Time_Without_L(void)
 char* Get_Time_Without_S(void)
 {
 	BALLOCS_S(char, p, 26, NULL, PPW("Get_Time_Without_S:BALLOCS_S Faliue,return NULL"));
+	time_t tim = time(NULL);
+	if (ctime_s(p, 26, &tim) != 0)
+		return NULL;
+	*(p + 24) = (char)' ';
+	return p;
+}
+
+char* GetTimeWithout(List* mem)
+{
+	char* p = NULL;
+	if (!mem)
+		p = MCALLOC(26, char);
+	else
+		p = BALLOC_R(26, char, mem);
 	time_t tim = time(NULL);
 	if (ctime_s(p, 26, &tim) != 0)
 		return NULL;
@@ -875,6 +893,13 @@ List* List_Init(void)
 		plist->IndexGet = List_IndexGet;
 		return plist;
 	}
+}
+
+List* List_Init(void* pdata)
+{
+	List* pret = List_Init();
+	List_Put(pret, pdata);
+	return pret;
 }
 //***********************************************************************************************************************
 

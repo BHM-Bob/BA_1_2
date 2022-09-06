@@ -1110,10 +1110,7 @@ BA_Array::BA_Array(BA_Shape _shape, const char* way)
 
 	if (strcmp(way, "rand") == 0)
 	{
-		dataF = BALLOC_R(dataLen, float, mem);
-		float* te = dataF;
-		for (_LL i = 0; i < dataLen; i++, te++)
-			*te = (float)(rand() % 10000) / (float)10000.;
+		dataF = RandNum(0.f, 1.f, dataLen, mem);
 	}
 	else if (strcmp(way, "range") == 0)
 	{

@@ -10,29 +10,34 @@
 
 #define __STDC_WANT_LIB_EXT1__ 1
 
-#include<any>
-#include<assert.h>
-#include<ctype.h>
-#include<conio.h>
-#include<direct.h>
-#include<functional>
-#include<locale.h>
-#include<limits.h>
-//#include<map>
-#include<math.h>
-#include<io.h>
-#include<iostream>
-#include<setjmp.h>
-#include<stdarg.h>
-#include<stdbool.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<sys/types.h>
-#include<time.h>
-//#include<unistd.h>
-#include<thread>
-#include<mutex>
+#include <any>
+#include <assert.h>
+#include <cstdlib>
+#include <ctime>
+#include <ctype.h>
+#include <conio.h>
+#include <direct.h>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <locale.h>
+#include <limits.h>
+#include <map>
+#include <math.h>
+#include <io.h>
+#include <iostream>
+#include <random>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <time.h>
+//#include <unistd.h>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 
@@ -152,12 +157,12 @@ struct ListDot
 typedef struct List List;//先进先出
 struct List
 {
-	_ULL tik;//标识符，区分List，或者用来储存一些ID信息
-	_ULL sumque;
-	ListDot* pfirst;
-	ListDot* plast;
-	ListDot* now;
-	ListDot* reverse_now;
+	_ULL tik = 0;//标识符，区分List，或者用来储存一些ID信息
+	_ULL sumque = 0;
+	ListDot* pfirst = NULL;
+	ListDot* plast = NULL;
+	ListDot* now = NULL;
+	ListDot* reverse_now = NULL;
 
 	List* (*Put)(List* plist, void* pdata);
 	void* (*Get)(List* plist);
@@ -168,6 +173,7 @@ struct List
 	void* (*IndexGet)(List* plist, _ULL index);
 };
 List* List_Init(void);
+List* List_Init(void* pdata);
 void* List_Copy(List* plist);
 ListDot* List_CopyDot(List* plist);
 void* List_ReverseCopy(List* plist);
@@ -234,6 +240,9 @@ public:
 	balistDot<dataType>* plast = NULL;
 	balistDot<dataType>* now = NULL;
 	balistDot<dataType>* medium = NULL;
+
+	//(dataType*)(0x1)
+	dataType* errPtr = (dataType*)(0x1);
 
 	_LL lastIndex = 0;
 	balistDot<dataType>* lastIndexDot = NULL;
@@ -375,6 +384,8 @@ public:
 //***********************************************************************************************************************
 
 
+char* GetTimeWithout(List* mem = NULL);
+
 
 //***********************************************************************************************************************
 typedef struct BALog BALog;
@@ -403,6 +414,8 @@ struct MyBA
 	bool GUT_state;
 	clock_t JDT_t;
 
+	default_random_engine randomEngine;
+
 	bool isSDL2;
 	bool isSAFEMODE;
 
@@ -416,9 +429,9 @@ struct MyBA
 	void (*PutLog)(const char* pc);
 };
 extern MyBA* pba;
+void MyBA_Init(void);
 void MyBA_Context(const char* nowFuncName);
 float MyBA_GetUsedTime(void);
-void MyBA_Init(void);
 void MyBA_PutLog(const char* pc);
 bool MyBA_WriteLog(bool isquit);
 void* MyBA_Err(const char* pc, bool instance);
@@ -439,13 +452,19 @@ int MyBA_CMD_ShowLog(void);
 void MyBA_SafeMode(void);
 //***********************************************************************************************************************
 
-
 // if mem == NULL, do not record
 char* mstrdup(const char* p, List* mem = NULL);
 //_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
 // if mem == NULL, use MCALLOC
 template<typename dataType>
 dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...);
+// random, [start, end]
+template<typename dataType>
+dataType RandNum(dataType start, dataType end);
+// random, [start, end) for int, [start, end] for float
+// if mem is NULL, using MCALLOC
+template<typename dataType>
+dataType* RandNum(dataType start, dataType end, _LL len, List* mem = NULL);
 
 
 //***********************************************************************************************************************
@@ -501,6 +520,48 @@ dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
 		va_end(parg);
 	}
 	return pret;
+}
+
+template<typename dataType>
+inline dataType RandNum(dataType start, dataType end)
+{
+	if (typeid(dataType) == typeid(float))
+	{
+		uniform_real_distribution<float> dis(start, end);
+		return dis(pba->randomEngine);
+	}
+	else
+	{
+		uniform_int_distribution<int> dis(start, end);
+		return dis(pba->randomEngine);
+	}
+}
+
+template<typename dataType>
+inline dataType* RandNum(dataType start, dataType end, _LL len, List* mem)
+{
+	dataType* ret = NULL;
+	if (mem)
+	{
+		ret = BALLOC_R(len, dataType, mem);
+	}
+	else
+	{
+		ret = MCALLOC(len, dataType);
+	}
+	if (typeid(dataType) == typeid(float))
+	{
+		uniform_real_distribution<float> dis(start, end);
+		for (_LL i = 0; i < len; i++)
+			ret[i] = dis(pba->randomEngine);
+	}
+	else
+	{
+		uniform_int_distribution<int> dis(start, end-1);
+		for (_LL i = 0; i < len; i++)
+			ret[i] = dis(pba->randomEngine);
+	}
+	return ret;
 }
 
 //***********************************************************************************************************************

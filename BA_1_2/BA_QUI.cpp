@@ -62,6 +62,10 @@ SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y)
 int QUI_Quit(void* pui_, int code, ...)
 {
 	QUI* pui = (QUI*)pui_;
+	SDL_FreeSurface(pui->win->pwinSur);
+	SDL_DestroyTexture(pui->win->pwinTex);
+	SDL_DestroyRenderer(pui->win->rend);
+	SDL_DestroyWindow(pui->win->pwin);
 	MyBA_Free_R(pui->mem);
 	return 0;
 }
@@ -375,10 +379,21 @@ bool QUI::Update(bool rendclear, bool copyTex)
 
 bool QUI::PollQuit()
 {
-	this->CheckButt(); 
+	this->CheckButt();
 	if ((win->exitButtName) && *(butts->events.Copy(win->exitButtName)) == 1)
 		return 1;
 	return SDL_Poll_Quit(win->peve);
+}
+
+int QUI::Quit(int code, ...)
+{
+	//SDL_FreeSurface(win->pwinSur);
+	//SDL_DestroyTexture(win->pwinTex);
+	SDL_DestroyRenderer(win->rend);
+	SDL_DestroyWindow(win->pwin);
+	//MyBA_Free_R(mem);
+	List_SetVar(pba->exitFunc, (void*)QUI_Quit, (void*)0x1);
+	return 0;
 }
 
 void QUI_Keys::Update(SDL_Event* pEve)

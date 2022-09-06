@@ -114,6 +114,7 @@ public:
 	bool CheckTitle();
 	bool Update(bool rendclear = true, bool copyTex = true);
 	bool PollQuit();
+	int Quit(int code, ...);
 	friend int QUI_Quit(void* pui_, int code, ...);
 };
 
