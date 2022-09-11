@@ -115,13 +115,52 @@ void MyBA_Init(void)
 	pba->randomEngine.seed(time(NULL));
 }
 
-void MyBA_PutLog(const char* pc)
+//BALLOC_L
+void MyBA_PutLog(const char* pc, const char* head)
 {
-	MCALLOCS(BALog, plog, 1);
-	plog->t = clock();
-	plog->pdate = Get_Time_Without_L();
-	plog->pc = _strdup(pc);
-	pba->pLog->Put(pba->pLog, plog);
+	if(pba)
+	{
+		if (!head)
+			head = mstrdup("Normal Log:", pba->LTmem);
+		BALLOCS_L(BALog, plog, 1);
+		plog->t = clock();
+		plog->pdate = Get_Time_Without_L();
+		_ULL sumlen = strlen(pc) + strlen(head);
+		plog->pc = StrAdd(pba->LTmem, head, pc, NULL);
+		pba->pLog->Put(pba->pLog, plog);
+	}
+}
+
+//BALLOC_L
+void MyBA_PutLogs(const char* head, ...)
+{
+	if(pba)
+	{
+		if (!head)
+			head = mstrdup("Normal Log:", pba->LTmem);
+		va_list parg;
+		va_start(parg, head);
+		_ULL sumlen = strlen(head) + 1;
+		List* plist = List_Init();
+		for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
+		{
+			sumlen += strlen(p);
+			plist->Put(plist, (void*)p);
+		}
+		va_end(parg);
+		BALLOCS_L(char, pret, sumlen, , );
+		strcat_s(pret, sumlen, head);
+		for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
+			strcat_s(pret, sumlen, p);
+
+		free(plist);
+
+		BALLOCS_L(BALog, plog, 1);
+		plog->t = clock();
+		plog->pdate = Get_Time_Without_L();
+		plog->pc = pret;
+		pba->pLog->Put(pba->pLog, plog);
+	}
 }
 
 float MyBA_GetUsedTime(void)
@@ -146,13 +185,13 @@ bool MyBA_WriteLog(bool isquit)
 	FILE* pf = NULL;
 	if (fopen_s(&pf, StringAdd_S(pba->exepath, "\\mba.log", NULL), "a") == 0)
 	{
-		pba->PutLog(_strdup("mba.log file opened successfully"));
+		MyBA_PutLog(_strdup("mba.log file opened successfully"));
 		if (isquit == 1)
-			pba->PutLog(_strdup("MyBA Start To Quit"));
+			MyBA_PutLog(_strdup("MyBA Start To Quit"));
 	}
 	else
 	{
-		pba->PutLog(_strdup("Unable to open mba.log file"));
+		MyBA_PutLog(_strdup("Unable to open mba.log file"));
 		if (pf != NULL)
 			fclose(pf);
 		return 0;
@@ -181,13 +220,13 @@ void* MyBA_Err(const char* pc, bool instance)
 		{
 			PPW(pc);
 		}
-		pba->PutLog(StringAdd_L("Err:", pc, NULL));
+		MyBA_PutLog(pc, "Err:");
 	}
 	return NULL;
 }
 
-void* MyBA_Errs(bool instance, ...)
 //End with a NULL
+void* MyBA_Errs(bool instance, ...)
 {
 	va_list parg;
 	va_start(parg, instance);
@@ -201,14 +240,13 @@ void* MyBA_Errs(bool instance, ...)
 	va_end(parg);
 	sumlen += 5;
 	BALLOCS_L(char, pret, sumlen, NULL, );
-	strcat_s(pret, sumlen, "Err:");
 	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
 		strcat_s(pret, sumlen, p);
 	free(plist);
 
 	if (instance == 1)
 		PPW(pret);
-	pba->PutLog(pret);
+	MyBA_PutLog(pret, "Err:");
 	return NULL;
 }
 
@@ -387,11 +425,11 @@ int MyBA_CMD_ShowLog(void)
 	FILE* pf = NULL;
 	if (fopen_s(&pf, StringAdd_S(pba->exepath, "\\mba.log", NULL), "r") == 0)
 	{
-		pba->PutLog(_strdup("mba.log file opened successfully"));
+		MyBA_PutLog(_strdup("mba.log file opened successfully"));
 	}
 	else
 	{
-		pba->PutLog(_strdup("Unable to open mba.log file"));
+		MyBA_PutLog(_strdup("Unable to open mba.log file"));
 		if (pf)
 			fclose(pf);
 		return 0;

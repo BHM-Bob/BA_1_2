@@ -40,14 +40,14 @@ TextIni* TextIni_Del(TextIni* p, const char* name);
 TextIni* TextIni_Read(const char* path);
 char* TextIni_Query(TextIni* p, const char* name);
 
-class BA_Dir
+class BA_Dir : public BA_Base
 {
 public:
-	List* dirs;//char* as a dot,not full path, don't contain "." and ".."
-	List* files;//char* as a dot,not full path
-	char* root;//root as "D:\\A_DIR"
+	balist<char>* dirs = new balist<char>;//char* as a dot,not full path, don't contain "." and ".."
+	balist<char>* files = new balist<char>;//char* as a dot,not full path
+	char* root = NULL;//root as "D:\\A_DIR"
 
-	List* mem;
+	bool isErr = false;
 
 	//_root as "D:\\A_DIR"
 	BA_Dir(const char* _root);

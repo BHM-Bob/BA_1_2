@@ -22,27 +22,6 @@ int main(int argc, char** argvs)
 	d["k3"] = a;
 	char* k2 = d.Copy<char*>("k2");
 
-	string sInput;
-	while (true)
-	{
-		if (_kbhit())//非阻塞获取用户输入
-		{
-			char cTake = _getche();//获取输入字符,并回显		
-			if (cTake == 'q' || cTake == 'Q')
-			{
-				break;
-			}
-			if (cTake == '\r')
-			{
-				cout << endl;
-				cout << "Input message: " << sInput << endl;
-				sInput.clear();
-				continue;
-			}
-			sInput = sInput + cTake;
-		}
-	}
-
 	//BA_Test_WordsCount();
 
 	//QUI ui("TEST");

@@ -219,12 +219,10 @@ char* TextIni_Query(TextIni* p, const char* name)
 BA_Dir::BA_Dir(const char* _root)
 {
     _ULL _rootLen = strlen(root);
-    dirs = List_Init();
-    files = List_Init();
-    mem = List_Init();
     if (root == NULL || _rootLen < 3)
     {
         MyBA_Err("BA_Dir::BA_Dir(const char* root):root == NULL || strlen(root) < 3,do nothing", 1);
+        isErr = true;
     }
     else
     {
@@ -244,29 +242,32 @@ BA_Dir::BA_Dir(const char* _root)
                         if ((findData.attrib & _A_SUBDIR))
                         {
                             if (strcmp(findData.name, ".") != 0 && strcmp(findData.name, "..") != 0)
-                                List_Put(dirs, (void*)mstrdup(findData.name));
+                                dirs->Put(mstrdup(findData.name, mem));
                         }
                         else
                         {
-                            List_Put(files, (void*)mstrdup(findData.name));
+                            files->Put(mstrdup(findData.name, mem));
                             files->plast->usage = findData.size;
                         }
                     } while (_findnext(handle, &findData) == 0);    // 查找目录中的下一个文件
                 }
                 else
                 {
-                    MyBA_Errs(1, "Failed to find first file! with root:", _root, "do nothing", NULL);
+                    MyBA_Errs(1, "Failed to find first file! with root:", _root, ", do nothing", NULL);
+                    isErr = true;
                 }
                 _findclose(handle);    // 关闭搜索句柄
             }
             else
             {
                 MyBA_Errs(1, "BA_Dir::BA_Dir(const char* root):strcpy_s(root, _rootLen + 1, _root) err with _root:", _root, ", do nothing", NULL);
+                isErr = true;
             }
         }
         else
         {
             PPW("BALLOC_R(strlen(_root), char, mem) == NULL");
+            isErr = true;
         }
     }
 }
@@ -275,13 +276,12 @@ BA_Dir::BA_Dir(const char* _root, const char* _type)
 {
 
     _ULL _rootLen = strlen(_root);
-    dirs = List_Init();
-    files = List_Init();
     mem = List_Init();
     root = BALLOC_R(_rootLen + 1, char, mem);
     if (root == NULL || _type == NULL || _rootLen < 3)
     {
         MyBA_Err("BA_Dir::BA_Dir(const char* root):root == NULL || strlen(root) < 3,do nothing", 1);
+        isErr = true;
     }
     else
     {
@@ -298,26 +298,29 @@ BA_Dir::BA_Dir(const char* _root, const char* _type)
                     do
                     {
                         if (!(findData.attrib & _A_SUBDIR))
-                        {                            
-                            List_Put(files, (void*)mstrdup(findData.name));
+                        {      
+                            files->Put(mstrdup(findData.name, mem));
                             files->plast->usage = findData.size;
                         }
                     } while (_findnext(handle, &findData) == 0);    // 查找目录中的下一个文件
                 }
                 else
                 {
-                    MyBA_Errs(1, "Failed to find first file! with root:", _root, "do nothing", NULL);
+                    MyBA_Errs(1, "Failed to find first file! with root:", _root, ", do nothing", NULL);
+                    isErr = true;
                 }
                 _findclose(handle);    // 关闭搜索句柄
             }
             else
             {
                 MyBA_Errs(1, "BA_Dir::BA_Dir(const char* root):strcpy_s(root, _rootLen + 1, _root) err with _root:", _root, ", do nothing", NULL);
+                isErr = true;
             }
         }
         else
         {
             PPW("BALLOC_R(strlen(_root), char, mem) == NULL");
+            isErr = true;
         }
     }
 }
@@ -329,13 +332,13 @@ void BA_Dir::Print(void)
         printf("=");
     printf("\n%s\n",root);
 
-    LIST_FORR(char, p, dirs,js++)
+    for(char* p = dirs->Copy(); p; p = dirs->Copy(), js++)
         printf("|||%5d - [%10.2fMB] ||| %s\n", js + 1, -1.0, p);
     for (_ULL a = 0; a < 100; a++)
         printf("-");
     printf("\n");
 
-    for (ListDot* dot = files->pfirst; dot != NULL; dot = dot->pnext,js++)
+    for (balistDot<char>* dot = dirs->pfirst; dot; dot = dot->pnext, js++)
         printf("|||%5d - [%10.2fMB] ||| %s\n", js + 1, (dot->usage) / 1024.0 / 1024.0, (char*)(dot->pdata));
     for (_ULL a = 0; a < 100; a++)
         printf("=");

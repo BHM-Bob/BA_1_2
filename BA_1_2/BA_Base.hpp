@@ -191,7 +191,7 @@ List* List_Destroy(List* plist);
 
 //******************************************************************
 //******************************************************************
- 
+
 class BA_Base
 {
 public:
@@ -426,13 +426,17 @@ struct MyBA
 
 	int (*Quit)(int retVal);
 	float (*GUT)(void);
-	void (*PutLog)(const char* pc);
+	// BALLOC_L
+	void (*PutLog)(const char* pc, const char* head);
 };
 extern MyBA* pba;
 void MyBA_Init(void);
 void MyBA_Context(const char* nowFuncName);
 float MyBA_GetUsedTime(void);
-void MyBA_PutLog(const char* pc);
+// BALLOC_L
+void MyBA_PutLog(const char* pc, const char* head = "Normal Log:");
+// end with NULL & BALLOC_L
+void MyBA_PutLogs(const char* head = "Normal Log:", ...);
 bool MyBA_WriteLog(bool isquit);
 void* MyBA_Err(const char* pc, bool instance);
 void* MyBA_Errs(bool instance, ...);
