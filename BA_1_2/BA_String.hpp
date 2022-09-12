@@ -74,4 +74,51 @@ char* BA_Chars(int num);
 char* BA_Chars(BA_Shape s);
 char* BA_Chars(BA_Array a);
 
+
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+// use MCALLOC when mem is NULL
+template<typename dataType>
+char* Num2Str(dataType num, List* mem = NULL)
+{
+	char* preturn = NULL;
+	size_t w = 1;
+	if (typeid(dataType) == typeid(double))
+	{
+		if (mem)
+		{
+			preturn = BALLOC_R(18, char, mem);
+		}
+		else
+		{
+			preturn = MCALLOC(181, char);
+		}
+		sprintf_s(preturn, w + 1, "%e", num);
+	}
+	else
+	{
+		for (int a = 10; num / a != 0; w++, a *= 10);
+		if (mem)
+		{
+			preturn = BALLOC_R(w + 1, char, mem);
+		}
+		else
+		{
+			preturn = MCALLOC(w + 1, char);
+		};
+		if (typeid(dataType) == typeid(int))
+			sprintf_s(preturn, w + 1, "%d", num);
+		else if (typeid(dataType) == typeid(_LL))
+			sprintf_s(preturn, w + 1, "%lld", num);
+		else if (typeid(dataType) == typeid(_ULL))
+			sprintf_s(preturn, w + 1, "%llu", num);
+		else
+			return (char*)MyBA_Errs(1, "Num_To_Char: type default with ",
+				typeid(dataType).name(), ", return NULL", NULL);
+	}
+	return preturn;
+}
+
 #endif

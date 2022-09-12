@@ -462,7 +462,7 @@ char* mstrdup(const char* p, List* mem = NULL);
 // if mem == NULL, use MCALLOC
 template<typename dataType>
 dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...);
-// random, [start, end]
+// random, [start, end) when type is int
 template<typename dataType>
 dataType RandNum(dataType start, dataType end);
 // random, [start, end) for int, [start, end] for float
@@ -536,7 +536,7 @@ inline dataType RandNum(dataType start, dataType end)
 	}
 	else
 	{
-		uniform_int_distribution<int> dis(start, end);
+		uniform_int_distribution<int> dis(start, end - 1);
 		return dis(pba->randomEngine);
 	}
 }
@@ -699,8 +699,20 @@ dataType* balist<dataType>::Get(_LL index)
 {
 	balistDot<dataType>* p = pfirst;
 	for (_LL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
-	p->ppre->pnext = p->pnext;
-	p->pnext->ppre = p->ppre;
+	if (p == pfirst)
+	{
+		return this->Get();
+	}
+	else if (p == plast)
+	{
+		plast = p->ppre;
+		p->ppre->pnext = NULL;
+	}
+	else
+	{
+		p->ppre->pnext = p->pnext;
+		p->pnext->ppre = p->ppre;
+	}
 	dataType* pret = p->pdata;
 	delete p;
 	return pret;
