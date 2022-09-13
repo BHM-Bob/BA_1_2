@@ -704,6 +704,7 @@ dataType* balist<dataType>::Get(_LL index)
 	}
 	dataType* pret = p->pdata;
 	delete p;
+	--sumque;
 	return pret;
 }
 
