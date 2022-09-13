@@ -679,7 +679,7 @@ dataType* balist<dataType>::Copy(_LL index)
 	if (index < 0 && index >= -(sumque))
 		index = sumque + index;
 	balistDot<dataType>* pd = pfirst;
-	for (_LL i = 0; (i < index) && (p != NULL); i++, pd = pd->pnext);
+	for (_LL i = 0; (i < index) && (pd != NULL); i++, pd = pd->pnext);
 	return pd->pdata;
 }
 
@@ -786,11 +786,11 @@ void balist<dataType>::Put(dataType* pdata, const char* name, bool justUseNamePt
 		}
 		else
 		{
+			pte->idx = plast->idx + 1;
 			pte->ppre = plast;
 			pte->pnext = NULL;
 			plast->pnext = pte;
 			plast = pte;
-			pte->idx = plast->idx + 1;
 		}
 	}
 }
