@@ -244,9 +244,6 @@ public:
 	//(dataType*)(0x1)
 	dataType* errPtr = (dataType*)(0x1);
 
-	_LL lastIndex = 0;
-	balistDot<dataType>* lastIndexDot = NULL;
-
 	int (*strCmpFunc)(const char* ptr1, const char* ptr2) = strcmp;
 
 	balist();
@@ -679,18 +676,10 @@ dataType* balist<dataType>::Copy(_LL index)
 {
 	if (index > sumque-1 || index < -(sumque))
 		return (dataType*)(0x1);
-	if (index < 0 && index > -(sumque))
+	if (index < 0 && index >= -(sumque))
 		index = sumque + index;
-	if (!lastIndexDot)
-		lastIndexDot = pfirst;
-	balistDot<dataType>* pd = lastIndexDot;
-	if (index > lastIndex)
-		for (_LL i = lastIndex; i < index; i++, pd = pd->pnext);
-	else if (index < lastIndex)
-		for (_LL i = lastIndex; i > index; i--, pd = pd->ppre);
-	//else//(index == lastIndex);
-	lastIndex = index;
-	lastIndexDot = pd;
+	balistDot<dataType>* pd = pfirst;
+	for (_LL i = 0; (i < index) && (p != NULL); i++, pd = pd->pnext);
 	return pd->pdata;
 }
 
@@ -785,7 +774,7 @@ void balist<dataType>::Put(dataType* pdata, const char* name, bool justUseNamePt
 		{
 			now = plast = pfirst;
 			pfirst->pnext = pfirst->ppre = NULL;
-			pfirst->idx = sumque - 1;
+			pfirst->idx = 0;
 		}
 	}
 	else
@@ -801,7 +790,7 @@ void balist<dataType>::Put(dataType* pdata, const char* name, bool justUseNamePt
 			pte->pnext = NULL;
 			plast->pnext = pte;
 			plast = pte;
-			pte->idx = sumque - 1;
+			pte->idx = plast->idx + 1;
 		}
 	}
 }

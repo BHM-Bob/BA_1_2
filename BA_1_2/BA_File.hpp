@@ -1,7 +1,7 @@
-//BASIC_ALL_1_2 BA_FILE_H
+ï»¿//BASIC_ALL_1_2 BA_FILE_H
 //H
 //Writen By BHM
-//2021Äê11ÔÂ24ÈÕ 21µã11·Ö
+//2021å¹´11æœˆ24æ—¥ 21ç‚¹11åˆ†
 
 //#define USE_OPENCV
 //#define USE_WINDOWS
@@ -56,5 +56,51 @@ public:
 
 	void Print(void);
 };
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+// return errCode
+template<typename dataType>
+int WriteType(FILE* pf, dataType* data, _LL num = 1);
+// return data, use MCALLOC if data is NULL
+template<typename dataType>
+dataType* ReadType(FILE* pf, dataType* data = NULL);
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+template<typename dataType>
+int WriteType(FILE* pf, dataType* data, _LL num)
+{
+	if (fwrite(&num, sizeof(_LL), 1, pf) != 1)
+		return -1;
+	if (fwrite(data, sizeof(dataType), num, pf) != num)
+		return -2;
+	return 0;
+}
+
+template<typename dataType>
+dataType* ReadType(FILE* pf, dataType* data)
+{
+	_LL* num = MCALLOC(1, _LL);
+	fread(num, sizeof(_LL), 1, pf);
+	if (!data)
+	{
+		data = MCALLOC(*num, dataType);
+		if (!data)
+		{
+			free(num);
+			return (dataType*)(0x1);
+		}
+	}
+	if(fread(data, sizeof(dataType), *num, pf) != *num)
+	{
+		free(num);
+		return (dataType*)(0x2);
+	}
+	return data;
+}
 
 #endif
