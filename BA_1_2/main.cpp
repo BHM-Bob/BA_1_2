@@ -24,13 +24,6 @@ int main(int argc, char** argvs)
 
 	//BA_Test_WordsCount();
 
-	//QUI ui("TEST");
-	//ui.AddButt("toShowKey", (const char*)u8"中文", 20, NULL,
-	//	NULL, NULL, QUI_WIN_NULLSUR);
-	//ui.win->pre_title = &(ui.butts->butts["toShowKey"]->re_butt);
-	//while(ui.PollQuit() == 0)
-	//	ui.Update();
-
 	return MyBA_Quit();
 }
 

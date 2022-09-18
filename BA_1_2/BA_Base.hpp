@@ -39,31 +39,11 @@
 #include <thread>
 #include <mutex>
 
-using namespace std;
+//using namespace std;
 
-
-#ifdef USE_WINDOWS
 
 #include<Windows.h>
 #include<WinBase.h>
-
-#endif // USE_WINDOWS
-
-/*
-E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2.lib
-E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2_image.lib
-E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2_mixer.lib
-E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2main.lib
-E:\My_Progs\Cpp\@ExtendLib\SDL2\lib\x64\LIB\SDL2_ttf.lib
-*/
-//#ifdef USE_SDL2
-
-#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL.h"
-#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL_syswm.h"
-#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL_image.h"
-#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL_ttf.h"
-#include"../../../../Cpp/@ExtendLib/SDL2/include/SDL_mixer.h"
-//#endif // USE_SDL2
 
 /*
 D:\OpenCV\opencv\build\include\opencv2
@@ -82,7 +62,7 @@ typedef long long _LL;
 #define BA_FREED_PTR (void*)0x1
 
 #define PPT() printf("\nTime now : In %s\n, %s at line %lu ,<%s> <%.10f s>,\n",__FILE__, __func__,__LINE__,Get_Time_Without_S(),(float)( (float)(clock())/CLOCKS_PER_SEC))
-#define PPX(p) cout << "\n <" << (float)( (float)(clock())/CLOCKS_PER_SEC) << " s>In " << __FILE__ << ", " << __func__ << " at line " << __LINE__ << " ," << #p << " is <" << p << ">\n" << endl;
+#define PPX(p) std::cout << "\n <" << (float)( (float)(clock())/CLOCKS_PER_SEC) << " s>In " << __FILE__ << ", " << __func__ << " at line " << __LINE__ << " ," << #p << " is <" << p << ">\n" << std::endl;
 // do not cacu it's len
 #define PPSS(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%s>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
 //this str can not contan any ++ opts, because ti will use twice in this define line
@@ -93,7 +73,7 @@ typedef long long _LL;
 #define PPWs(p,q) printf("\nWarning : In %s\n, %s at line %lu ,<%s %s>!!!,\n",__FILE__,__func__,__LINE__,(p),(q))
 
 /*STOP_IF_SCANF*/
-#define _SIS_ {printf("\nStopping Now,Enter Anykey To Comtinue\nAt %s in line %lu  ",__func__,__LINE__);fflush(stdin);int c = _getch();printf("   Scanfed\n");fflush(stdin);}
+#define _SIS_ {printf("\nStopping Now,Enter Anykey To Continue\nAt %s in line %lu  ",__func__,__LINE__);fflush(stdin);int c = _getch();printf("   Scanfed\n");fflush(stdin);}
 
 #define MCALLOC(num,type) (type*)calloc((size_t)(num),sizeof(type))
 #define MCALLOCS(type,ret,num) type* ret = (type*)calloc((size_t)(num),sizeof(type))
@@ -270,12 +250,12 @@ public:
 		void (*hashCollisionFunc)(balistDot<dataType>* pOriDot, balistDot<dataType>* pNowDot),
 		const char* name = NULL, bool justUseNamePtr = false);
 	// multi threads
-	void ThrPut(dataType* pdata, mutex* m,
+	void ThrPut(dataType* pdata, std::mutex* m,
 		const char* name = NULL, bool justUseNamePtr = false);
 	// multi threads
-	dataType* ThrGet(mutex* m);
+	dataType* ThrGet(std::mutex* m);
 	// multi threads
-	_LL ThrSize(mutex* m);
+	_LL ThrSize(std::mutex* m);
 	// end with a NULL
 	balist<dataType> Gather(dataType* pData1, ...);
 	void Destroy(void);
@@ -300,17 +280,17 @@ class badictPair
 {
 public:
 	char* key = NULL;
-	any data;
+	std::any data;
 	_LL idx = 0;//from 0
 	_ULL usage = 0;//for some open use
 	badictPair* pnext = NULL;
 	badictPair* ppre = NULL;
 
 	badictPair();
-	badictPair(const char* _key, any _data, bool _justUseKeyPtr = false);
+	badictPair(const char* _key, std::any _data, bool _justUseKeyPtr = false);
 	~badictPair();
 
-	void operator=(any _data);
+	void operator=(std::any _data);
 };
 class badict
 {
@@ -326,12 +306,12 @@ public:
 
 	badict(bool _justUseKeyPtr = false);
 	// end with a NULL
-	badict(const char* key, any data, bool _justUseKeyPtr = false);
+	badict(const char* key, std::any data, bool _justUseKeyPtr = false);
 
 	bool HasKey(const char* key, bool justCmpKeyById = false);
 	//Get the data to key
 	template <typename dataType> dataType Copy(const char* key, bool justCmpKeyById = false);
-	badict Put(const char* key, any data, bool _justUseKeyPtr = false);
+	badict Put(const char* key, std::any data, bool _justUseKeyPtr = false);
 	// del
 	bool Del(const char* key, bool freeKey = true);
 	void Destroy(void);
@@ -343,7 +323,7 @@ public:
 	//use in obj justUseKeyPtr when create pair
 	badictPair& operator[](const char* key);
 	// () 运算符重载, setVar via key
-	badict operator()(const char* _key, any _data);
+	badict operator()(const char* _key, std::any _data);
 };
 
 
@@ -364,7 +344,7 @@ public:
 	balist<float>* procQues = NULL;
 	_ULL quePtr = 0;
 	char* name = NULL;
-	thread** ppThs = NULL;
+	std::thread** ppThs = NULL;
 	COORD pos = COORD();
 
 	List* mem = List_Init();
@@ -373,9 +353,9 @@ public:
 		void (*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<float>&, balist<bool>&, void*),
 		void* otherData = NULL, const char* _name = NULL);
 
-	void PutTask(dataTypePut* pData, mutex* m);
-	List* LoopToQuit(mutex* m);
-	void Destroy(mutex* m);
+	void PutTask(dataTypePut* pData, std::mutex* m);
+	List* LoopToQuit(std::mutex* m);
+	void Destroy(std::mutex* m);
 };
 
 //***********************************************************************************************************************
@@ -411,7 +391,7 @@ struct MyBA
 	bool GUT_state;
 	clock_t JDT_t;
 
-	default_random_engine randomEngine;
+	std::default_random_engine randomEngine;
 
 	bool isSDL2;
 	bool isSAFEMODE;
@@ -528,12 +508,12 @@ inline dataType RandNum(dataType start, dataType end)
 {
 	if (typeid(dataType) == typeid(float))
 	{
-		uniform_real_distribution<float> dis(start, end);
+		std::uniform_real_distribution<float> dis(start, end);
 		return dis(pba->randomEngine);
 	}
 	else
 	{
-		uniform_int_distribution<int> dis(start, end - 1);
+		std::uniform_int_distribution<int> dis(start, end - 1);
 		return dis(pba->randomEngine);
 	}
 }
@@ -552,13 +532,13 @@ inline dataType* RandNum(dataType start, dataType end, _LL len, List* mem)
 	}
 	if (typeid(dataType) == typeid(float))
 	{
-		uniform_real_distribution<float> dis(start, end);
+		std::uniform_real_distribution<float> dis(start, end);
 		for (_LL i = 0; i < len; i++)
 			ret[i] = dis(pba->randomEngine);
 	}
 	else
 	{
-		uniform_int_distribution<int> dis(start, end-1);
+		std::uniform_int_distribution<int> dis(start, end-1);
 		for (_LL i = 0; i < len; i++)
 			ret[i] = dis(pba->randomEngine);
 	}
@@ -865,7 +845,7 @@ void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
 }
 
 template<typename dataType>
-void balist<dataType>::ThrPut(dataType* pdata, mutex* m, const char* name, bool justUseNamePtr)
+void balist<dataType>::ThrPut(dataType* pdata, std::mutex* m, const char* name, bool justUseNamePtr)
 {
 	m->lock();
 	this->Put(pdata, name, justUseNamePtr);
@@ -873,7 +853,7 @@ void balist<dataType>::ThrPut(dataType* pdata, mutex* m, const char* name, bool 
 }
 
 template<typename dataType>
-dataType* balist<dataType>::ThrGet(mutex* m)
+dataType* balist<dataType>::ThrGet(std::mutex* m)
 {
 	dataType* ret = NULL;
 balist_Label_A:
@@ -893,7 +873,7 @@ balist_Label_A:
 }
 
 template<typename dataType>
-_LL balist<dataType>::ThrSize(mutex* m)
+_LL balist<dataType>::ThrSize(std::mutex* m)
 {
 	m->lock();
 	_LL ret = sumque;
@@ -1057,7 +1037,7 @@ MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_ULL _sumThreads,
 		balist<float>&, balist<bool>&, void*), void* otherData, const char* _name)
 {
 	sumThreads = _sumThreads;
-	ppThs = BALLOC_R(_sumThreads, thread*, mem);
+	ppThs = BALLOC_R(_sumThreads, std::thread*, mem);
 	putDataQues = new balist< dataTypePut>[_sumThreads];
 	getDataQues = new balist< dataTypeGet>[_sumThreads];
 	procQues = new balist< float>[_sumThreads];
@@ -1068,13 +1048,13 @@ MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_ULL _sumThreads,
 		name = mstrdup(_name, mem);
 	for (_ULL i = 0; i < sumThreads; i++)
 	{
-		ppThs[i] = new thread(_pF, i, ref(putDataQues[i]),
-			ref(getDataQues[i]), ref(procQues[i]), ref(sig), otherData);
+		ppThs[i] = new std::thread(_pF, i, std::ref(putDataQues[i]),
+			std::ref(getDataQues[i]), std::ref(procQues[i]), std::ref(sig), otherData);
 	}
 }
 
 template<typename dataTypePut, typename dataTypeGet>
-inline void MyThreadsPool<dataTypePut, dataTypeGet>::PutTask(dataTypePut* pData, mutex* m)
+inline void MyThreadsPool<dataTypePut, dataTypeGet>::PutTask(dataTypePut* pData, std::mutex* m)
 {
 	putDataQues[quePtr].ThrPut(pData, m);
 	quePtr = ((quePtr + 1) < sumThreads) ? (quePtr + 1) : 0;
@@ -1085,7 +1065,7 @@ inline void MyThreadsPool<dataTypePut, dataTypeGet>::PutTask(dataTypePut* pData,
 //send 'wait to quit' signal to every que,
 //and start to loop waiting
 template<typename dataTypePut, typename dataTypeGet>
-inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(mutex* m)
+inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(std::mutex* m)
 {
 	List* retList = List_Init();
 	for (_ULL idx = 0; idx < sumThreads; idx++)
@@ -1128,7 +1108,7 @@ inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(mutex* m)
 }
 
 template<typename dataTypePut, typename dataTypeGet>
-inline void MyThreadsPool<dataTypePut, dataTypeGet>::Destroy(mutex* m)
+inline void MyThreadsPool<dataTypePut, dataTypeGet>::Destroy(std::mutex* m)
 {
 	MyBA_Free_R(mem);
 	List_Destroy(mem);

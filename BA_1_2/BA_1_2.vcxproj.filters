@@ -24,9 +24,6 @@
     <ClCompile Include="BA_Math.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="BA_UI.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="BA_String.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -36,13 +33,7 @@
     <ClCompile Include="test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="BA_Plot.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="BA_BioInfo.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="BA_QUI.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,9 +47,6 @@
     <ClInclude Include="BA_Base.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="BA_UI.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="BA_String.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -68,13 +56,7 @@
     <ClInclude Include="BA_Test.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="BA_Plot.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="BA_BioInfo.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="BA_QUI.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2279,7 +2279,7 @@ char* BA_Array::Str(bool toStr, bool printOut)
 	return nullptr;
 }
 
-any BA_Array::operator[](_LL idx)
+std::any BA_Array::operator[](_LL idx)
 {
 	if (idx < 0 && idx >= (-dataLen))
 	{
@@ -2297,7 +2297,7 @@ any BA_Array::operator[](_LL idx)
 		return dataL[idx];
 }
 
-any BA_Array::operator[](_ULL idx)
+std::any BA_Array::operator[](_ULL idx)
 {
 	if (type == 'f')
 		return dataF[idx];
@@ -2305,7 +2305,7 @@ any BA_Array::operator[](_ULL idx)
 		return dataL[idx];
 }
 
-any BA_Array::operator()(_LL idx1, ...)
+std::any BA_Array::operator()(_LL idx1, ...)
 {
-	return any();
+	return std::any();
 }

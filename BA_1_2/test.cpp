@@ -1,37 +1,10 @@
 ﻿
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
-#include"BA_UI.hpp"
-#include"BA_QUI.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
 #include"BA_Test.hpp"
-#include"BA_Plot.hpp"
 #include"BA_BioInfo.hpp"
-
-float BA_Plot_Test_Map(float x,float y)
-{
-	return 1-x*log(x-y) + y * y;
-}
-
-void BA_Plot_Test(void)
-{
-	PPX(pba->GUT());
-	BA_Plot("Test", BA_Plot_Test_Map, 30., 30.).PaintMM().Loop(0);
-}
-
-
-void BA_Dir_Test(void)
-{
-	BA_Dir dir = BA_Dir("D:\\AI\\DataSet\\AlphaMedia\\rna2img\\culturable", "jpeg");
-	LIST_FORS(char, path, dir.files)
-	{
-		if (remove(StringAdd_S(dir.root, "\\", path, NULL)) != 0)
-			MyBA_Errs(1, "BA_Dir_Test:can not remove file:", StringAdd_S(dir.root, "\\", path), " ,do nothing", NULL);
-		if (dir.files->now && dir.files->now->idx % 5 == 0)
-			JDT(dir.files->now->idx, dir.files->sumque);
-	}
-}
 
 void BA_String_Test(void)
 {
@@ -155,7 +128,7 @@ void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, balistDot<_ULL>* p2)
     delete p2;
 }
 
-mutex m;
+std::mutex m;
 
 void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
     balist<char>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
@@ -164,14 +137,14 @@ void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
     BA_String* text = (BA_String*)getQ.ThrGet(&m);
     balist<char>* splitResult = text->Splitx(" ,.\n\"'?!;:@`#$%^&*()+=/\r\t()[]{}<>");
     balist<_ULL>* tree = (balist<_ULL>*)data;
-    string* str = new string();
+    std::string* str = new std::string();
     _ULL hashV = 0, nowIdx = 0;
     _ULL* count = NULL;
     std::hash<std::string> strHash;
     for(char* p = splitResult->Copy(); p; p = splitResult->Copy())
     {
         delete str;
-        str = new string(p);
+        str = new std::string(p);
         hashV = strHash(*str);
         count = TypeDupR(NULL, 1, 1ULL);
         m.lock();

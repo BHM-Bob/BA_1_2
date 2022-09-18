@@ -9,7 +9,6 @@
 
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
-#include"BA_UI.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
 
@@ -960,7 +959,7 @@ badictPair::badictPair()
 {
 }
 
-badictPair::badictPair(const char* _key, any _data, bool _justUseKeyPtr)
+badictPair::badictPair(const char* _key, std::any _data, bool _justUseKeyPtr)
 {
 	if (_justUseKeyPtr)
 	{
@@ -978,7 +977,7 @@ badictPair::~badictPair()
 {
 }
 
-void badictPair::operator=(any _data)
+void badictPair::operator=(std::any _data)
 {
 	data.reset();
 	data = _data;
@@ -989,7 +988,7 @@ badict::badict(bool _justUseKeyPtr)
 	justUseKeyPtr = _justUseKeyPtr;
 }
 
-badict::badict(const char* key, any data, bool _justUseKeyPtr)
+badict::badict(const char* key, std::any data, bool _justUseKeyPtr)
 {
 	this->Put(key, data, _justUseKeyPtr);
 }
@@ -1005,7 +1004,7 @@ bool badict::HasKey(const char* key, bool justCmpKeyById)
 	return false;
 }
 
-badict badict::Put(const char* key, any data, bool _justUseKeyPtr)
+badict badict::Put(const char* key, std::any data, bool _justUseKeyPtr)
 {
 	++sumque;
 	if (sumque == 1)

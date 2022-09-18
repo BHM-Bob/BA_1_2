@@ -11,7 +11,6 @@
 
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
-#include"BA_UI.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
 
@@ -21,7 +20,6 @@ void BA_Array_Test2(void);
 float BA_ArrayTest_1(float* p);
 BA_Array BA_Array_GetTest();
 void BA_Dir_Test(void);
-void BA_Plot_Test(void);
 void BA_ThreadPool_Test(void);
 void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, balistDot<_ULL>* p2);
 void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,

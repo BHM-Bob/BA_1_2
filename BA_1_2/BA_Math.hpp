@@ -105,9 +105,9 @@ public:
 	BA_Array operator*(dataType other);
 	template<typename dataType>
 	BA_Array operator/(dataType other);
-	any operator[](_LL idx);
-	any operator[](_ULL idx);
-	any operator()(_LL idx1, ...);
+	std::any operator[](_LL idx);
+	std::any operator[](_ULL idx);
+	std::any operator()(_LL idx1, ...);
 
 };
 
