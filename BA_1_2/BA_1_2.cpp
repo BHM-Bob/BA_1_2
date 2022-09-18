@@ -740,7 +740,7 @@ void* List_Get(List* plist)
 	ListDot* pret = plist->pfirst;
 	if (plist->sumque == 1)
 	{
-		plist->now = plist->reverse_now = plist->pfirst = plist->plast = NULL;
+		plist->now = plist->pfirst = plist->plast = NULL;
 	}
 	else if (plist->sumque == 0)
 	{
@@ -788,20 +788,6 @@ ListDot* List_CopyDot(List* plist)
 	return pret;
 }
 
-void* List_ReverseCopy(List* plist)
-{
-	if (plist == NULL)
-		return MyBA_Err("get a NULL que", 1);
-	if (plist->reverse_now == NULL)
-	{
-		plist->reverse_now = plist->plast;//ReSet
-		return NULL;
-	}
-	void* pret = plist->reverse_now->pdata;
-	plist->reverse_now = plist->reverse_now->ppre;//If it means the end, it will report a NULL to rise a signal
-	return pret;
-}
-
 //Get the index dot content,from 0
 void* List_Index(List* plist, _ULL index)
 {
@@ -824,35 +810,6 @@ ListDot* List_IndexDot(List* plist, _ULL index)
 	return p;
 }
 
-void* List_IndexGet(List* plist, _ULL index)
-{
-	if (plist == NULL)
-		return MyBA_Err("get a NULL plist pram", 1);
-	ListDot* p = plist->pfirst;
-	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
-	if(p)
-	{
-		if (p == plist->pfirst)
-		{
-			return List_Get(plist);
-		}
-		else if (p == plist->plast)
-		{
-			plist->plast = p->ppre;
-			p->ppre->pnext = NULL;
-		}
-		else
-		{
-			p->ppre->pnext = p->pnext;
-			p->pnext->ppre = p->ppre;
-		}
-		void* pret = p->pdata;
-		free(p);
-		return pret;
-	}
-	return BA_FREED_PTR;
-}
-
 List* List_Put(List* plist, void* pdata)
 {
 	++(plist->sumque);
@@ -869,7 +826,7 @@ List* List_Put(List* plist, void* pdata)
 			plist->pfirst->pnext = plist->pfirst->ppre = NULL;
 			plist->pfirst->pdata = pdata;
 			plist->pfirst->idx = plist->sumque - 1;
-			plist->reverse_now = plist->now = plist->pfirst;
+			plist->now = plist->pfirst;
 		}
 		return plist;
 	}
@@ -884,9 +841,6 @@ List* List_Put(List* plist, void* pdata)
 		pte->pnext = NULL;
 		plist->plast->pnext = pte;
 		plist->plast = pte;
-		if (plist->reverse_now == plist->plast->ppre)
-			// make sure put opt do not influence rverseCopy opt
-			plist->reverse_now = plist->plast;
 		pte->pdata = pdata;
 		pte->idx = plist->sumque - 1;
 	}
@@ -905,18 +859,6 @@ void List_SetVar(List* plist, void* pdata, void* newVar)
 		p->pdata = newVar;
 }
 
-List* List_Gather(void* pData1, ...)
-{
-	va_list parg;
-	va_start(parg, pData1);
-	List* plist = List_Init();
-	plist->Put(plist, pData1);
-	for (void* p = va_arg(parg, void*); p != NULL; p = va_arg(parg, void*))
-		plist->Put(plist, p);
-	va_end(parg);
-	return plist;
-}
-
 
 List* List_Destroy(List* plist)
 {
@@ -930,7 +872,7 @@ List* List_Destroy(List* plist)
 	return NULL;
 }
 
-List* List_Init(void)
+List* List_Init(void* pdata)
 {
 	MCALLOCS(List, plist, 1);
 	if (plist == NULL)
@@ -944,19 +886,12 @@ List* List_Init(void)
 		plist->Put = List_Put;
 		plist->Get = List_Get;
 		plist->Copy = List_Copy;
-		plist->ReverseCopy = List_ReverseCopy;
 		plist->Index = List_Index;
-		plist->IndexDot = List_IndexDot;
-		plist->IndexGet = List_IndexGet;
+
+		if(pdata)
+			List_Put(plist, pdata);
 		return plist;
 	}
-}
-
-List* List_Init(void* pdata)
-{
-	List* pret = List_Init();
-	List_Put(pret, pdata);
-	return pret;
 }
 //***********************************************************************************************************************
 

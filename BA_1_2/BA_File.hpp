@@ -26,20 +26,6 @@ bool Check_File_Exist(char* path);
 
 bool Encrypt_File(char* path, char* Passwords);
 
-typedef struct TextIni TextIni;
-struct TextIni
-{
-	FILE* pf;
-	List* name;
-	List* data;
-};
-TextIni* TextIni_Create(void);
-TextIni* TextIni_Add(TextIni* p, const char* name, const char* data);
-TextIni* TextIni_Write(TextIni* p, const char* path);
-TextIni* TextIni_Del(TextIni* p, const char* name);
-TextIni* TextIni_Read(const char* path);
-char* TextIni_Query(TextIni* p, const char* name);
-
 class BA_Dir : public BA_Base
 {
 public:

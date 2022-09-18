@@ -142,31 +142,23 @@ struct List
 	ListDot* pfirst = NULL;
 	ListDot* plast = NULL;
 	ListDot* now = NULL;
-	ListDot* reverse_now = NULL;
 
 	List* (*Put)(List* plist, void* pdata);
 	void* (*Get)(List* plist);
 	void* (*Copy)(List* plist);
-	void* (*ReverseCopy)(List* plist);
 	void* (*Index)(List* plist, _ULL index);
 	ListDot* (*IndexDot)(List* plist, _ULL index);
-	void* (*IndexGet)(List* plist, _ULL index);
 };
-List* List_Init(void);
-List* List_Init(void* pdata);
+List* List_Init(void* pdata = NULL);
 void* List_Copy(List* plist);
 ListDot* List_CopyDot(List* plist);
-void* List_ReverseCopy(List* plist);
 void* List_Get(List* plist);
 //Get the index dot content,from 0
 void* List_Index(List* plist, _ULL index);
 //Get the index dot,from 0
 ListDot* List_IndexDot(List* plist, _ULL index);
-void* List_IndexGet(List* plist, _ULL index);
 List* List_Put(List* plist, void* pdata);
 void List_SetVar(List* plist, void* pdata, void* newVar);
-// end with a NULL
-List* List_Gather(void* pData1, ...);
 List* List_Destroy(List* plist);
 
 //******************************************************************
