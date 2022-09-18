@@ -17,13 +17,13 @@ void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultP
 class SequencesSimiCacuer
 {
 public:
-	int seqALen = 0;
-	int seqBLen = 0;
-	int rows = seqALen + 1;
-	int cols = seqALen + 1;
-	int var1 = 0;
-	int var2 = 0;
-	int var3 = 0;
+	_ULL seqALen = 0;
+	_ULL seqBLen = 0;
+	_ULL rows = seqALen + 1;
+	_ULL cols = seqALen + 1;
+	_LL var1 = 0;
+	_LL var2 = 0;
+	_LL var3 = 0;
 	int bestAction = 0;
 	char tracebackSymbol[4] = {"QA<"};
 	BA_Array H = BA_Array(BA_Shape(2, rows, cols), "l");

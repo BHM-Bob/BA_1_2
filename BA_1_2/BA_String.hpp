@@ -50,7 +50,7 @@ public:
 
 	void Destroy(void);
 
-	// () 运算符重载, setVar via index
+	// [] 运算符重载
 	BA_String* operator()(_LL index1, _LL index2);
 };
 

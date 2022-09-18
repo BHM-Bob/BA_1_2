@@ -336,21 +336,21 @@ template<typename dataTypePut, typename dataTypeGet>
 class MyThreadsPool
 {
 public:
-	_ULL sumThreads = 0;
-	_ULL sumTasks = 0;
+	_LL sumThreads = 0;
+	_LL sumTasks = 0;
 	balist<bool> sig = balist<bool>();
 	balist<dataTypePut>* putDataQues = NULL;
 	balist<dataTypeGet>* getDataQues = NULL;
 	balist<float>* procQues = NULL;
-	_ULL quePtr = 0;
+	_LL quePtr = 0;
 	char* name = NULL;
 	std::thread** ppThs = NULL;
 	COORD pos = COORD();
 
 	List* mem = List_Init();
 
-	MyThreadsPool(_ULL _sumThreads,
-		void (*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<float>&, balist<bool>&, void*),
+	MyThreadsPool(_LL _sumThreads,
+		void (*_pF)(_LL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<float>&, balist<bool>&, void*),
 		void* otherData = NULL, const char* _name = NULL);
 
 	void PutTask(dataTypePut* pData, std::mutex* m);
@@ -421,7 +421,7 @@ _ULL MyBA_AtQuit(int (*exitFunc)(void* data, int code, ...), void* data);
 int MyBA_Quit(int retVal = 0);
 
 void MyBA_Free(void* p, List* mem);
-void MyBA_Free_R(List* pli);
+void MyBA_Free_R(List* pli, bool destoryList = false);
 void MyBA_FreeInstance(void);
 void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli);
 void* MyBA_CALLOC_L(_ULL count, _ULL size);
@@ -478,15 +478,7 @@ bool Frees(dataType* p1, ...)
 template<typename dataType>
 dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
 {
-	dataType* pret = NULL;
-	if (mem)
-	{
-		pret = BALLOC_R(num, dataType, mem);
-	}
-	else
-	{
-		pret = MCALLOC(num, dataType);
-	}
+	dataType* pret = BALLOC_R(num, dataType, mem);
 	if (pret)
 	{
 		pret[0] = firstData;
@@ -521,28 +513,28 @@ inline dataType RandNum(dataType start, dataType end)
 template<typename dataType>
 inline dataType* RandNum(dataType start, dataType end, _LL len, List* mem)
 {
-	dataType* ret = NULL;
-	if (mem)
+	dataType* ret = BALLOC_R(len, dataType, mem);
+	if(ret)
 	{
-		ret = BALLOC_R(len, dataType, mem);
+		if (typeid(dataType) == typeid(float))
+		{
+			std::uniform_real_distribution<float> dis((float)start, (float)end);
+			for (_LL i = 0; i < len; i++)
+				ret[i] = (float)dis(pba->randomEngine);
+		}
+		else
+		{
+			std::uniform_int_distribution<int> dis((int)start, (int)end - 1);
+			for (_LL i = 0; i < len; i++)
+				ret[i] = (int)dis(pba->randomEngine);
+		}
+		return ret;
 	}
 	else
 	{
-		ret = MCALLOC(len, dataType);
+		PPW("OOM Err");
+		return (dataType*)1;
 	}
-	if (typeid(dataType) == typeid(float))
-	{
-		std::uniform_real_distribution<float> dis(start, end);
-		for (_LL i = 0; i < len; i++)
-			ret[i] = dis(pba->randomEngine);
-	}
-	else
-	{
-		std::uniform_int_distribution<int> dis(start, end-1);
-		for (_LL i = 0; i < len; i++)
-			ret[i] = dis(pba->randomEngine);
-	}
-	return ret;
 }
 
 //***********************************************************************************************************************
@@ -790,7 +782,7 @@ void balist<dataType>::Insert(dataType* pdata, _LL hashKey,
 		medium = now = plast = pfirst = pNowDot;
 		pfirst->pnext = pfirst->ppre = NULL;
 	}
-	else if (hashKey < pfirst->usage)// insert as first
+	else if (hashKey <= pfirst->usage)// insert as first
 	{
 		pNowDot->pnext = pfirst;
 		pfirst->ppre = pNowDot;
@@ -1032,8 +1024,8 @@ inline badictPair& badict::operator[](const char* key)
 
 
 template<typename dataTypePut, typename dataTypeGet>
-MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_ULL _sumThreads,
-	void(*_pF)(_ULL, balist<dataTypePut>&, balist<dataTypeGet>&,
+MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_LL _sumThreads,
+	void(*_pF)(_LL, balist<dataTypePut>&, balist<dataTypeGet>&,
 		balist<float>&, balist<bool>&, void*), void* otherData, const char* _name)
 {
 	sumThreads = _sumThreads;
@@ -1068,34 +1060,37 @@ template<typename dataTypePut, typename dataTypeGet>
 inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(std::mutex* m)
 {
 	List* retList = List_Init();
-	for (_ULL idx = 0; idx < sumThreads; idx++)
+	for (_LL idx = 0; idx < sumThreads; idx++)
 		putDataQues[idx].ThrPut((dataTypePut*)0x1, m);
-	_ULL sumTasksTillNow = 0;
+	_LL sumTasksTillNow = 0;
 	float st = (float)clock();
 	float* hisProc = BALLOC_R(sumThreads, float, mem);
+	float* procTemp = NULL;
 	pos = GetConsoleCursor();
 	while (sig.ThrSize(m) < sumThreads)
 	{
 		sumTasksTillNow = 0;
-		for (_ULL idx = 0; idx < sumThreads; idx++)
+		for (_LL idx = 0; idx < sumThreads; idx++)
 			sumTasksTillNow += putDataQues[idx].ThrSize(m);
 
 		SetConsoleCursor(pos.X, pos.Y);
 		printf("%20s: subThreads working: %5llu / %5llu  --  %8.3f sec\n",
 			name, sumTasksTillNow, sumTasks, (float)(clock() - st) / CLOCKS_PER_SEC);
-		for (_ULL idx = 0; idx < sumThreads; idx++)
+		for (_LL idx = 0; idx < sumThreads; idx++)
 		{
-			hisProc[idx] = procQues[idx].ThrSize(m) > 0 ?
-				*(procQues[idx].ThrGet(m)) : hisProc[idx];
+			procTemp = procQues[idx].ThrSize(m) > 0 ? procQues[idx].ThrGet(m) : NULL;
+			hisProc[idx] = procTemp ? *procTemp : hisProc[idx];
 			printf("subThreads %llu : %6.3f %%        \n", idx, hisProc[idx]);
+			if (procTemp)
+				free(procTemp);
 		}
 
-		for (_ULL idx = 0; idx < sumThreads; idx++)
+		for (_LL idx = 0; idx < sumThreads; idx++)
 			while (getDataQues[idx].ThrSize(m) > 0)
 				List_Put(retList, getDataQues[idx].ThrGet(m));
 		Sleep(1000);
 	}
-	for (_ULL idx = 0; idx < sumThreads; idx++)
+	for (_LL idx = 0; idx < sumThreads; idx++)
 	{
 		while (getDataQues[idx].ThrSize(m) > 0)
 			List_Put(retList, getDataQues[idx].ThrGet(m));

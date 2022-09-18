@@ -195,7 +195,7 @@ BA_String::BA_String(const char* _pc)
 	}
 	else
 	{
-		pc = _strdup(_pc);
+		pc = mstrdup(_pc, mem);
 		if (pc == NULL)
 			MyBA_Err("BA_String::BA_String(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
 		else
@@ -265,8 +265,7 @@ BA_String BA_String::ReLoad(const char* _pc)
 
 void BA_String::Destroy(void)
 {
-	if(pc)
-		free(pc);
+	MyBA_Free_R(mem, true);
 }
 
 BA_String* BA_String::operator()(_LL index1, _LL index2)

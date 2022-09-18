@@ -22,7 +22,7 @@ int main(int argc, char** argvs)
 	d["k3"] = a;
 	char* k2 = d.Copy<char*>("k2");
 
-	//BA_Test_WordsCount();
+	BA_Test_WordsCount();
 
 	return MyBA_Quit();
 }

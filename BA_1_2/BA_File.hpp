@@ -18,9 +18,9 @@ char* StringRead(FILE* pf, List* mem = NULL);
 
 unsigned long long  Get_File_Size(FILE* pf);
 
-char* ReadTXT(const char* path, _ULL loadSize = 0);
+char* ReadTXT(const char* path, _ULL loadSize = 0, List* mem = NULL);
 
-char* Get_File_Type(char* ppath);
+char* GetFileType(char* ppath, List* mem = NULL);
 
 bool Check_File_Exist(char* path);
 

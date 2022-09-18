@@ -36,19 +36,19 @@ public:
 class BA_Array
 {
 public:
-	_LL* dataL;
-	float* dataF;
+	_LL* dataL = NULL;
+	float* dataF = NULL;
 
-	_LL dataSumL;
-	float dataSumF;
+	_LL dataSumL = 0;
+	float dataSumF = 0.f;
 
-	char type;//f = float, l = _LL
-	_LL dataLen;
+	char type = 'f';//f = float, l = _LL
+	_LL dataLen = 0;
 
-	_LL* dataShape;
-	_LL shapeLen;
+	_LL* dataShape = NULL;
+	_LL shapeLen = 0;
 
-	List* mem;
+	List* mem = List_Init();
 
 	BA_Array(BA_Shape _shape, _LL content);
 	BA_Array(BA_Shape _shape, float content);

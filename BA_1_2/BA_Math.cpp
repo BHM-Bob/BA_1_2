@@ -348,7 +348,7 @@ float* LOFE_Norm(LOFE_Model* model, _ULL sum, float* num, bool is0center)// xi =
 	if (is0center)
 	{
 		for (_ULL i = 0; i < sum; i++, pt++, pte++)//do the Division
-			(*pte) = (*pt) / t - 0.5;
+			(*pte) = (*pt) / t - 0.5f;
 	}
 	else
 	{
@@ -406,7 +406,7 @@ LOFE_Model* LOFE_CreateTrDS(LOFE_Model* model, _ULL index, _LL sum, ...)
 	{
 		model->train_ds[index] = BALLOC_R(sum, float, model->mem);
 		for (_LL i = 0; i < sum; i++)
-			model->train_ds[index][i] = va_arg(parg, double);
+			model->train_ds[index][i] = (float)va_arg(parg, double);
 	}
 	else if (sum < 0)
 	{
@@ -432,7 +432,7 @@ LOFE_Model* LOFE_CreateTeDS(LOFE_Model* model, _ULL index, _LL sum, ...)
 	{
 		model->test_ds[index] = BALLOC_R(sum, float, model->mem);
 		for (_LL i = 0; i < sum; i++)
-			model->test_ds[index][i] = va_arg(parg, double);
+			model->test_ds[index][i] = (float)va_arg(parg, double);
 	}
 	else if (sum < 0)
 	{
@@ -456,7 +456,7 @@ LOFE_Layer* LOFE_FillLayer(LOFE_Layer* pl, _LL sum, ...)
 		if (sum != pl->sumtensor)
 			return (LOFE_Layer*)MyBA_Errs(1, "LOFE_FillLayer: sum != pl->sumtensor with layer ", pl->layerlname, "return NULL", NULL);
 		for (_LL i = 0; i < sum; i++, pt++)
-			pt->num = va_arg(parg, double);
+			pt->num = (float)va_arg(parg, double);
 	}
 	else if (sum < 0)
 	{
@@ -590,9 +590,9 @@ LOFE_Model* LOFE_Train_ApllyG(LOFE_Model* model)
 						*pwnew = *pw - (model->lr) * LOFE_Train_CacuSubChain(model, pt, pw, 1, j);
 						*pbnew = *pb - (model->lr) * LOFE_Train_CacuSubChain(model, pt, pb, 0, j);
 						if (isnan(*pwnew))
-							*pwnew = sin(rand());
+							*pwnew = (float)sin(rand());
 						if (isnan(*pbnew))
-							*pbnew = sin(rand());
+							*pbnew = (float)sin(rand());
 					}
 				}
 			}
@@ -1015,14 +1015,11 @@ char* BA_Shape::Str(bool toStr, bool printOut)
 
 BA_Array::BA_Array(BA_Shape _shape, _LL content)
 {
-	mem = List_Init();
 	_LL* pt = _shape.shape;
 	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
-	dataF = NULL;
-	type = 'l';
 	dataLen = 1;
-	dataSumF = dataSumL = 0;
+	type = 'l';
 
 	for (_LL i = 0; i < _shape.shapeLen; i++, pt++)
 	{
@@ -1041,14 +1038,11 @@ BA_Array::BA_Array(BA_Shape _shape, _LL content)
 
 BA_Array::BA_Array(BA_Shape _shape, float content)
 {
-	mem = List_Init();
 	_LL* pt = _shape.shape;
 	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
-	dataL = NULL;
-	type = 'f';
 	dataLen = 1;
-	dataSumF = dataSumL = 0;
+	type = 'f';
 
 	for (_LL i = 0; i < _shape.shapeLen; i++, pt++)
 	{
@@ -1067,14 +1061,12 @@ BA_Array::BA_Array(BA_Shape _shape, float content)
 
 BA_Array::BA_Array(BA_Shape _shape, float* content)
 {
-	mem = List_Init();
 	_LL* pt = _shape.shape;
 	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
 	dataL = NULL;
 	type = 'f';
 	dataLen = 1;
-	dataSumF = dataSumL = 0;
 
 	for (_LL i = 0; i < _shape.shapeLen; i++, pt++)
 	{
@@ -1093,14 +1085,12 @@ BA_Array::BA_Array(BA_Shape _shape, float* content)
 
 BA_Array::BA_Array(BA_Shape _shape, const char* way)
 {
-	mem = List_Init();
 	dataShape = BALLOC_R(_shape.shapeLen, _LL, mem);
 	shapeLen = _shape.shapeLen;
 	dataL = NULL;
 	dataF = NULL;
 	type = 'f';
 	dataLen = 1;
-	dataSumF = dataSumL = 0;
 
 	for (_LL i = 0; i < _shape.shapeLen; i++)
 	{
@@ -1155,7 +1145,8 @@ BA_Array BA_Array::ReCreate(BA_Shape _shape, const char* way)
 	dataF = NULL;
 	type = 'f';
 	dataLen = 1;
-	dataSumF = dataSumL = 0;
+	dataSumF = 0.;
+	dataSumL = 0;
 
 	for (_LL i = 0; i < _shape.shapeLen; i++)
 	{
@@ -2100,14 +2091,14 @@ BA_Array BA_Array::Eq(float other, bool aNew)
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
 			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) == (other) ? 1 : 0;
+				*pt3 = (*pt1) == (other) ? 1.f : 0.f;
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
 			for (_LL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = (*pt1) == (other) ? 1 : 0;
+				*pt1 = (*pt1) == (other) ? 1.f : 0.f;
 		}
 	}
 	return *this;
@@ -2186,14 +2177,14 @@ BA_Array BA_Array::Ge(float other, bool aNew)
 			BA_Array ret = BA_Array(BA_Shape(dataShape, shapeLen), (float)0.f);
 			float* pt1 = dataF, * pt3 = ret.dataF;
 			for (_LL i = 0; i < dataLen; i++, pt1++, pt3++)
-				*pt3 = (*pt1) >= (other) ? 1. : 0.;
+				*pt3 = (*pt1) >= (other) ? 1.f : 0.f;
 			return ret;
 		}
 		else
 		{
 			float* pt1 = dataF;
 			for (_LL i = 0; i < dataLen; i++, pt1++)
-				*pt1 = (*pt1) >= (other) ? 1. : 0.;
+				*pt1 = (*pt1) >= (other) ? 1.f : 0.f;
 		}
 	}
 	return *this;

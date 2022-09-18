@@ -110,8 +110,8 @@ void MyBA_Init(void)
 			}
 		}
 	}
-	srand(time(NULL));
-	pba->randomEngine.seed(time(NULL));
+	srand((unsigned int)time(NULL));
+	pba->randomEngine.seed((unsigned int)time(NULL));
 }
 
 //BALLOC_L
@@ -121,7 +121,7 @@ void MyBA_PutLog(const char* pc, const char* head)
 	{
 		if (!head)
 			head = mstrdup("Normal Log:", pba->LTmem);
-		BALLOCS_L(BALog, plog, 1);
+		BALLOCS_L(BALog, plog, 1, , );
 		plog->t = clock();
 		plog->pdate = Get_Time_Without_L();
 		_ULL sumlen = strlen(pc) + strlen(head);
@@ -154,7 +154,7 @@ void MyBA_PutLogs(const char* head, ...)
 
 		free(plist);
 
-		BALLOCS_L(BALog, plog, 1);
+		BALLOCS_L(BALog, plog, 1, , );
 		plog->t = clock();
 		plog->pdate = Get_Time_Without_L();
 		plog->pc = pret;
@@ -292,9 +292,12 @@ void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli)
 		PPW("MyBA_CALLOC_R: Can not alloc mem, return NULL");//由于可能会引发递不归，所以不使用MyBA_Err
 		return NULL;
 	}
-	List_Put(pli, ret);
-	pli->plast->usage = size * count;
-	pli->tik += pli->plast->usage;
+	if(pli)
+	{
+		List_Put(pli, ret);
+		pli->plast->usage = size * count;
+		pli->tik += pli->plast->usage;
+	}
 	return ret;
 }
 
@@ -331,7 +334,7 @@ int MyBA_Quit(int retVal)
 	return retVal;
 }
 
-void MyBA_Free_R(List* pli)
+void MyBA_Free_R(List* pli, bool destoryList)
 {
 	if (pli != NULL)
 	{
@@ -339,6 +342,8 @@ void MyBA_Free_R(List* pli)
 			if (pm != (void*)0x1)
 				free(pm);
 		pli->now = pli->pfirst;
+		if (destoryList)
+			free(pli);
 	}
 	else
 	{
@@ -434,6 +439,11 @@ int MyBA_CMD_ShowLog(void)
 		return 0;
 	}
 	BALog* pl = MCALLOC(1, BALog);
+	if (!pl)
+	{
+		PPW("MCALLOC(1, BALog) == NULL, return -1");
+		return -1;
+	}
 	fseek(pf, 0L, SEEK_END);//文件指针置于结尾
 	long len1 = ftell(pf);//获取结尾指针值
 	fseek(pf, 0L, SEEK_SET);//文件指针至于开头
@@ -463,9 +473,9 @@ void JDT(_ULL now, _ULL sum)
 {
 	if (pba->JDT_t == 0)
 		pba->JDT_t = clock();
-	float a = (float)(now / ((float)sum)) * 100.0;
+	float a = (float)(now / ((float)sum)) * 100.0f;
 	float sec = (float)((clock() - pba->JDT_t) / (float)CLOCKS_PER_SEC);
-	printf("\r[-Done %5.1f%%,%7.2f s--Need%7.2f s-]         ", a, sec, (float)((sec / a) * (100.0 - a)));
+	printf("\r[-Done %5.1f%%,%7.2f s--Need%7.2f s-]         ", a, sec, (float)((sec / a) * (100.0f - a)));
 }
 
 float* floatDup(List* mem, _ULL num, ...)
@@ -493,7 +503,7 @@ float* floatDup(List* mem, _ULL num, ...)
 //https://blog.csdn.net/radjedef/article/details/79028329
 void SetConsoleCursor(int x, int y)
 {
-	COORD pos = { x,y };
+	COORD pos = { (SHORT)x, (SHORT)y };
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);// 获取标准输出设备句柄
 	SetConsoleCursorPosition(hOut, pos);//两个参数分别是指定哪个窗体，具体位置
 }
@@ -562,7 +572,7 @@ char* GetTimeWithout(List* mem)
 	else
 		p = BALLOC_R(26, char, mem);
 	time_t tim = time(NULL);
-	if (ctime_s(p, 26, &tim) != 0)
+	if (!p || ctime_s(p, 26, &tim) != 0)
 		return NULL;
 	*(p + 24) = (char)' ';
 	return p;
@@ -787,16 +797,17 @@ void* List_ReverseCopy(List* plist)
 	return pret;
 }
 
+//Get the index dot content,from 0
 void* List_Index(List* plist, _ULL index)
-/*
-* Description: Get the index dot content,from 0
-*/
 {
 	if (plist == NULL)
 		return MyBA_Err("get a NULL plist pram", 1);
 	ListDot* p = plist->pfirst;
 	for (_ULL i = 0; (i < index) && p; i++, p = p->pnext);
-	return p->pdata;
+	if (p)
+		return p->pdata;
+	else
+		return BA_FREED_PTR;
 }
 
 ListDot* List_IndexDot(List* plist, _ULL index)
@@ -814,23 +825,27 @@ void* List_IndexGet(List* plist, _ULL index)
 		return MyBA_Err("get a NULL plist pram", 1);
 	ListDot* p = plist->pfirst;
 	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
-	if (p == plist->pfirst)
+	if(p)
 	{
-		return List_Get(plist);
+		if (p == plist->pfirst)
+		{
+			return List_Get(plist);
+		}
+		else if (p == plist->plast)
+		{
+			plist->plast = p->ppre;
+			p->ppre->pnext = NULL;
+		}
+		else
+		{
+			p->ppre->pnext = p->pnext;
+			p->pnext->ppre = p->ppre;
+		}
+		void* pret = p->pdata;
+		free(p);
+		return pret;
 	}
-	else if (p == plist->plast)
-	{
-		plist->plast = p->ppre;
-		p->ppre->pnext = NULL;
-	}
-	else
-	{
-		p->ppre->pnext = p->pnext;
-		p->pnext->ppre = p->ppre;
-	}
-	void* pret = p->pdata;
-	free(p);
-	return pret;
+	return BA_FREED_PTR;
 }
 
 List* List_Put(List* plist, void* pdata)
@@ -841,7 +856,7 @@ List* List_Put(List* plist, void* pdata)
 		plist->pfirst = MCALLOC(1, ListDot);
 		if (plist->pfirst == NULL)
 		{
-			MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+			PPW("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist");
 		}
 		else
 		{
@@ -856,7 +871,7 @@ List* List_Put(List* plist, void* pdata)
 	ListDot* pte = MCALLOC(1, ListDot);
 	if (pte == NULL)
 	{
-		MyBA_Err("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist", 1);
+		PPW("List* List_Put(List* plist, void* pdata): MCALLOC(1, ListDot) == NULL, return plist");
 	}
 	else
 	{

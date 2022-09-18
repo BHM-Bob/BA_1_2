@@ -300,20 +300,20 @@ void SequencesSimiCacuer::VizTraceback2(BA_String seqA, BA_String seqB)
 	for (int i = 0; i < H.dataShape[0]; i++)
 	{
 		for (int j = 0; j < H.dataShape[1]; j++)
-			printf("%3d ", H.dataL[i * H.dataShape[1] + j]);
+			printf("%3lld ", H.dataL[i * H.dataShape[1] + j]);
 		printf("\n");
 	}
 	printf("\n");
 	for (int i = 0; i < H.dataShape[0]; i++)
 	{
 		for (int j = 0; j < H.dataShape[1]; j++)
-			printf("%3d ", traceback.dataL[i * H.dataShape[1] + j]);
+			printf("%3lld ", traceback.dataL[i * H.dataShape[1] + j]);
 		printf("\n");
 	}
 	_ULL maxLen = seqA.len > seqB.len ? seqA.len : seqB.len;
 	BA_String seqAs = BA_String("_").Repeat(maxLen);
 	BA_String seqBs = BA_String("_").Repeat(maxLen);
-	for (_LL seqAIdx = seqA.len, seqBIdx = seqB.len, seqIdx = maxLen - 1; seqAIdx >= 0 && seqAIdx >= 0 && seqIdx >= 0; seqIdx--)
+	for (_LL seqAIdx = seqA.len, seqBIdx = seqB.len, seqIdx = maxLen - 1; seqAIdx >= 0 && seqBIdx >= 0 && seqIdx >= 0; seqIdx--)
 	{
 		switch (traceback.dataL[(seqAIdx) * traceback.dataShape[1] + seqBIdx]) {
 		case 0:

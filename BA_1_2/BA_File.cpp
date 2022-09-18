@@ -20,7 +20,7 @@ _ULL  Get_File_Size(FILE* pf)
 	fseek(pf, 0, SEEK_SET);
 	return end - begin;
 }
-char* ReadTXT(const char* path, _ULL loadSize)
+char* ReadTXT(const char* path, _ULL loadSize, List* mem)
 {
     FILE* pf = NULL;
     if (fopen_s(&pf, path, "r") == 0)
@@ -30,29 +30,35 @@ char* ReadTXT(const char* path, _ULL loadSize)
             return (char*)MyBA_Errs(1, "ReadTXT: loadSize > size:", path, " ,return NULL", NULL);
         if (loadSize == 0)
             loadSize = size;
-        BALLOCS_L(char, pc, loadSize + 1, NULL, );
+        char* pc = NULL;
+        if (mem)
+        {
+            pc = BALLOC_R(loadSize + 1, char, mem);
+        }
+        else
+        {
+            pc = MCALLOC(loadSize + 1, char);
+        }
         fread(pc, 1, loadSize, pf);
         fclose(pf);
         return pc;
     }
     else
     {
-        if (!pf)
+        if (pf)
             fclose(pf);
         return (char*)MyBA_Errs(1, "ReadTXT: Err to open index_file:", path, " ,return NULL", NULL);
     }
 }
 
-char* Get_File_Type(char* ppath)
+char* GetFileType(char* ppath, List* mem)
 {
 	int i = 0;
 	char* pte = ppath + strlen(ppath) - 1;
 	for (; *pte != '.'; pte--, i++);//*pte=='.'  ,  i = type_len
-	char** ppte = MCALLOC(1, char*);
-	*ppte = MCALLOC(i + 1, char);
-	for (int j = 0; j < i; j++)
-		*(*ppte + j) = (char)tolower(*(pte + 1 + j));
-	return *ppte;
+    char* ret = BALLOC_R(i + 1, char, mem);
+    strcpy_s(ret, i, pte);
+	return ret;
 }
 
 bool Check_File_Exist(char* path)
@@ -218,56 +224,59 @@ char* TextIni_Query(TextIni* p, const char* name)
 
 BA_Dir::BA_Dir(const char* _root)
 {
-    _ULL _rootLen = strlen(root);
-    if (root == NULL || _rootLen < 3)
+    if (root)
     {
-        MyBA_Err("BA_Dir::BA_Dir(const char* root):root == NULL || strlen(root) < 3,do nothing", 1);
-        isErr = true;
-    }
-    else
-    {
-        root = BALLOC_R(_rootLen + 1, char, mem);
-        if (root != NULL)
+        _ULL _rootLen = strlen(root);
+        if (root == NULL || _rootLen < 3)
         {
-            if (strcpy_s(root, _rootLen + 1, _root) == 0)
-            {
-                intptr_t handle;
-                _finddata_t findData;
-
-                handle = _findfirst(StringAdd_S(root, "\\*", NULL), &findData);    // 查找目录中的第一个文件
-                if (handle != -1)
-                {
-                    do
-                    {
-                        if ((findData.attrib & _A_SUBDIR))
-                        {
-                            if (strcmp(findData.name, ".") != 0 && strcmp(findData.name, "..") != 0)
-                                dirs->Put(mstrdup(findData.name, mem));
-                        }
-                        else
-                        {
-                            files->Put(mstrdup(findData.name, mem));
-                            files->plast->usage = findData.size;
-                        }
-                    } while (_findnext(handle, &findData) == 0);    // 查找目录中的下一个文件
-                }
-                else
-                {
-                    MyBA_Errs(1, "Failed to find first file! with root:", _root, ", do nothing", NULL);
-                    isErr = true;
-                }
-                _findclose(handle);    // 关闭搜索句柄
-            }
-            else
-            {
-                MyBA_Errs(1, "BA_Dir::BA_Dir(const char* root):strcpy_s(root, _rootLen + 1, _root) err with _root:", _root, ", do nothing", NULL);
-                isErr = true;
-            }
+            MyBA_Err("BA_Dir::BA_Dir(const char* root):root == NULL || strlen(root) < 3,do nothing", 1);
+            isErr = true;
         }
         else
         {
-            PPW("BALLOC_R(strlen(_root), char, mem) == NULL");
-            isErr = true;
+            root = BALLOC_R(_rootLen + 1, char, mem);
+            if (root != NULL)
+            {
+                if (strcpy_s(root, _rootLen + 1, _root) == 0)
+                {
+                    intptr_t handle;
+                    _finddata_t findData;
+
+                    handle = _findfirst(StringAdd_S(root, "\\*", NULL), &findData);    // 查找目录中的第一个文件
+                    if (handle != -1)
+                    {
+                        do
+                        {
+                            if ((findData.attrib & _A_SUBDIR))
+                            {
+                                if (strcmp(findData.name, ".") != 0 && strcmp(findData.name, "..") != 0)
+                                    dirs->Put(mstrdup(findData.name, mem));
+                            }
+                            else
+                            {
+                                files->Put(mstrdup(findData.name, mem));
+                                files->plast->usage = findData.size;
+                            }
+                        } while (_findnext(handle, &findData) == 0);    // 查找目录中的下一个文件
+                    }
+                    else
+                    {
+                        MyBA_Errs(1, "Failed to find first file! with root:", _root, ", do nothing", NULL);
+                        isErr = true;
+                    }
+                    _findclose(handle);    // 关闭搜索句柄
+                }
+                else
+                {
+                    MyBA_Errs(1, "BA_Dir::BA_Dir(const char* root):strcpy_s(root, _rootLen + 1, _root) err with _root:", _root, ", do nothing", NULL);
+                    isErr = true;
+                }
+            }
+            else
+            {
+                PPW("BALLOC_R(strlen(_root), char, mem) == NULL");
+                isErr = true;
+            }
         }
     }
 }

@@ -22,12 +22,12 @@ void BA_String_Test(void)
 
 float BA_ArrayTest_1(float* p)
 {
-	return pow(*p, 2);
+	return (float)pow(*p, 2);
 }
 
 float BA_ArrayTest_2(float* pt, void* p)
 {
-	return pow(*pt-*(float*)p, 2);
+	return (float)pow(*pt-*(float*)p, 2);
 }
 
 void BA_Array_Test(void)
@@ -130,7 +130,7 @@ void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, balistDot<_ULL>* p2)
 
 std::mutex m;
 
-void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
+void BA_Test_WordsCount_SubThr(_LL id, balist<BA_String>& getQ,
     balist<char>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
 {
     List* mem = List_Init();
@@ -146,22 +146,22 @@ void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
         delete str;
         str = new std::string(p);
         hashV = strHash(*str);
-        count = TypeDupR(NULL, 1, 1ULL);
+        count = TypeDupR(mem, 1, 1ULL);
         m.lock();
         tree->Insert(count, hashV, BA_Test_WordsCount_HashCol, p, true);
         m.unlock();
 
         nowIdx = splitResult->GetNowIndex();
         if (nowIdx % 10000 == 0)
-            proc.ThrPut(TypeDupR(mem, 1, 100.f * nowIdx / splitResult->sumque), &m);
+            proc.ThrPut(TypeDupR(NULL, 1, 100.f * nowIdx / splitResult->sumque), &m);
     }
     sig.ThrPut(NULL, &m);
-    MyBA_Free_R(mem);
+    MyBA_Free_R(mem, true);
 }
 
 void BA_Test_WordsCount(void)
 {
-    _ULL sumThreads = 4;
+    _LL sumThreads = 4;
     balist<_ULL>* tree = new balist<_ULL>();
     MyThreadsPool tp = MyThreadsPool(sumThreads,
         BA_Test_WordsCount_SubThr, (void*)tree);
@@ -174,14 +174,14 @@ void BA_Test_WordsCount(void)
         tp.PutTask(subStr, &m);
     }
     List* result = tp.LoopToQuit(&m);
-    FILE* pf = NULL;
-    fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
-    if (pf)
-    {
-        for (balistDot<_ULL>* pd = tree->pfirst; pd; pd = pd->pnext)
-            fprintf(pf, "%s,%llu\n", pd->name, *(pd->pdata));
-        fclose(pf);
-    }
+    //FILE* pf = NULL;
+    //fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
+    //if (pf)
+    //{
+    //    for (balistDot<_ULL>* pd = tree->pfirst; pd; pd = pd->pnext)
+    //        fprintf(pf, "%s,%llu\n", pd->name, *(pd->pdata));
+    //    fclose(pf);
+    //}
     tp.Destroy(&m);
 }
 
