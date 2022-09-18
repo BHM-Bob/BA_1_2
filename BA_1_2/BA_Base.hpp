@@ -78,13 +78,13 @@ typedef long long _LL;
 #define MCALLOC(num,type) (type*)calloc((size_t)(num),sizeof(type))
 #define MCALLOCS(type,ret,num) type* ret = (type*)calloc((size_t)(num),sizeof(type))
 
-#define BALLOC_L(num,type) (type*)MyBA_CALLOC_L((size_t)(num),sizeof(type));
-#define BALLOC_S(num,type) (type*)MyBA_CALLOC_S((size_t)(num),sizeof(type));
+#define BALLOC_L(num,type) (type*)MyBA_CALLOC_L((size_t)(num),sizeof(type))
+#define BALLOC_S(num,type) (type*)MyBA_CALLOC_S((size_t)(num),sizeof(type))
 
 #define BALLOCS_L(type,ret,num,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_L((size_t)(num),sizeof(type));if((ret) == NULL){err_opts;return err_ret;}
 #define BALLOCS_S(type,ret,num,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_S((size_t)(num),sizeof(type));if((ret) == NULL){err_opts;return err_ret;}
 
-#define BALLOC_R(num,type,pli) (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli);
+#define BALLOC_R(num,type,pli) (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli)
 #define BALLOCS_R(type,ret,num,pli,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli);if((ret) == NULL){err_opts;return err_ret;}
 
 #define _Get_File_Size(n,pf) unsigned long long n = 0ULL;{fseek(pf,0,SEEK_END);n = ftell(pf);fseek(pf,0,SEEK_SET);};
