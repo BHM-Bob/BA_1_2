@@ -437,13 +437,13 @@ BA_String BA_String::Replace(const char* _pc, const char* newStr)
 	return *this;
 }
 
-List* BA_String::Split(BA_String string)
+balist<char>* BA_String::Split(BA_String string)
 {
 	if (string.pc == NULL || *(string.pc) == '\0' || pc == NULL || len == 0 || *pc == '\0')
-		return (List*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
+		return (balist<char>*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
 
 	List* pli = this->Find(string);
-	List* pret = List_Init();
+	balist<char>* pret = new balist<char>();
 	char* pcte = pc;
 	char* ptm = NULL;
 	_ULL lens = 0;
@@ -455,20 +455,20 @@ List* BA_String::Split(BA_String string)
 			continue;
 		ptm = BALLOC_R(lens + 1, char, mem);
 		strncat_s(ptm, lens + 1, pcte, lens);
-		List_Put(pret, (void*)ptm);
+		pret->Put(ptm);
 		pret->plast->usage = lens;
 		pcte += (lens + trgStrLen);
 	}
 	return pret;
 }
 
-List* BA_String::Split(const char* _pc)
+balist<char>* BA_String::Split(const char* _pc)
 {
 	if (_pc == NULL || *_pc == '\0' || pc == NULL || len == 0 || *pc == '\0')
-		return (List*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
+		return (balist<char>*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
 
 	List* pli = this->Find(_pc);
-	List* pret = List_Init();
+	balist<char>* pret = new balist<char>();
 	char* pcte = pc;
 	char* ptm = NULL;
 	_ULL lens = 0;
@@ -480,7 +480,7 @@ List* BA_String::Split(const char* _pc)
 			continue;
 		ptm = BALLOC_R(lens +1, char, mem);
 		strncat_s(ptm, lens + 1, pcte, lens);
-		List_Put(pret, (void*)ptm);
+		pret->Put(ptm);
 		pret->plast->usage = lens;
 		pcte += (lens + trgStrLen);
 	}
@@ -489,7 +489,7 @@ List* BA_String::Split(const char* _pc)
 		return pret;
 	ptm = BALLOC_R(lens + 1, char, mem);
 	strncat_s(ptm, lens + 1, pcte, lens);
-	List_Put(pret, (void*)ptm);
+	pret->Put(ptm);
 	pret->plast->usage = lens;
 	return pret;
 }
@@ -564,6 +564,7 @@ balist<char>* BA_String::Splitx(BA_String string)
 		}
 		pte += *p + 1;
 	}
+	List_Destroy(pli);
 	return pret;
 }
 

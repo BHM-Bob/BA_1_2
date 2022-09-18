@@ -307,18 +307,18 @@ int MyBA_Quit(int retVal)
 {
 	MyBA_WriteLog(true);
 
-	int (*exitFunc)(void* data, int code, ...) = NULL;
-	for (ListDot* pdata = List_CopyDot(pba->exitFuncData), *pfunc = List_CopyDot(pba->exitFunc);
-		pdata;
-		pdata = List_CopyDot(pba->exitFuncData), pfunc = List_CopyDot(pba->exitFunc))
+	int (*exitFunc)(void* data, int code, ...) = (int (*)(void* data, int code, ...))List_Copy(pba->exitFunc);
+	for (void* data = List_Copy(pba->exitFuncData); exitFunc;
+		data = List_Copy(pba->exitFuncData),
+		exitFunc = (int (*)(void* data, int code, ...))List_Copy(pba->exitFunc))
 	{
-		if (pfunc->pdata != (void*)0x1)
+		if (data != (void*)0x1)
 		{
-			exitFunc = (int (*)(void* data, int code, ...))(pfunc->pdata);
-			if (exitFunc(pdata->pdata, 0) != 0)
+			if (exitFunc(data, 0) != 0)
 			{
 				MyBA_Errs(1, "int MyBA_Quit(int retVal): exitFunc(pdata, 0) != 0, func No.",
-					Num_To_Char("llu", pdata->idx), " err!", NULL);
+					Num_To_Char("llu", pba->exitFunc->now ? pba->exitFunc->now->idx-1 : pba->exitFunc->sumque),
+					" err!", NULL);
 			}
 		}
 	}
@@ -774,20 +774,6 @@ void* List_Copy(List* plist)
 	return pret;
 }
 
-ListDot* List_CopyDot(List* plist)
-{
-	if (plist == NULL)
-		return (ListDot*)MyBA_Err("get a NULL que", 1);
-	if (plist->now == NULL)//Get the signal
-	{
-		plist->now = plist->pfirst;//ReSet
-		return NULL;
-	}
-	ListDot* pret = plist->now;
-	plist->now = plist->now->pnext;//If it means the end, it will report a NULL to rise a signal
-	return pret;
-}
-
 //Get the index dot content,from 0
 void* List_Index(List* plist, _ULL index)
 {
@@ -799,15 +785,6 @@ void* List_Index(List* plist, _ULL index)
 		return p->pdata;
 	else
 		return BA_FREED_PTR;
-}
-
-ListDot* List_IndexDot(List* plist, _ULL index)
-{
-	if (plist == NULL)
-		return (ListDot*)MyBA_Err("get a NULL plist pram", 1);
-	ListDot* p = plist->pfirst;
-	for (_ULL i = 0; (i < index) && (p != NULL); i++, p = p->pnext);
-	return p;
 }
 
 List* List_Put(List* plist, void* pdata)
@@ -868,7 +845,6 @@ List* List_Destroy(List* plist)
 		free(p);
 	}
 	free(plist);
-	plist = NULL;
 	return NULL;
 }
 

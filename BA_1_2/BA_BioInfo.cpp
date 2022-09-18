@@ -22,33 +22,34 @@
 
 void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultPath)
 {
+	List* mem = List_Init();
 	BA_String seqA = BA_String("GCG");
 	BA_String seqB = BA_String("UGC");
-	List* rnaSeqs = NULL;
+	balist<char>* rnaSeqs = NULL;
 	if (loadSize == 0)
 		rnaSeqs = BA_String(ReadTXT(seqPath)).Split("\n");
 	else
 		rnaSeqs = BA_String(ReadTXT(seqPath, loadSize)).Split("\n");
-	List* result = List_Init();
+	balist<_LL>* result = new balist<_LL>();
 	SequencesSimiCacuer seqCacuer = SequencesSimiCacuer();
 
-	for (_ULL seqAIdx = 0; seqAIdx < rnaSeqs->sumque; seqAIdx += 100)
+	for (_LL seqAIdx = 0; seqAIdx < rnaSeqs->sumque; seqAIdx += 100)
 	{
-		seqA.ReLoad((char*)rnaSeqs->Index(rnaSeqs, seqAIdx));
-		for (ListDot* seqBDot = rnaSeqs->IndexDot(rnaSeqs, seqAIdx + 1); seqBDot; seqBDot = seqBDot->pnext)
+		seqA.ReLoad(rnaSeqs->Copy(seqAIdx));
+		for (balistDot<char>* seqBDot = rnaSeqs->CopyDot(seqAIdx + 1); seqBDot; seqBDot = seqBDot->pnext)
 		{
 			if (seqBDot->idx % 50 == 0)
 				printf("\rseqAIdx:%4llu seqBIdx:%4llu sumQue:%4llu  %5.4f s / seq-seq",
 					seqAIdx, seqBDot->idx, rnaSeqs->sumque, pba->GUT() / 50.0);
-			seqB.ReLoad((char*)seqBDot->pdata);
-			result->Put(result, (void*)TypeDupR(NULL, 5, seqAIdx, seqA.len, seqBDot->idx, seqB.len,
+			seqB.ReLoad(seqBDot->pdata);
+			result->Put(TypeDupR(mem, 5, seqAIdx, seqA.len, seqBDot->idx, seqB.len,
 				seqCacuer.CacuSequencesSimilarity2(seqA, seqB)));
 		}
 	}
 	FILE* pf = NULL;
 	if (fopen_s(&pf, resultPath, "w") == 0)
 	{
-		LIST_FORS(_LL, p, result)
+		for(_LL* p = result->Copy(); p; p = result->Copy())
 		{// seqAIdx | seqALen | seqBIdx | seqBLen | Simi
 			fprintf(pf, "%4lld | %4lld | %4lld | %4lld | %4lld\n",
 				p[0], p[1], p[2], p[3], p[4]);
@@ -59,6 +60,7 @@ void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultP
 		if (pf)
 			fclose(pf);
 	}
+	MyBA_Free_R(mem);
 }
 
 

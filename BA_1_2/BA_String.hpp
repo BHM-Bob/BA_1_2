@@ -37,8 +37,8 @@ public:
 
 	BA_String Replace(BA_String string, BA_String newStr);
 	BA_String Replace(const char* _pc, const char* newStr);
-	List* Split(BA_String string);
-	List* Split(const char* _pc);
+	balist<char>* Split(BA_String string);
+	balist<char>* Split(const char* _pc);
 	//BALLOC_R
 	balist<char>* Splitx(BA_String string);
 	//BALLOC_R

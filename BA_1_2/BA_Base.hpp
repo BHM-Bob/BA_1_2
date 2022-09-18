@@ -87,10 +87,6 @@ typedef long long _LL;
 #define BALLOC_R(num,type,pli) (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli)
 #define BALLOCS_R(type,ret,num,pli,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli);if((ret) == NULL){err_opts;return err_ret;}
 
-#define _Get_File_Size(n,pf) unsigned long long n = 0ULL;{fseek(pf,0,SEEK_END);n = ftell(pf);fseek(pf,0,SEEK_SET);};
-
-#define _CHECKP_(p, opts) {if((p) == NULL){PPW("NULL Pointer");opts;}}
-
 #define LIST_FOR(p,pli) for(void* p = List_Copy(pli); p; p = List_Copy(pli))
 #define LIST_FORS(type,p,pli) for(type* p = (type*)List_Copy(pli); p; p = (type*)List_Copy(pli))
 #define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p; p = (type*)List_Get(pli))
@@ -147,16 +143,12 @@ struct List
 	void* (*Get)(List* plist);
 	void* (*Copy)(List* plist);
 	void* (*Index)(List* plist, _ULL index);
-	ListDot* (*IndexDot)(List* plist, _ULL index);
 };
 List* List_Init(void* pdata = NULL);
 void* List_Copy(List* plist);
-ListDot* List_CopyDot(List* plist);
 void* List_Get(List* plist);
 //Get the index dot content,from 0
 void* List_Index(List* plist, _ULL index);
-//Get the index dot,from 0
-ListDot* List_IndexDot(List* plist, _ULL index);
 List* List_Put(List* plist, void* pdata);
 void List_SetVar(List* plist, void* pdata, void* newVar);
 List* List_Destroy(List* plist);
@@ -228,12 +220,13 @@ public:
 	dataType* Get();
 	//Get the index dot content,from 0
 	dataType* Copy(_LL index);
+	balistDot< dataType>* CopyDot(_LL index);
 	//Copy the index dot content,from 0
 	dataType* Get(_LL index);
-	//Get the name dot content
-	dataType* Get(const char* name, bool justCmpNameById = false, bool freeName = true);
 	//Copy the name dot content
 	dataType* Copy(const char* name, bool justCmpNameById = false);
+	//Get the name dot content
+	dataType* Get(const char* name, bool justCmpNameById = false, bool freeName = true);
 	// put as plast
 	void Put(dataType* pdata,
 		const char* name = NULL, bool justUseNamePtr = false);
@@ -644,7 +637,19 @@ dataType* balist<dataType>::Copy(_LL index)
 		index = sumque + index;
 	balistDot<dataType>* pd = pfirst;
 	for (_LL i = 0; (i < index) && (pd != NULL); i++, pd = pd->pnext);
-	return pd->pdata;
+	return pd ? pd->pdata : errPtr;
+}
+
+template<typename dataType>
+inline balistDot<dataType>* balist<dataType>::CopyDot(_LL index)
+{
+	if (index > sumque - 1 || index < -(sumque))
+		return (balistDot<dataType>*)(0x1);
+	if (index < 0 && index >= -(sumque))
+		index = sumque + index;
+	balistDot<dataType>* pd = pfirst;
+	for (_LL i = 0; (i < index) && (pd != NULL); i++, pd = pd->pnext);
+	return pd;
 }
 
 template<typename dataType>
