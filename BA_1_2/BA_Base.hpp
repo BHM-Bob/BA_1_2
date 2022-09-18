@@ -407,7 +407,7 @@ struct MyBA
 	void (*PutLog)(const char* pc, const char* head);
 };
 extern MyBA* pba;
-void MyBA_Init(void);
+void MyBA_Init(bool safeMode = false);
 void MyBA_Context(const char* nowFuncName);
 float MyBA_GetUsedTime(void);
 // BALLOC_L

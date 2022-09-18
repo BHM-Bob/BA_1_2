@@ -40,7 +40,7 @@ float MyBA_Ver(void)
 	*/
 }
 
-void MyBA_Init(void)
+void MyBA_Init(bool safeMode)
 {
 	pba = MCALLOC(1, MyBA);
 	if (pba == NULL)
@@ -59,6 +59,8 @@ void MyBA_Init(void)
 		pba->JDT_t = 0;
 
 		pba->exepath = _getcwd(NULL, 0);//psd->exeinfo.exepath is <G:\PellesC\My Project\VN7\VN7 v1_3\VN7 1_3>,It's size is 42
+
+		pba->isSAFEMODE = safeMode;
 
 		pba->mem = List_Init();
 		pba->LTmem = List_Init();
@@ -336,6 +338,8 @@ int MyBA_Quit(int retVal)
 
 void MyBA_Free_R(List* pli, bool destoryList)
 {
+	if (pba->isSAFEMODE)
+		return;// do not free mem manually
 	if (pli != NULL)
 	{
 		for (void* pm = List_Get(pli); pm != NULL; pm = List_Get(pli))
@@ -467,6 +471,7 @@ int MyBA_CMD_ShowLog(void)
 
 void MyBA_SafeMode(void)
 {
+	pba->isSAFEMODE = true;
 }
 
 void JDT(_ULL now, _ULL sum)
