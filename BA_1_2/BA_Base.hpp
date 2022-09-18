@@ -11,36 +11,35 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 
 #include <any>
+#include <algorithm>
 #include <assert.h>
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <ctype.h>
 #include <conio.h>
+#include <deque>
 #include <direct.h>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <locale.h>
+#include <list>
 #include <limits.h>
 #include <map>
-#include <math.h>
+#include <mutex>
+#include <numeric>
 #include <io.h>
 #include <iostream>
 #include <random>
 #include <setjmp.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <sys/types.h>
 #include <time.h>
-//#include <unistd.h>
 #include <thread>
-#include <mutex>
+#include <vector>
 
 //using namespace std;
-
 
 #include<Windows.h>
 #include<WinBase.h>
@@ -1035,7 +1034,7 @@ MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_LL _sumThreads,
 		name = mstrdup("MyThreadsPool", mem);
 	else
 		name = mstrdup(_name, mem);
-	for (_ULL i = 0; i < sumThreads; i++)
+	for (_LL i = 0; i < sumThreads; i++)
 	{
 		ppThs[i] = new std::thread(_pF, i, std::ref(putDataQues[i]),
 			std::ref(getDataQues[i]), std::ref(procQues[i]), std::ref(sig), otherData);
@@ -1075,6 +1074,7 @@ inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(std::mutex* m)
 			name, sumTasksTillNow, sumTasks, (float)(clock() - st) / CLOCKS_PER_SEC);
 		for (_LL idx = 0; idx < sumThreads; idx++)
 		{
+			for (; procQues[idx].ThrSize(m) > 1; free(procQues[idx].ThrGet(m)));
 			procTemp = procQues[idx].ThrSize(m) > 0 ? procQues[idx].ThrGet(m) : NULL;
 			hisProc[idx] = procTemp ? *procTemp : hisProc[idx];
 			printf("subThreads %llu : %6.3f %%        \n", idx, hisProc[idx]);
@@ -1108,12 +1108,6 @@ inline void MyThreadsPool<dataTypePut, dataTypeGet>::Destroy(std::mutex* m)
 	delete[] putDataQues;
 	delete[] procQues;
 }
-
-
-
-
-
-
 
 
 

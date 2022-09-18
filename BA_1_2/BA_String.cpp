@@ -498,10 +498,13 @@ balist<char>* BA_String::Split(const char* _pc)
 //会对pc进行地址偏移操作，修改pc值
 _ULL* BA_String_Splitx_FindOnce(char* pc, const char* delimiters)
 {
-	BALLOCS_S(_ULL, psite, 1, NULL, );
-	for (*psite = 0; *pc != '\0'; (*psite)++, pc++)
-		if (strchr(delimiters, *pc) != NULL)
-			return psite;
+	MCALLOCS(_ULL, psite, 1);
+	if(psite)
+	{
+		for (*psite = 0; *pc != '\0'; (*psite)++, pc++)
+			if (strchr(delimiters, *pc) != NULL)
+				return psite;
+	}
 	return NULL;
 }
 
@@ -519,7 +522,7 @@ balist<char>* BA_String::Splitx(const char* _pc)
 		pte += *psite + 1;
 		List_Put(pli, (void*)psite);
 	}
-	List_Put(pli, &(len));
+	List_Put(pli, TypeDupR(NULL, 1, len));
 	balist<char>* pret = new balist<char>();
 	char* pcte = NULL;
 	pte = pc;
@@ -532,7 +535,9 @@ balist<char>* BA_String::Splitx(const char* _pc)
 			pret->Put(pcte);
 		}
 		pte += *p + 1;
+		free(p);
 	}
+	List_Destroy(pli);
 	return pret;
 }
 
@@ -563,6 +568,7 @@ balist<char>* BA_String::Splitx(BA_String string)
 			pret->Put(pcte);
 		}
 		pte += *p + 1;
+		free(p);
 	}
 	List_Destroy(pli);
 	return pret;

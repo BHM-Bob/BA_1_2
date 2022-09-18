@@ -136,19 +136,15 @@ void BA_Test_WordsCount_SubThr(_LL id, balist<BA_String>& getQ,
     List* mem = List_Init();
     BA_String* text = (BA_String*)getQ.ThrGet(&m);
     balist<char>* splitResult = text->Splitx(" ,.\n\"'?!;:@`#$%^&*()+=/\r\t()[]{}<>");
-    balist<_ULL>* tree = (balist<_ULL>*)data;
-    std::string* str = new std::string();
-    _ULL hashV = 0, nowIdx = 0;
-    _ULL* count = NULL;
-    std::hash<std::string> strHash;
+    std::map<std::string, _ULL>* tree = (std::map<std::string, _ULL>*)data;
+    std::string str;
+    _ULL nowIdx = 0;
     for(char* p = splitResult->Copy(); p; p = splitResult->Copy())
     {
-        delete str;
-        str = new std::string(p);
-        hashV = strHash(*str);
-        count = TypeDupR(mem, 1, 1ULL);
+        str.clear();
+        str.assign(p);
         m.lock();
-        tree->Insert(count, hashV, BA_Test_WordsCount_HashCol, p, true);
+        (*tree)[str] = (*tree)[str] + 1;
         m.unlock();
 
         nowIdx = splitResult->GetNowIndex();
@@ -162,13 +158,13 @@ void BA_Test_WordsCount_SubThr(_LL id, balist<BA_String>& getQ,
 void BA_Test_WordsCount(void)
 {
     _LL sumThreads = 4;
-    balist<_ULL>* tree = new balist<_ULL>();
+    std::map<std::string, _ULL>* tree = new std::map<std::string, _ULL>();
     MyThreadsPool tp = MyThreadsPool(sumThreads,
         BA_Test_WordsCount_SubThr, (void*)tree);
     BA_String text = BA_String(
         ReadTXT("E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter (complete works).txt"));
     BA_String* subStr = NULL;
-    for (_ULL i = 0, stepLen = text.len / sumThreads; i < sumThreads; i++)
+    for (_LL i = 0, stepLen = text.len / sumThreads; i < sumThreads; i++)
     {
         subStr = text(i * stepLen, (i == sumThreads-1) ? text.len : (i + 1) * stepLen);
         tp.PutTask(subStr, &m);
@@ -178,8 +174,8 @@ void BA_Test_WordsCount(void)
     //fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
     //if (pf)
     //{
-    //    for (balistDot<_ULL>* pd = tree->pfirst; pd; pd = pd->pnext)
-    //        fprintf(pf, "%s,%llu\n", pd->name, *(pd->pdata));
+    //    for (auto pd = tree->begin(); pd != tree->end(); pd++)
+    //        fprintf(pf, "%s,%llu\n", pd->first.c_str(), pd->second);
     //    fclose(pf);
     //}
     tp.Destroy(&m);
