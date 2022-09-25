@@ -79,6 +79,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryWPath>E:\My_Progs\Cpp\%40ExtendLib\SDL2\lib\x64\DLL;$(LibraryWPath)</LibraryWPath>
+    <TargetName>mba</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -147,6 +148,7 @@
   <ItemGroup>
     <ClCompile Include="BA_1_2.cpp" />
     <ClCompile Include="BA_BioInfo.cpp" />
+    <ClCompile Include="BA_CMD.cpp" />
     <ClCompile Include="BA_File.cpp" />
     <ClCompile Include="BA_Math.cpp" />
     <ClCompile Include="BA_Mem.cpp" />
@@ -159,6 +161,7 @@
     <ClInclude Include="BA_1_2.hpp" />
     <ClInclude Include="BA_Base.hpp" />
     <ClInclude Include="BA_BioInfo.hpp" />
+    <ClInclude Include="BA_CMD.hpp" />
     <ClInclude Include="BA_File.hpp" />
     <ClInclude Include="BA_Math.hpp" />
     <ClInclude Include="BA_Mem.hpp" />

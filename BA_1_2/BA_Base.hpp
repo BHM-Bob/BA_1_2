@@ -181,6 +181,8 @@ public:
 	balistDot();
 	balistDot(dataType* _pdata, const char* _name = NULL, bool justUseNamePtr = false);
 	~balistDot();
+	// ++ 运算符重载, move forward
+	balistDot<dataType> operator++();
 };
 template <typename dataType>
 class balist
@@ -350,7 +352,7 @@ struct MyBA
 	void (*PutLog)(const char* pc, const char* head);
 };
 extern MyBA* pba;
-void MyBA_Init(bool safeMode = false);
+void MyBA_Init(int argc = 1, char** argvs = NULL, bool safeMode = false);
 void MyBA_Context(const char* nowFuncName);
 float MyBA_GetUsedTime(void);
 // BALLOC_L
@@ -370,7 +372,6 @@ void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli);
 void* MyBA_CALLOC_L(_ULL count, _ULL size);
 void* MyBA_CALLOC_S(_ULL count, _ULL size);
 
-void MyBA_CMD(void);
 int MyBA_CMD_SearchCom(char* pc);
 int MyBA_CMD_ShowLog(void);
 void MyBA_SafeMode(void);
@@ -510,6 +511,12 @@ inline balistDot<dataType>::balistDot(dataType* _pdata, const char* _name, bool 
 template<typename dataType>
 balistDot<dataType>::~balistDot()
 {
+}
+
+template<typename dataType>
+inline balistDot<dataType> balistDot<dataType>::operator++()
+{
+	this = this->pnext;
 }
 
 template<typename dataType>

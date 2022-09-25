@@ -10,6 +10,7 @@
 #include"BA_Base.hpp"
 #include"BA_Mem.hpp"
 #include"BA_Thread.hpp"
+#include"BA_CMD.hpp"
 #include"BA_Math.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
@@ -42,7 +43,7 @@ float MyBA_Ver(void)
 	*/
 }
 
-void MyBA_Init(bool safeMode)
+void MyBA_Init(int argc, char** argvs, bool safeMode)
 {
 	pba = MCALLOC(1, MyBA);
 	if (pba == NULL)
@@ -54,7 +55,8 @@ void MyBA_Init(bool safeMode)
 	else
 	{
 		pba->BA_Ver = MyBA_Ver();
-		printf("\nMyBA (Ver: %10.4f; Build: %s %s) start\n", pba->BA_Ver, __DATE__, __TIME__);
+		if(argc ==1 )
+			printf("\nMyBA (Ver: %10.4f; Build: %s %s) start\n", pba->BA_Ver, __DATE__, __TIME__);
 
 		pba->GUT_t = clock();
 		pba->GUT_state = 0;
@@ -116,6 +118,9 @@ void MyBA_Init(bool safeMode)
 	}
 	srand((unsigned int)time(NULL));
 	pba->randomEngine.seed((unsigned int)time(NULL));
+
+	if(argc > 1 && argvs)
+		MyBA_CMD(argc, argvs);
 }
 
 //BALLOC_L
@@ -394,33 +399,6 @@ void MyBA_FreeInstance(void)
 	{
 		PPW("MyBA_FreeInstance: pba->STmem==NULL,return");
 	}
-}
-
-void MyBA_CMD(void)
-{
-	bool conti = 1;
-	List* pcl = List_Init();
-	char* pc = NULL;
-	do
-	{
-		pc = MCALLOC(1024 * 1024, char);
-		printf("\nMyBA CMD (Ver:1.0):\n");
-		fgets(pc, 1024 * 1024 - 1, stdin);
-
-		switch (MyBA_CMD_SearchCom(pc))
-		{
-		case 0:
-			printf("\nQuit MyBA CMD\n");
-			conti = 0;
-			break;
-		case 1:
-			MyBA_CMD_ShowLog();
-			break;
-		default:
-			break;
-		}
-		free(pc);
-	} while (conti);
 }
 
 int MyBA_CMD_SearchCom(char* pc)

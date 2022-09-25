@@ -245,20 +245,13 @@ BA_String::BA_String(_ULL num,const char* _pc1, ...)
 
 BA_String BA_String::ReLoad(const char* _pc)
 {
-	if (_pc == NULL)
-	{
-		MyBA_Err("BA_String::ReLoad(const char* _pc):_pc == NULL,return *this", 1);
-	}
+	if(pc != NULL)
+		free(pc);
+	pc = _strdup(_pc);
+	if (pc == NULL)
+		MyBA_Err("BA_String::ReLoad(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
 	else
-	{
-		if(pc != NULL)
-			free(pc);
-		pc = _strdup(_pc);
-		if (pc == NULL)
-			MyBA_Err("BA_String::ReLoad(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
-		else
-			len = strlen(pc);
-	}
+		len = strlen(pc);
 	return *this;
 }
 
