@@ -8,6 +8,8 @@
 //#define USE_SDL2
 
 #include"BA_Base.hpp"
+#include"BA_Mem.hpp"
+#include"BA_Thread.hpp"
 #include"BA_Math.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"

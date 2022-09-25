@@ -149,7 +149,9 @@
     <ClCompile Include="BA_BioInfo.cpp" />
     <ClCompile Include="BA_File.cpp" />
     <ClCompile Include="BA_Math.cpp" />
+    <ClCompile Include="BA_Mem.cpp" />
     <ClCompile Include="BA_String.cpp" />
+    <ClCompile Include="BA_Thread.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
@@ -159,8 +161,10 @@
     <ClInclude Include="BA_BioInfo.hpp" />
     <ClInclude Include="BA_File.hpp" />
     <ClInclude Include="BA_Math.hpp" />
+    <ClInclude Include="BA_Mem.hpp" />
     <ClInclude Include="BA_String.hpp" />
     <ClInclude Include="BA_Test.hpp" />
+    <ClInclude Include="BA_Thread.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,6 +8,8 @@
 //#define USE_SDL2
 
 #include"BA_Base.hpp"
+#include"BA_Mem.hpp"
+#include"BA_Thread.hpp"
 #include"BA_String.hpp"
 
 char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite)

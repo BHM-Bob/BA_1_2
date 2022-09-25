@@ -10,7 +10,7 @@
 
 int main(int argc, char** argvs)
 {
-	MyBA_Init(true);
+	MyBA_Init();
 
 	BA_Array a = BA_Array(BA_Shape(3, 90, 90, 90), "rand");
 	BA_Array b = BA_Array(BA_Shape(3, 90, 90, 90), "l");

@@ -1,5 +1,7 @@
 ﻿
 #include"BA_Base.hpp"
+#include"BA_Mem.hpp"
+#include"BA_Thread.hpp"
 #include"BA_Math.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
@@ -157,7 +159,7 @@ void BA_Test_WordsCount_SubThr(_LL id, balist<BA_String>& getQ,
 
 void BA_Test_WordsCount(void)
 {
-    _LL sumThreads = 4;
+    _LL sumThreads = 8;
     std::map<std::string, _ULL>* tree = new std::map<std::string, _ULL>();
     MyThreadsPool tp = MyThreadsPool(sumThreads,
         BA_Test_WordsCount_SubThr, (void*)tree);
