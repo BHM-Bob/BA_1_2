@@ -298,20 +298,7 @@ BA_String BA_String::Repeat(_ULL times)
 
 BA_String BA_String::Concat(BA_String string)
 {
-	len += string.len+1;
-	char* pct = MCALLOC(len, char);
-	if (pct != NULL)
-	{
-		strcat_s(pct, len, pc);
-		strcat_s(pct, len, string.pc);
-		free(pc);
-		pc = pct;
-	}
-	else
-	{
-		PPW("BA_String BA_String::Repeat(_ULL times):MCALLOC NULL,return *this");
-	}
-	return *this;
+	return Concat(string.pc);
 }
 
 BA_String BA_String::Concat(const char* _pc)
@@ -334,50 +321,7 @@ BA_String BA_String::Concat(const char* _pc)
 
 BA_String BA_String::Replace(BA_String string, BA_String newStr)
 {
-	_ULL trgStringLen = string.len;
-	_ULL newSubStringLen = newStr.len;
-	List* pli = List_Init();
-	if (pli != NULL)
-	{
-		for (char* pte = strstr(pc, string.pc); pte != NULL; pte = strstr(pte, string.pc))
-		{
-			List_Put(pli, (void*)pte);
-			pte += trgStringLen;
-		}
-		if (pli->sumque > 0)
-		{
-			_ULL maxDist = len + (pli->sumque) * (newSubStringLen - trgStringLen) + 1;
-			char* ptm = MCALLOC(maxDist, char);
-			if (ptm != NULL)
-			{
-				len = strlen(ptm);
-				char* st = pc;
-				LIST_FORG(char, p, pli)
-				{
-					strncat_s(ptm, maxDist, st, (_ULL)(p - st));//NOT st - p
-					if(newSubStringLen >0)
-						strncat_s(ptm, maxDist, newStr.pc, newSubStringLen);
-					st = p + trgStringLen;
-				}
-				free(pc);
-				free(pli);
-				pc = ptm;
-			}
-			else
-			{
-				PPW("MCALLOC==NULL,return *this");
-			}
-		}
-		else
-		{
-			return *this;
-		}
-	}
-	else
-	{
-		PPW("List_Init()==NULL,return *this");
-	}
-	return *this;
+	return Replace(string.pc, newStr.pc);
 }
 
 BA_String BA_String::Replace(const char* _pc, const char* newStr)
@@ -438,27 +382,7 @@ BA_String BA_String::Replace(const char* _pc, const char* newStr)
 
 balist<char>* BA_String::Split(BA_String string)
 {
-	if (string.pc == NULL || *(string.pc) == '\0' || pc == NULL || len == 0 || *pc == '\0')
-		return (balist<char>*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
-
-	List* pli = this->Find(string);
-	balist<char>* pret = new balist<char>();
-	char* pcte = pc;
-	char* ptm = NULL;
-	_ULL lens = 0;
-	_ULL trgStrLen = strlen(string.pc);
-	LIST_FORG(char, p, pli)
-	{
-		lens = p - pcte;
-		if (lens == 0)
-			continue;
-		ptm = BALLOC_R(lens + 1, char, mem);
-		strncat_s(ptm, lens + 1, pcte, lens);
-		pret->Put(ptm);
-		pret->plast->usage = lens;
-		pcte += (lens + trgStrLen);
-	}
-	return pret;
+	return Split(string.pc);
 }
 
 balist<char>* BA_String::Split(const char* _pc)
@@ -542,62 +466,12 @@ balist<char>* BA_String::Splitx(const char* _pc)
 
 balist<char>* BA_String::Splitx(BA_String string)
 {
-	if (string.pc == NULL || *(string.pc) == '\0' || pc == NULL || len == 0 || *pc == '\0')
-		return (balist<char>*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
-
-	_ULL* psite = NULL;
-	char* pte = pc;
-	List* pli = List_Init();
-	for (psite = BA_String_Splitx_FindOnce(pte, string.pc); psite != NULL; psite = BA_String_Splitx_FindOnce(pte, string.pc))
-	{
-		//if the first chr of pte is in delimiters, *psite is 0
-		pte += *psite + 1;
-		List_Put(pli, (void*)psite);
-	}
-	List_Put(pli, &(len));
-	balist<char>* pret = new balist<char>();
-	char* pcte = NULL;
-	pte = pc;
-	LIST_FORG(_ULL, p, pli)
-	{
-		if (*p > 0)
-		{
-			pcte = BALLOC_R(*p + 1, char, mem);
-			strncpy_s(pcte, *p + 1, pte, *p);
-			pret->Put(pcte);
-		}
-		pte += *p + 1;
-		free(p);
-	}
-	List_Destroy(pli);
-	return pret;
+	return Splitx(string.pc);
 }
 
 List* BA_String::Find(BA_String string)
 {
-	_ULL trgStringLen = string.len;
-	List* pli = List_Init();
-	if (pli != NULL)
-	{
-		for (char* pte = strstr(pc, string.pc); pte != NULL; pte = strstr(pte, string.pc))
-		{
-			List_Put(pli, (void*)pte);
-			pte += trgStringLen;
-		}
-		if (pli->sumque > 0)
-		{
-			return pli;
-		}
-		else
-		{
-			return NULL;
-		}
-	}
-	else
-	{
-		PPW("List_Init()==NULL,return *this");
-	}
-	return NULL;
+	return Find(string.pc);
 }
 
 List* BA_String::Find(const char* _pc)
@@ -624,68 +498,5 @@ List* BA_String::Find(const char* _pc)
 	{
 		PPW("List_Init()==NULL,return *this");
 	}
-	return NULL;
-}
-
-char* BA_Chars(_ULL num)
-{
-	char* preturn = NULL;
-	size_t w = 1;
-	for (_ULL a = 10; num / a != 0; w++, a *= 10);
-	preturn = BALLOC_L(w + 1, char);
-	if (preturn == NULL)
-		MyBA_Err("char* BA_Chars(_ULL num): BALLOC_L(w + 1, char),return NULL",1);
-	else
-		sprintf_s(preturn, w + 1, "%llu", num);
-	return preturn;
-}
-
-char* BA_Chars(_LL num)
-{
-	char* preturn = NULL;
-	size_t w = 1;
-	for (_ULL a = 10; num / a != 0; w++, a *= 10);
-	preturn = BALLOC_L(w + 1, char);
-	if (preturn == NULL)
-		MyBA_Err("char* BA_Chars(_LL num): BALLOC_L(w + 1, char),return NULL",1);
-	else
-		sprintf_s(preturn, w + 1, "%lld", num);
-	return preturn;
-}
-
-
-char* BA_Chars(int num)
-{
-	char* preturn = NULL;
-	size_t w = 1;
-	for (_ULL a = 10; num / a != 0; w++, a *= 10);
-	preturn = BALLOC_L(w + 1, char);
-	if (preturn == NULL)
-		MyBA_Err("char* BA_Chars(int num): BALLOC_L(w + 1, char),return NULL",1);
-	else
-		sprintf_s(preturn, w + 1, "%d", num);
-	return preturn;
-}
-
-char* BA_Chars(float num)
-{
-	char* preturn = NULL;
-	size_t w = 1;
-	for (_ULL a = 10; num / a != 0; w++, a *= 10);
-	preturn = BALLOC_L(w + 1, char);
-	if (preturn == NULL)
-		MyBA_Err("char* BA_Chars(float num): BALLOC_L(w + 1, char),return NULL",1);
-	else
-		sprintf_s(preturn, w + 1, "%e", num);
-	return preturn;
-}
-
-char* BA_Chars(BA_Shape s)
-{
-	return NULL;
-}
-
-char* BA_Chars(BA_Array a)
-{
 	return NULL;
 }
