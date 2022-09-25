@@ -9,6 +9,7 @@
 
 #include"BA_Base.hpp"
 #include"BA_File.hpp"
+#include"BA_String.hpp"
 
 
 _ULL  Get_File_Size(FILE* pf)
@@ -168,7 +169,7 @@ BA_Dir::BA_Dir(const char* _root)
                     intptr_t handle;
                     _finddata_t findData;
 
-                    handle = _findfirst(StringAdd_S(root, "\\*", NULL), &findData);    // 查找目录中的第一个文件
+                    handle = _findfirst(StrAdd(pba->STmem, root, "\\*", NULL), &findData);    // 查找目录中的第一个文件
                     if (handle != -1)
                     {
                         do
@@ -227,7 +228,7 @@ BA_Dir::BA_Dir(const char* _root, const char* _type)
                 intptr_t handle;
                 _finddata_t findData;
 
-                handle = _findfirst(StringAdd_S(root, "\\*",_type, NULL), &findData);    // 查找目录中的第一个文件
+                handle = _findfirst(StrAdd(pba->STmem, root, "\\*",_type, NULL), &findData);    // 查找目录中的第一个文件
                 if (handle != -1)
                 {
                     do

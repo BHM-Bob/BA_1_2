@@ -86,20 +86,14 @@ typedef long long _LL;
 #define BALLOC_R(num,type,pli) (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli)
 #define BALLOCS_R(type,ret,num,pli,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli);if((ret) == NULL){err_opts;return err_ret;}
 
-#define LIST_FOR(p,pli) for(void* p = List_Copy(pli); p; p = List_Copy(pli))
-#define LIST_FORS(type,p,pli) for(type* p = (type*)List_Copy(pli); p; p = (type*)List_Copy(pli))
 #define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p; p = (type*)List_Get(pli))
-#define LIST_FORR(type,p,pli,opts) for(type* p = (type*)List_Copy(pli); p; p = (type*)List_Copy(pli),opts)
-
 #define FORI(start, end) for(_LL i = start; i < end; i++)
 
 void JDT(_ULL now, _ULL sum);
 
+// TODO : remove windows dependence
 void SetConsoleCursor(int x, int y);
 COORD GetConsoleCursor(void);
-
-char* StringAdd_L(const char* pstr, ...);//end with NULL
-char* StringAdd_S(const char* pstr, ...);//end with NULL
 
 int GetDayOfMonth(int year, int month);
 
@@ -110,9 +104,6 @@ char* Get_Time_L(void);
 char* Get_Time_S(void);
 
 char* Get_Time_For_File_Name(char char_to_replace_unspport_char);
-
-// ... 表示被换的数字变量
-char* Num_To_Char(const char* ptype, ...);
 
 // ... Must end with a NULL
 template<typename dataType>
@@ -158,8 +149,6 @@ List* List_Destroy(List* plist);
 class BA_Base
 {
 public:
-
-
 	List* mem = List_Init();
 
 	char* __name__ = NULL;

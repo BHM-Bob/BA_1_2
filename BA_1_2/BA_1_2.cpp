@@ -186,7 +186,7 @@ float MyBA_GetUsedTime(void)
 bool MyBA_WriteLog(bool isquit)
 {
 	FILE* pf = NULL;
-	if (fopen_s(&pf, StringAdd_S(pba->exepath, "\\mba.log", NULL), "a") == 0)
+	if (fopen_s(&pf, StrAdd(pba->STmem, pba->exepath, "\\mba.log", NULL), "a") == 0)
 	{
 		MyBA_PutLog(_strdup("mba.log file opened successfully"));
 		if (isquit == 1)
@@ -319,7 +319,7 @@ int MyBA_Quit(int retVal)
 			if (exitFunc(data, 0) != 0)
 			{
 				MyBA_Errs(1, "int MyBA_Quit(int retVal): exitFunc(pdata, 0) != 0, func No.",
-					Num_To_Char("llu", pba->exitFunc->now ? pba->exitFunc->now->idx-1 : pba->exitFunc->sumque),
+					Num2Str(pba->exitFunc->now ? pba->exitFunc->now->idx-1 : pba->exitFunc->sumque),
 					" err!", NULL);
 			}
 		}
@@ -433,7 +433,7 @@ int MyBA_CMD_SearchCom(char* pc)
 int MyBA_CMD_ShowLog(void)
 {
 	FILE* pf = NULL;
-	if (fopen_s(&pf, StringAdd_S(pba->exepath, "\\mba.log", NULL), "r") == 0)
+	if (fopen_s(&pf, StrAdd(pba->STmem, pba->exepath, "\\mba.log", NULL), "r") == 0)
 	{
 		MyBA_PutLog(_strdup("mba.log file opened successfully"));
 	}
@@ -611,122 +611,12 @@ char* Get_Time_For_File_Name(char char_to_replace_unspport_char)
 	return p;
 }
 
-char* Num_To_Char(const char* ptype, ...)
-{
-	char* preturn = NULL;
-	va_list parg;
-	va_start(parg, ptype);
-	size_t w = 1;
-	if (*ptype == 'd')
-	{
-		int te = va_arg(parg, int);
-		for (int a = 10; te / a != 0; w++, a *= 10);
-		preturn = BALLOC_L(w + 1, char);
-		sprintf_s(preturn, w + 1, "%d", te);
-	}
-	else if (*ptype == 'u')
-	{
-		unsigned int te = va_arg(parg, unsigned int);
-		for (int a = 10; te / a != 0; w++, a *= 10);
-		preturn = BALLOC_L(w + 1, char);
-		sprintf_s(preturn, w + 1, "%u", te);
-	}
-	else if (strncmp(ptype, "ld", 2) == 0)
-	{
-		long te = va_arg(parg, long);
-		for (int a = 10; te / a != 0; w++, a *= 10);
-		preturn = BALLOC_L(w + 1, char);
-		sprintf_s(preturn, w + 1, "%ld", te);
-	}
-	else if (strncmp(ptype, "lu", 2) == 0)
-	{
-		unsigned long te = va_arg(parg, unsigned long);
-		for (int a = 10; te / a != 0; w++, a *= 10);
-		preturn = BALLOC_L(w + 1, char);
-		sprintf_s(preturn, w + 1, "%lu", te);
-	}
-	else if (strncmp(ptype, "lld", 3) == 0)
-	{
-		long long te = va_arg(parg, long long);
-		for (int a = 10; te / a != 0; w++, a *= 10);
-		preturn = BALLOC_L(w + 1, char);
-		sprintf_s(preturn, w + 1, "%lld", te);
-	}
-	else if (strncmp(ptype, "llu", 3) == 0)
-	{
-		unsigned long long te = va_arg(parg, unsigned long long);
-		for (int a = 10; te / a != 0; w++, a *= 10);
-		preturn = BALLOC_L(w + 1, char);
-		sprintf_s(preturn, w + 1, "%llu", te);
-	}
-	/*	else if(*ptype=='f')
-		{
-			float te = va_arg(parg,float);
-			preturn = BALLOC(10,char);
-			sprintf_s(preturn,w+1,"%f",te);
-		}*/
-	else if (*ptype == 'e')
-	{
-		double te = va_arg(parg, double);
-		preturn = BALLOC_L(18, char);
-		sprintf_s(preturn, w + 1, "%e", te);
-	}
-	else
-	{
-		va_end(parg);
-		return (char*)MyBA_Errs(1, "Num_To_Char: type default with", ptype, "return NULL", NULL);
-	}
-	va_end(parg);
-	return preturn;
-}
-
-char* StringAdd_L(const char* pstr, ...)//end with NULL
-{
-	va_list parg;
-	va_start(parg, pstr);
-	_ULL sumlen = 1;
-	List* plist = List_Init();
-	sumlen += strlen(pstr);
-	plist->Put(plist, (void*)pstr);
-	for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
-	{
-		sumlen += strlen(p);
-		plist->Put(plist, (void*)p);
-	}
-	BALLOCS_L(char, pret, sumlen, NULL, );
-	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
-		strcat_s(pret, sumlen, p);
-	va_end(parg);
-	return pret;
-}
-
-char* StringAdd_S(const char* pstr, ...)//end with NULL
-{
-	va_list parg;
-	va_start(parg, pstr);
-	_ULL sumlen = 1;
-	List* plist = List_Init();
-	sumlen += strlen(pstr);
-	plist->Put(plist, (void*)pstr);
-	for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
-	{
-		sumlen += strlen(p);
-		plist->Put(plist, (void*)p);
-	}
-	BALLOCS_S(char, pret, sumlen, NULL, );
-	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
-		strcat_s(pret, sumlen, p);
-	free(plist);
-	va_end(parg);
-	return pret;
-}
-
 int GetDayOfMonth(int year, int month)
 {
 	//month:1~12
 	if (month < 1 || month >12)
 	{
-		MyBA_Errs(1, "GetDayOfMonth: month is out of range with input:", Num_To_Char("d", month), ",return -1");
+		MyBA_Errs(1, "GetDayOfMonth: month is out of range with input:", Num2Str(month), ",return -1");
 		return -1;
 	}
 	int a[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };

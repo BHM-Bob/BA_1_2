@@ -1,7 +1,7 @@
-//BASIC_ALL_1_2 Thread
+ï»¿//BASIC_ALL_1_2 Thread
 //H
 //Writen By BHM
-//2022Äê9ÔÂ25ÈÕ
+//2022å¹´9æœˆ25æ—¥
 
 #ifndef BA_1_2_THREAD_H
 #define BA_1_2_THREAD_H

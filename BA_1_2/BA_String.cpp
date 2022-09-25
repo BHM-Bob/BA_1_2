@@ -166,14 +166,11 @@ char* StrAdd(List* mem, const char* pstr, ...)
 		sumlen += strlen(p);
 		plist->Put(plist, (void*)p);
 	}
-	char* pret = NULL;
-	if (mem)
+	char* pret = BALLOC_R(sumlen, char, mem);
+	if (!pret)
 	{
-		pret = BALLOC_R(sumlen, char, mem);
-	}
-	else
-	{
-		pret = MCALLOC(sumlen, char);
+		PPW("OOM");
+		return (char*)1;
 	}
 	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
 		strcat_s(pret, sumlen, p);
