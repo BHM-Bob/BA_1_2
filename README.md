@@ -3,9 +3,7 @@ Basic for All v1.2(for C++)
 -
 this project is writen in C++, 
 and it try to construct a tiny platform to provide some tools in
-memory control, log service, GUI(based on SDL2) and some basic tiny usefull funcs and classes.
-
-If you want to write some tiny programs in C++, you can try using it as a base.
+memory control, log service and some basic tiny usefull funcs and classes.
 
 It contans:
 -
