@@ -91,15 +91,16 @@ void MyBA_Init(int argc, char** argvs, bool safeMode)
 		pba->pLog = List_Init();
 		pba->pLog->Put(pba->pLog, plog);
 
-		pba->PutLog = MyBA_PutLog;
 		pba->GUT = MyBA_GetUsedTime;
-		pba->Quit = MyBA_Quit;
 
 #ifdef USE_OPENCV
 		cv::WaitKey(500);
 #else
 		Sleep(500);
 #endif
+
+	srand((unsigned int)time(NULL));
+	pba->randomEngine.seed((unsigned int)time(NULL));
 
 		if (_kbhit() != 0)
 		{
@@ -116,9 +117,6 @@ void MyBA_Init(int argc, char** argvs, bool safeMode)
 			}
 		}
 	}
-	srand((unsigned int)time(NULL));
-	pba->randomEngine.seed((unsigned int)time(NULL));
-
 	if(argc > 1 && argvs)
 		MyBA_CMD(argc, argvs);
 }
@@ -134,7 +132,7 @@ void MyBA_PutLog(const char* pc, const char* head)
 		plog->t = clock();
 		plog->pdate = Get_Time_Without_L();
 		_ULL sumlen = strlen(pc) + strlen(head);
-		plog->pc = StrAdd(pba->LTmem, head, pc, NULL);
+		plog->pc = ba::StrAdd(pba->LTmem, head, pc, NULL);
 		pba->pLog->Put(pba->pLog, plog);
 	}
 }
@@ -191,7 +189,7 @@ float MyBA_GetUsedTime(void)
 bool MyBA_WriteLog(bool isquit)
 {
 	FILE* pf = NULL;
-	if (fopen_s(&pf, StrAdd(pba->STmem, pba->exepath, "\\mba.log", NULL), "a") == 0)
+	if (fopen_s(&pf, ba::StrAdd(pba->STmem, pba->exepath, "\\mba.log", NULL), "a") == 0)
 	{
 		MyBA_PutLog(_strdup("mba.log file opened successfully"));
 		if (isquit == 1)
@@ -324,7 +322,7 @@ int MyBA_Quit(int retVal)
 			if (exitFunc(data, 0) != 0)
 			{
 				MyBA_Errs(1, "int MyBA_Quit(int retVal): exitFunc(pdata, 0) != 0, func No.",
-					Num2Str(pba->exitFunc->now ? pba->exitFunc->now->idx-1 : pba->exitFunc->sumque),
+					ba::Num2Str(pba->exitFunc->now ? pba->exitFunc->now->idx-1 : pba->exitFunc->sumque),
 					" err!", NULL);
 			}
 		}
@@ -401,54 +399,6 @@ void MyBA_FreeInstance(void)
 	}
 }
 
-int MyBA_CMD_SearchCom(char* pc)
-{
-	if (strstr(pc, "quit") != NULL)
-		return 0;
-	return 1;
-}
-
-int MyBA_CMD_ShowLog(void)
-{
-	FILE* pf = NULL;
-	if (fopen_s(&pf, StrAdd(pba->STmem, pba->exepath, "\\mba.log", NULL), "r") == 0)
-	{
-		MyBA_PutLog(_strdup("mba.log file opened successfully"));
-	}
-	else
-	{
-		MyBA_PutLog(_strdup("Unable to open mba.log file"));
-		if (pf)
-			fclose(pf);
-		return 0;
-	}
-	BALog* pl = MCALLOC(1, BALog);
-	if (!pl)
-	{
-		PPW("MCALLOC(1, BALog) == NULL, return -1");
-		return -1;
-	}
-	fseek(pf, 0L, SEEK_END);//文件指针置于结尾
-	long len1 = ftell(pf);//获取结尾指针值
-	fseek(pf, 0L, SEEK_SET);//文件指针至于开头
-	long len2 = ftell(pf);//获取开头指针值
-	while (len2 < len1)//循环判断
-	{
-		fread(&(pl->t), sizeof(clock_t), 1, pf);
-		pl->pdate = StringRead(pf);
-		pl->pc = StringRead(pf);
-		fread(&(pl->code), sizeof(int), 1, pf);
-		printf("\nBoot:%10.5fs | Date:%s | Code:%d\nContent:<%s>\n", (float)((float)(pl->t) / CLOCKS_PER_SEC), pl->pdate, pl->code, pl->pc);
-		//free(pl->pc);
-		//free(pl->pdate);
-
-		len2 = ftell(pf);
-	}
-	fclose(pf);
-	free(pl);
-	return 0;
-}
-
 void MyBA_SafeMode(void)
 {
 	pba->isSAFEMODE = true;
@@ -511,6 +461,23 @@ char* mstrdup(const char* p, List* mem)
 	char* pret = _strdup(p);
 	if (mem)
 		List_Put(mem, (void*)pret);
+	return pret;
+}
+
+//_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
+// if mem == NULL, use MCALLOC
+float* TypeDupR(List* mem, _ULL num, float firstData, ...)
+{
+	float* pret = BALLOC_R(num, float, mem);
+	if (pret)
+	{
+		pret[0] = firstData;
+		va_list parg;
+		va_start(parg, firstData);
+		for (_ULL a = 1; a < num; a++)
+			pret[a] = (float)va_arg(parg, double);
+		va_end(parg);
+	}
 	return pret;
 }
 
@@ -594,7 +561,7 @@ int GetDayOfMonth(int year, int month)
 	//month:1~12
 	if (month < 1 || month >12)
 	{
-		MyBA_Errs(1, "GetDayOfMonth: month is out of range with input:", Num2Str(month), ",return -1");
+		MyBA_Errs(1, "GetDayOfMonth: month is out of range with input:", ba::Num2Str(month), ",return -1");
 		return -1;
 	}
 	int a[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
@@ -606,7 +573,7 @@ int GetDayOfMonth(int year, int month)
 void* List_Get(List* plist)
 {
 	if (plist == NULL)
-		return MyBA_Err("get a NULL que", 1);
+		return MyBA_Err("void* List_Get(List* plist)::get a NULL que, return NULL", 1);
 	ListDot* pret = plist->pfirst;
 	if (plist->sumque == 1)
 	{

@@ -23,13 +23,13 @@
 void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultPath)
 {
 	List* mem = List_Init();
-	BA_String seqA = BA_String("GCG");
-	BA_String seqB = BA_String("UGC");
+	ba::str seqA = ba::str("GCG");
+	ba::str seqB = ba::str("UGC");
 	balist<char>* rnaSeqs = NULL;
 	if (loadSize == 0)
-		rnaSeqs = BA_String(ReadTXT(seqPath)).Split("\n");
+		rnaSeqs = ba::str(ReadTXT(seqPath)).Split("\n");
 	else
-		rnaSeqs = BA_String(ReadTXT(seqPath, loadSize)).Split("\n");
+		rnaSeqs = ba::str(ReadTXT(seqPath, loadSize)).Split("\n");
 	balist<_LL>* result = new balist<_LL>();
 	SequencesSimiCacuer seqCacuer = SequencesSimiCacuer();
 
@@ -68,7 +68,7 @@ void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultP
 
 
 
-_LL SequencesSimiCacuer::CacuSequencesSimilarity(BA_String seqA, BA_String seqB)
+_LL SequencesSimiCacuer::CacuSequencesSimilarity(ba::str seqA, ba::str seqB)
 {
 	seqALen = seqA.len;
 	seqBLen = seqB.len;
@@ -112,7 +112,7 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarity(BA_String seqA, BA_String seqB)
 	return H.dataL[H.dataLen - 1];
 }
 
-_LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace(BA_String seqA, BA_String seqB)
+_LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace(ba::str seqA, ba::str seqB)
 {
 	seqALen = seqA.len;
 	seqBLen = seqB.len;
@@ -159,11 +159,11 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace(BA_String seqA, BA_Str
 }
 
 
-void SequencesSimiCacuer::VizTraceback(BA_String seqA, BA_String seqB)
+void SequencesSimiCacuer::VizTraceback(ba::str seqA, ba::str seqB)
 {
 	if (seqA.len + 1 != traceback.dataShape[0] || seqB.len + 1 != traceback.dataShape[1])
 	{
-		MyBA_Err("void SequencesSimiCacuer::VizTraceback(BA_String seqA, BA_String seqB) : seqA.len+1 != traceback.dataShape[0] || seqB.len+1 != traceback.dataShape[1], return none", 1);
+		MyBA_Err("void SequencesSimiCacuer::VizTraceback(ba::str seqA, ba::str seqB) : seqA.len+1 != traceback.dataShape[0] || seqB.len+1 != traceback.dataShape[1], return none", 1);
 		return;
 	}
 	for (int i = 0; i < traceback.dataShape[0]; i++)
@@ -205,7 +205,7 @@ void SequencesSimiCacuer::VizTraceback(BA_String seqA, BA_String seqB)
 
 
 
-_LL SequencesSimiCacuer::CacuSequencesSimilarity2(BA_String seqA, BA_String seqB)
+_LL SequencesSimiCacuer::CacuSequencesSimilarity2(ba::str seqA, ba::str seqB)
 {
 	seqALen = seqA.len;
 	seqBLen = seqB.len;
@@ -230,7 +230,7 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarity2(BA_String seqA, BA_String seqB
 	}
 	return H.dataL[H.dataLen - 1];
 }
-_LL SequencesSimiCacuer::CacuSequencesSimilarity2(BA_String* seqA, BA_String* seqB)
+_LL SequencesSimiCacuer::CacuSequencesSimilarity2(ba::str* seqA, ba::str* seqB)
 {
 	seqALen = seqA->len;
 	seqBLen = seqB->len;
@@ -256,7 +256,7 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarity2(BA_String* seqA, BA_String* se
 	return H.dataL[H.dataLen - 1];
 }
 
-_LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace2(BA_String seqA, BA_String seqB)
+_LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace2(ba::str seqA, ba::str seqB)
 {
 	seqALen = seqA.len;
 	seqBLen = seqB.len;
@@ -292,11 +292,11 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace2(BA_String seqA, BA_St
 	return H.dataL[H.dataLen - 1];
 }
 
-void SequencesSimiCacuer::VizTraceback2(BA_String seqA, BA_String seqB)
+void SequencesSimiCacuer::VizTraceback2(ba::str seqA, ba::str seqB)
 {
 	if (seqA.len + 1 != traceback.dataShape[0] || seqB.len + 1 != traceback.dataShape[1])
 	{
-		MyBA_Err("void SequencesSimiCacuer::VizTraceback(BA_String seqA, BA_String seqB) : seqA.len+1 != traceback.dataShape[0] || seqB.len+1 != traceback.dataShape[1], return none", 1);
+		MyBA_Err("void SequencesSimiCacuer::VizTraceback(ba::str seqA, ba::str seqB) : seqA.len+1 != traceback.dataShape[0] || seqB.len+1 != traceback.dataShape[1], return none", 1);
 		return;
 	}
 	for (int i = 0; i < H.dataShape[0]; i++)
@@ -313,8 +313,8 @@ void SequencesSimiCacuer::VizTraceback2(BA_String seqA, BA_String seqB)
 		printf("\n");
 	}
 	_ULL maxLen = seqA.len > seqB.len ? seqA.len : seqB.len;
-	BA_String seqAs = BA_String("_").Repeat(maxLen);
-	BA_String seqBs = BA_String("_").Repeat(maxLen);
+	ba::str seqAs = ba::str("_").Repeat(maxLen);
+	ba::str seqBs = ba::str("_").Repeat(maxLen);
 	for (_LL seqAIdx = seqA.len, seqBIdx = seqB.len, seqIdx = maxLen - 1; seqAIdx >= 0 && seqBIdx >= 0 && seqIdx >= 0; seqIdx--)
 	{
 		switch (traceback.dataL[(seqAIdx) * traceback.dataShape[1] + seqBIdx]) {

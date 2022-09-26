@@ -10,9 +10,9 @@
 
 void BA_String_Test(void)
 {
-	PPSS(BA_String("GGGKKtKHHHtGGGKKKBtBBHHeHJJJ").Replace("HHH", NULL).pc);
+	PPSS(ba::str("GGGKKtKHHHtGGGKKKBtBBHHeHJJJ").Replace("HHH", NULL).pc);
 
-    balist<char>* result = BA_String("1234...56789").Splitx("2.");
+    balist<char>* result = ba::str("1234...56789").Splitx("2.");
     for (char* p = result->Copy(); p; p = result->Copy())
         PPS(p);
 
@@ -132,11 +132,11 @@ void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, balistDot<_ULL>* p2)
 
 std::mutex m;
 
-void BA_Test_WordsCount_SubThr(_LL id, balist<BA_String>& getQ,
+void BA_Test_WordsCount_SubThr(_LL id, balist<ba::str>& getQ,
     balist<char>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
 {
     List* mem = List_Init();
-    BA_String* text = (BA_String*)getQ.ThrGet(&m);
+    ba::str* text = (ba::str*)getQ.ThrGet(&m);
     balist<char>* splitResult = text->Splitx(" ,.\n\"'?!;:@`#$%^&*()+=/\r\t()[]{}<>");
     std::map<std::string, _ULL>* tree = (std::map<std::string, _ULL>*)data;
     std::string str;
@@ -163,9 +163,9 @@ void BA_Test_WordsCount(void)
     std::map<std::string, _ULL>* tree = new std::map<std::string, _ULL>();
     MyThreadsPool tp = MyThreadsPool(sumThreads,
         BA_Test_WordsCount_SubThr, (void*)tree);
-    BA_String text = BA_String(
+    ba::str text = ba::str(
         ReadTXT("E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter (complete works).txt"));
-    BA_String* subStr = NULL;
+    ba::str* subStr = NULL;
     for (_LL i = 0, stepLen = text.len / sumThreads; i < sumThreads; i++)
     {
         subStr = text(i * stepLen, (i == sumThreads-1) ? text.len : (i + 1) * stepLen);

@@ -31,13 +31,13 @@ public:
 	BA_Array traceback = BA_Array(BA_Shape(2, rows, cols), "l");
 
 
-	_LL CacuSequencesSimilarity(BA_String seqA, BA_String seqB);
-	_LL CacuSequencesSimilarity2(BA_String seqA, BA_String seqB);
-	_LL CacuSequencesSimilarity2(BA_String* seqA, BA_String* seqB);
-	_LL CacuSequencesSimilarityWithTrace(BA_String seqA, BA_String seqB);
-	_LL CacuSequencesSimilarityWithTrace2(BA_String seqA, BA_String seqB);
-	void VizTraceback(BA_String seqA, BA_String seqB);
-	void VizTraceback2(BA_String seqA, BA_String seqB);
+	_LL CacuSequencesSimilarity(ba::str seqA, ba::str seqB);
+	_LL CacuSequencesSimilarity2(ba::str seqA, ba::str seqB);
+	_LL CacuSequencesSimilarity2(ba::str* seqA, ba::str* seqB);
+	_LL CacuSequencesSimilarityWithTrace(ba::str seqA, ba::str seqB);
+	_LL CacuSequencesSimilarityWithTrace2(ba::str seqA, ba::str seqB);
+	void VizTraceback(ba::str seqA, ba::str seqB);
+	void VizTraceback2(ba::str seqA, ba::str seqB);
 };
 
 

@@ -38,6 +38,7 @@ doc:
 */
 
 void MyBA_CMD(int argc = 1, char** argvs = NULL);
+int MyBA_CMD_ShowLog(void);
 
 namespace ba {
 
@@ -73,7 +74,7 @@ namespace ba {
 		command(int _argc, char** _argvs);
 		int PutFunc(char* name);
 		int PutArg(char* name);
-};
+	};
 
 }
 

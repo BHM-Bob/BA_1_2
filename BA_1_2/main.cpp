@@ -10,7 +10,11 @@
 
 int main(int argc, char** argvs)
 {
-	MyBA_Init(argc, argvs);
+	argc = 2;
+	char** ppc = MCALLOC(2, char*);
+	ppc[0] = argvs[0];
+	ppc[1] = mstrdup("-version");
+	MyBA_Init(argc, ppc);
 
 	if(argc == 1)//run test
 	{

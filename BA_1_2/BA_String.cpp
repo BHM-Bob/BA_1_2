@@ -12,7 +12,7 @@
 #include"BA_Thread.hpp"
 #include"BA_String.hpp"
 
-char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite)
+char* ba::Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite)
 {
 	if ((pc == NULL) && (*pc == '\0'))
 	{
@@ -67,7 +67,7 @@ char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long*
 	}
 	return NULL;//没找到
 }
-char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, unsigned long long* psite)
+char* ba::Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, unsigned long long* psite)
 {
 	if ((single_delimiters != NULL && integration_elimiter != NULL) || (single_delimiters == NULL && integration_elimiter == NULL))
 	{
@@ -140,6 +140,11 @@ char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, uns
 			pte2 = pc + (*psite);
 			for (a = 0; pte2 + a != pte1; a++);
 			char* preturn = MCALLOC(a + 1, char);
+			if (!preturn)
+			{
+				PPW("OOM");
+				return (char*)1;
+			}
 			if (strncpy_s(preturn, a + 1, pc + (*psite), a) != 0)
 				return NULL;
 			*psite = a;
@@ -153,7 +158,7 @@ char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter, uns
 	return NULL;
 }
 
-char* StrAdd(List* mem, const char* pstr, ...)
+char* ba::StrAdd(List* mem, const char* pstr, ...)
 {
 	va_list parg;
 	va_start(parg, pstr);
@@ -178,31 +183,31 @@ char* StrAdd(List* mem, const char* pstr, ...)
 	return pret;
 }
 
-BA_String::BA_String(void)
+ba::str::str(void)
 {
 	pc = NULL;
 	len = 0;
 }
 
-BA_String::BA_String(const char* _pc)
+ba::str::str(const char* _pc)
 {
 	pc = NULL;
 	len = 0;
 	if (_pc == NULL)
 	{
-		MyBA_Err("BA_String::BA_String(const char* _pc):_pc == NULL,return *this", 1);
+		MyBA_Err("ba::str::str(const char* _pc):_pc == NULL,return *this", 1);
 	}
 	else
 	{
 		pc = mstrdup(_pc, mem);
 		if (pc == NULL)
-			MyBA_Err("BA_String::BA_String(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
+			MyBA_Err("ba::str::str(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
 		else
 			len = strlen(pc);
 	}
 }
 
-BA_String::BA_String(_ULL num,const char* _pc1, ...)
+ba::str::str(_ULL num,const char* _pc1, ...)
 {
 	pc = NULL;
 	len = 0;
@@ -214,7 +219,7 @@ BA_String::BA_String(_ULL num,const char* _pc1, ...)
 	List* plist = List_Init();
 	if (plist == NULL)
 	{
-		MyBA_Err("BA_String::BA_String(const char* _pc1, ...):List_Init() == NULL,return *this", 1);
+		MyBA_Err("ba::str::str(const char* _pc1, ...):List_Init() == NULL,return *this", 1);
 	}
 	else
 	{
@@ -230,7 +235,7 @@ BA_String::BA_String(_ULL num,const char* _pc1, ...)
 		pc = MCALLOC(sumlen, char);
 		if (pc == NULL)
 		{
-			MyBA_Err("BA_String::BA_String(const char* _pc1, ...):_strdup(_pc) == NULL,return *this", 1);
+			MyBA_Err("ba::str::str(const char* _pc1, ...):_strdup(_pc) == NULL,return *this", 1);
 		}
 		else
 		{
@@ -243,33 +248,48 @@ BA_String::BA_String(_ULL num,const char* _pc1, ...)
 	va_end(parg);
 }
 
-BA_String BA_String::ReLoad(const char* _pc)
+ba::str ba::str::Input(int maxLen)
+{
+	if (maxLen > 0)
+	{
+		pc = BALLOC_R(maxLen, char, mem);
+		scanf_s("%s", pc, maxLen);
+		len = strlen(pc);
+	}
+	else
+	{
+		MyBA_PutLog("str::Input(_LL maxLen)::maxLen < 0");
+	}
+	return *this;
+}
+
+ba::str ba::str::ReLoad(const char* _pc)
 {
 	if(pc != NULL)
 		free(pc);
 	pc = _strdup(_pc);
 	if (pc == NULL)
-		MyBA_Err("BA_String::ReLoad(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
+		MyBA_Err("str::ReLoad(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
 	else
 		len = strlen(pc);
 	return *this;
 }
 
-void BA_String::Destroy(void)
+void ba::str::Destroy(void)
 {
 	MyBA_Free_R(mem, true);
 }
 
-BA_String* BA_String::operator()(_LL index1, _LL index2)
+ba::str* ba::str::operator()(_LL index1, _LL index2)
 {
-	BA_String* ret = new BA_String();
+	str* ret = new str();
 	ret->len = index2 - index1;
 	ret->pc = BALLOC_R(ret->len + 1, char, ret->mem);
 	strncpy_s(ret->pc, ret->len+1, pc + index1, ret->len);
 	return ret;
 }
 
-BA_String BA_String::Repeat(_ULL times)
+ba::str ba::str::Repeat(_ULL times)
 {
 	_ULL oldLen = len;
 	len *= times;
@@ -284,17 +304,17 @@ BA_String BA_String::Repeat(_ULL times)
 	}
 	else
 	{
-		PPW("BA_String BA_String::Repeat(_ULL times):MCALLOC NULL,return *this");
+		PPW("str str::Repeat(_ULL times):MCALLOC NULL,return *this");
 	}
 	return *this;
 }
 
-BA_String BA_String::Concat(BA_String string)
+ba::str ba::str::Concat(str string)
 {
 	return Concat(string.pc);
 }
 
-BA_String BA_String::Concat(const char* _pc)
+ba::str ba::str::Concat(const char* _pc)
 {
 	len += strlen(_pc)+1;
 	char* pct = MCALLOC(len, char);
@@ -307,21 +327,21 @@ BA_String BA_String::Concat(const char* _pc)
 	}
 	else
 	{
-		PPW("BA_String BA_String::Repeat(_ULL times):MCALLOC NULL,return *this");
+		PPW("str str::Repeat(_ULL times):MCALLOC NULL,return *this");
 	}
 	return *this;
 }
 
-BA_String BA_String::Replace(BA_String string, BA_String newStr)
+ba::str ba::str::Replace(str string, str newStr)
 {
 	return Replace(string.pc, newStr.pc);
 }
 
-BA_String BA_String::Replace(const char* _pc, const char* newStr)
+ba::str ba::str::Replace(const char* _pc, const char* newStr)
 {
 	if (pc == NULL)
 	{
-		MyBA_Err("BA_String BA_String::Replace(const char* pc, const char* newStr):pc==NULL,return *this",1);
+		MyBA_Err("str str::Replace(const char* pc, const char* newStr):pc==NULL,return *this",1);
 		return *this;
 	}
 	_ULL trgStringLen = strlen(_pc);
@@ -373,15 +393,15 @@ BA_String BA_String::Replace(const char* _pc, const char* newStr)
 	return *this;
 }
 
-balist<char>* BA_String::Split(BA_String string)
+balist<char>* ba::str::Split(str string)
 {
 	return Split(string.pc);
 }
 
-balist<char>* BA_String::Split(const char* _pc)
+balist<char>* ba::str::Split(const char* _pc)
 {
 	if (_pc == NULL || *_pc == '\0' || pc == NULL || len == 0 || *pc == '\0')
-		return (balist<char>*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
+		return (balist<char>*)MyBA_Err("List* str::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
 
 	List* pli = this->Find(_pc);
 	balist<char>* pret = new balist<char>();
@@ -412,7 +432,7 @@ balist<char>* BA_String::Split(const char* _pc)
 
 //返回pc中出现delimiters的字符的偏移量,from 0
 //会对pc进行地址偏移操作，修改pc值
-_ULL* BA_String_Splitx_FindOnce(char* pc, const char* delimiters)
+_ULL* str_Splitx_FindOnce(char* pc, const char* delimiters)
 {
 	MCALLOCS(_ULL, psite, 1);
 	if(psite)
@@ -424,15 +444,15 @@ _ULL* BA_String_Splitx_FindOnce(char* pc, const char* delimiters)
 	return NULL;
 }
 
-balist<char>* BA_String::Splitx(const char* _pc)
+balist<char>* ba::str::Splitx(const char* _pc)
 {
 	if (_pc == NULL || *_pc == '\0' || pc == NULL || len == 0 || *pc == '\0')
-		return (balist<char>*)MyBA_Err("List* BA_String::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
+		return (balist<char>*)MyBA_Err("List* str::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
 
 	_ULL* psite = NULL;
 	char* pte = pc;
 	List* pli = List_Init();
-	for (psite = BA_String_Splitx_FindOnce(pte, _pc); psite != NULL; psite = BA_String_Splitx_FindOnce(pte, _pc))
+	for (psite = str_Splitx_FindOnce(pte, _pc); psite != NULL; psite = str_Splitx_FindOnce(pte, _pc))
 	{
 		//if the first chr of pte is in delimiters, *psite is 0
 		pte += *psite + 1;
@@ -457,17 +477,17 @@ balist<char>* BA_String::Splitx(const char* _pc)
 	return pret;
 }
 
-balist<char>* BA_String::Splitx(BA_String string)
+balist<char>* ba::str::Splitx(str string)
 {
 	return Splitx(string.pc);
 }
 
-List* BA_String::Find(BA_String string)
+List* ba::str::Find(str string)
 {
 	return Find(string.pc);
 }
 
-List* BA_String::Find(const char* _pc)
+List* ba::str::Find(const char* _pc)
 {
 	_ULL trgStringLen = strlen(_pc);
 	List* pli = List_Init();

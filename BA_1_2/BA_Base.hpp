@@ -181,8 +181,6 @@ public:
 	balistDot();
 	balistDot(dataType* _pdata, const char* _name = NULL, bool justUseNamePtr = false);
 	~balistDot();
-	// ++ 运算符重载, move forward
-	balistDot<dataType> operator++();
 };
 template <typename dataType>
 class balist
@@ -346,14 +344,11 @@ struct MyBA
 	List* exitFuncData;
 	List* exitFunc;
 
-	int (*Quit)(int retVal);
 	float (*GUT)(void);
-	// BALLOC_L
-	void (*PutLog)(const char* pc, const char* head);
 };
 extern MyBA* pba;
 void MyBA_Init(int argc = 1, char** argvs = NULL, bool safeMode = false);
-void MyBA_Context(const char* nowFuncName);
+void MyBA_Stack(const char* nowFuncName);
 float MyBA_GetUsedTime(void);
 // BALLOC_L
 void MyBA_PutLog(const char* pc, const char* head = "Normal Log:");
@@ -372,13 +367,14 @@ void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli);
 void* MyBA_CALLOC_L(_ULL count, _ULL size);
 void* MyBA_CALLOC_S(_ULL count, _ULL size);
 
-int MyBA_CMD_SearchCom(char* pc);
-int MyBA_CMD_ShowLog(void);
 void MyBA_SafeMode(void);
 //***********************************************************************************************************************
 
 // if mem == NULL, do not record
 char* mstrdup(const char* p, List* mem = NULL);
+//_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
+// if mem == NULL, use MCALLOC
+float* TypeDupR(List* mem, _ULL num, float firstData, ...);
 //_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
 // if mem == NULL, use MCALLOC
 template<typename dataType>
@@ -416,9 +412,6 @@ bool Frees(dataType* p1, ...)
 	return 0;
 };
 
-
-//_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
-// if mem == NULL, use MCALLOC
 template<typename dataType>
 dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
 {
@@ -428,12 +421,8 @@ dataType* TypeDupR(List* mem, _ULL num, dataType firstData, ...)
 		pret[0] = firstData;
 		va_list parg;
 		va_start(parg, firstData);
-		if(typeid(dataType) == typeid(float))
-			for (_ULL a = 1; a < num; a++)
-				pret[a] = (dataType)va_arg(parg, double);
-		else
-			for (_ULL a = 1; a < num; a++)
-				pret[a] = (dataType)va_arg(parg, dataType);
+		for (_ULL a = 1; a < num; a++)
+			pret[a] = (dataType)va_arg(parg, dataType);
 		va_end(parg);
 	}
 	return pret;
@@ -511,12 +500,6 @@ inline balistDot<dataType>::balistDot(dataType* _pdata, const char* _name, bool 
 template<typename dataType>
 balistDot<dataType>::~balistDot()
 {
-}
-
-template<typename dataType>
-inline balistDot<dataType> balistDot<dataType>::operator++()
-{
-	this = this->pnext;
 }
 
 template<typename dataType>

@@ -22,7 +22,7 @@ BA_Array BA_Array_GetTest();
 void BA_Dir_Test(void);
 void BA_ThreadPool_Test(void);
 void BA_Test_WordsCount_HashCol(balistDot<_ULL>* p1, balistDot<_ULL>* p2);
-void BA_Test_WordsCount_SubThr(_ULL id, balist<BA_String>& getQ,
+void BA_Test_WordsCount_SubThr(_ULL id, balist<ba::str>& getQ,
     balist<char>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
 void BA_Test_WordsCount(void);
 
