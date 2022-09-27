@@ -10,19 +10,13 @@
 
 int main(int argc, char** argvs)
 {
-	argc = 4;
-	char** ppc = MCALLOC(argc, char*);
-	ppc[0] = argvs[0];
-	ppc[1] = mstrdup("=open");
-	ppc[2] = mstrdup("-i");
-	ppc[3] = mstrdup("D:\\Bio\\DataBase\\Silva\\SILVA_138_SSU_tax_silva.fasta");
-	MyBA_Init(argc, ppc);
-
-	ba::str s = ba::str("666");
-	s.Insert(-1, "000");
-	s.Insert(3, "333");
-	s.Insert(8, "999");
-	PPS(s.pc);
+	//argc = 4;
+	//char** argvs = MCALLOC(argc, char*);
+	//argvs[0] = argvs[0];
+	//argvs[1] = mstrdup("=open");
+	//argvs[2] = mstrdup("-i");
+	//argvs[3] = mstrdup("D:\\Bio\\DataBase\\Silva\\SILVA_138_SSU_tax_silva.fasta");
+	MyBA_Init(argc, argvs);
 
 	if(argc == 1)//run test
 	{
