@@ -164,12 +164,12 @@ char* ba::StrAdd(List* mem, const char* pstr, ...)
 	va_start(parg, pstr);
 	_ULL sumlen = 1;
 	List* plist = List_Init();
-	sumlen += strlen(pstr);
-	plist->Put(plist, (void*)pstr);
+	sumlen += (pstr ? strlen(pstr) : 0);// handle that if the head ptr is NULL
+	plist->Put(plist, (pstr ? (void*)pstr : BA_FREED_PTR));// handle that if the head ptr is NULL
 	for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
 	{
-		sumlen += strlen(p);
-		plist->Put(plist, (void*)p);
+		sumlen += (p ? strlen(p) : 0);
+		plist->Put(plist, p);
 	}
 	char* pret = BALLOC_R(sumlen, char, mem);
 	if (!pret)
@@ -178,7 +178,8 @@ char* ba::StrAdd(List* mem, const char* pstr, ...)
 		return (char*)1;
 	}
 	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
-		strcat_s(pret, sumlen, p);
+		if(p != BA_FREED_PTR)
+			strcat_s(pret, sumlen, p);
 	List_Destroy(plist);
 	return pret;
 }
@@ -207,15 +208,15 @@ ba::str::str(const char* _pc)
 	}
 }
 
-ba::str::str(_ULL num,const char* _pc1, ...)
+ba::str::str(_LL num,const char* _pc1, ...)
 {
 	pc = NULL;
 	len = 0;
 
-	_ULL js = 0;
+	_LL js = 0;
 	va_list parg;
 	va_start(parg, _pc1);
-	_ULL sumlen = 1;
+	_LL sumlen = 1;
 	List* plist = List_Init();
 	if (plist == NULL)
 	{
@@ -269,7 +270,7 @@ ba::str ba::str::ReLoad(const char* _pc)
 		free(pc);
 	pc = _strdup(_pc);
 	if (pc == NULL)
-		MyBA_Err("str::ReLoad(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
+		MyBA_Err("ba::str ba::str::ReLoad(const char* _pc):_strdup(_pc) == NULL,return *this", 1);
 	else
 		len = strlen(pc);
 	return *this;
@@ -289,9 +290,9 @@ ba::str* ba::str::operator()(_LL index1, _LL index2)
 	return ret;
 }
 
-ba::str ba::str::Repeat(_ULL times)
+ba::str ba::str::Repeat(_LL times)
 {
-	_ULL oldLen = len;
+	_LL oldLen = len;
 	len *= times;
 	char* pct = MCALLOC(len+1, char);
 	if (pct != NULL)
@@ -304,7 +305,7 @@ ba::str ba::str::Repeat(_ULL times)
 	}
 	else
 	{
-		PPW("str str::Repeat(_ULL times):MCALLOC NULL,return *this");
+		PPW("ba::str ba::str::Repeat(_ULL times):MCALLOC NULL,return *this");
 	}
 	return *this;
 }
@@ -327,7 +328,38 @@ ba::str ba::str::Concat(const char* _pc)
 	}
 	else
 	{
-		PPW("str str::Repeat(_ULL times):MCALLOC NULL,return *this");
+		PPW("ba::str ba::str::Concat(const char* _pc):MCALLOC NULL,return *this");
+	}
+	return *this;
+}
+
+ba::str ba::str::Insert(_LL pos, str string)
+{
+	return Insert(pos, string.pc);
+}
+
+ba::str ba::str::Insert(_LL pos, const char* _pc)
+{
+	if (-1 <= pos && pos <= len-1)
+	{
+		++pos;//[0, len]
+		char* p1 = pc;
+		_LL l1 = pos;
+		char* p2 = mstrdup(_pc);
+		_LL l2 = strlen(p2);
+		char* p3 = pc + pos;
+		_LL l3 = len - pos;
+		char* p = BALLOC_R(l1 + l2 + l3 + 1, char, mem);
+		strncat_s(p, l1 + l2 + l3 + 1, p1, l1);
+		strncat_s(p, l1 + l2 + l3 + 1, p2, l2);
+		strncat_s(p, l1 + l2 + l3 + 1, p3, l3);
+		free(pc);
+		pc = p;
+		len = l1 + l2 + l3;
+	}
+	else
+	{
+		MyBA_Err("ba::str ba::str::Insert(_LL pos, const char* _pc): not -1 <= pos && pos <= len-1, do nothing", 1);
 	}
 	return *this;
 }

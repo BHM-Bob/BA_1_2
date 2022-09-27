@@ -16,15 +16,17 @@
 
 /*
 examples for cmd.exe to run:
-	mba -version
-	mba -contimode
-	mba -open vi.txt
-	mba -open [a.txt,b.file,c.obj] > r.txt
+	mba =version
+	mba =contimode
+	mba =open -i vi.txt
+	mba =open -i [a.txt,b.file,c.obj] > r.txt
 
 args:
 	mba: run mba.exe
-	-*: stands a func obj
+	=*: stands a func obj
+	-*: stands a arg name
 	* after -*: arg for func obj
+	:*: a var 
 	>: data flow output, defualt there is no '>' and is out to stdout
 	[*,*,]:list
 
@@ -38,18 +40,24 @@ doc:
 */
 
 void MyBA_CMD(int argc = 1, char** argvs = NULL);
-int MyBA_CMD_ShowLog(void);
 
 namespace ba {
 
 	class cmdStack : BA_Base
 	{
 	public:
-		char* funcObjName = NULL;
-		balist<char> args = balist<char>();
+		std::string funcObjName;
+		// argTy - arg
+		std::map<std::string, std::string> args;
 
 		cmdStack(char* _funcObjName);
 	};
+
+	namespace cmd {
+		int version(List* mem, std::any & data, char* dataType, cmdStack* stack);
+		int openlog(List* mem, std::any& data, char* dataType, cmdStack* stack);
+		int open(List* mem, std::any& data, char* dataType, cmdStack* stack);
+	}
 
 	class command : BA_Base
 	{
@@ -63,6 +71,8 @@ namespace ba {
 		bool cmdLineEnd = false;
 		_LL nowCmdIdx = 0;
 
+		bool isErr = false;
+
 		balist<cmdStack> stack = balist<cmdStack>();//actually not the stack
 
 		std::any data;
@@ -72,10 +82,21 @@ namespace ba {
 		char dataType = ' ';
 
 		command(int _argc, char** _argvs);
-		int PutFunc(char* name);
-		int PutArg(char* name);
-	};
+		command runStack(void);
+		command endWork(void);
 
+		int PutFunc(char* name);
+		int PutArg(char* argType, char* argName);
+
+		std::map<std::string,
+			int (*)(List* mem, std::any& data,
+				char* dataType, cmdStack* stack)> name2func = {
+			{"version", cmd::version},
+			{"openlog", cmd::openlog},
+			{"open", cmd::open},
+		};
+
+	};
 }
 
 

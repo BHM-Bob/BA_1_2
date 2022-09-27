@@ -31,14 +31,11 @@ char* ReadTXT(const char* path, _ULL loadSize, List* mem)
             return (char*)MyBA_Errs(1, "ReadTXT: loadSize > size:", path, " ,return NULL", NULL);
         if (loadSize == 0)
             loadSize = size;
-        char* pc = NULL;
-        if (mem)
+        char* pc = BALLOC_R(loadSize + 1, char, mem);
+        if (!pc)
         {
-            pc = BALLOC_R(loadSize + 1, char, mem);
-        }
-        else
-        {
-            pc = MCALLOC(loadSize + 1, char);
+            PPW("OOM");
+            return (char*)1;
         }
         fread(pc, 1, loadSize, pf);
         fclose(pf);
@@ -108,6 +105,7 @@ char* StringRead(FILE* pf, List* mem)
 	    fread(plen, sizeof(_ULL), 1, pf);
 	    if (*plen == 0)
 	    {
+            _LL i = ftell(pf);
 		    free(plen);
 		    return NULL;
 	    }

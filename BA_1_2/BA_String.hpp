@@ -22,22 +22,24 @@ namespace ba
 	{
 	public:
 		char* pc = NULL;
-		_ULL len = 0;
+		_LL len = 0;
 		List* mem = List_Init();
-
-		_ULL queCopyNowIdx = 0;
 
 		str(void);
 		str(const char* _pc);
 		//end with a NULL
-		str(_ULL num, const char* _pc1, ...);
+		str(_LL num, const char* _pc1, ...);
 
 		str Input(int maxLen = 0);
 		str ReLoad(const char* _pc);
 
-		str Repeat(_ULL times);
+		str Repeat(_LL times);
 		str Concat(str string);
 		str Concat(const char* _pc);
+		//after pos:[-1, len-1]
+		str Insert(_LL pos, str string);
+		//after pos:[-1, len-1]
+		str Insert(_LL pos, const char* _pc);
 
 		str Replace(str string, str newStr);
 		str Replace(const char* _pc, const char* newStr);
