@@ -244,12 +244,17 @@ int ba::cmd::open(List* mem, std::any& data, char* dataType, cmdStack* stack)
 	char* root = _getcwd(NULL, 0), *pt = NULL, *r = NULL;
 	if (ipath.size() == 0)
 	{
-		PPW("path.size() == 0");
+		PPW("ipath.size() == 0");
 		return -1;
 	}
 	if (ipath[0] == '[')//list args
 	{
-		std::string subStr = ipath.substr(1, ipath.size() - 1);
+		if (ipath.find(']') == std::string::npos)
+		{
+			PPW("err list without \']\', do noting");
+			return -2;
+		}
+		std::string subStr = ipath.substr(1, ipath.find(']') - 1);
 		ba::str* newIPath = new ba::str(subStr.c_str());
 		paths = newIPath->Split(",");
 	}

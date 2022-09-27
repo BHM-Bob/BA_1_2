@@ -45,7 +45,7 @@ char* ReadTXT(const char* path, _ULL loadSize, List* mem)
     {
         if (pf)
             fclose(pf);
-        return (char*)MyBA_Errs(1, "ReadTXT: Err to open index_file:", path, " ,return NULL", NULL);
+        return (char*)MyBA_Errs(1, "ReadTXT: Err to open file:", path, " ,return NULL", NULL);
     }
 }
 

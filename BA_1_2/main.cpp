@@ -10,13 +10,14 @@
 
 int main(int argc, char** argvs)
 {
-	//argc = 4;
-	//char** argvs = MCALLOC(argc, char*);
-	//argvs[0] = argvs[0];
-	//argvs[1] = mstrdup("=open");
-	//argvs[2] = mstrdup("-i");
-	//argvs[3] = mstrdup("D:\\Bio\\DataBase\\Silva\\SILVA_138_SSU_tax_silva.fasta");
-	MyBA_Init(argc, argvs);
+	argc = 4;
+	char** pps = MCALLOC(argc, char*);
+	pps[0] = argvs[0];
+	pps[1] = mstrdup("=open");
+	pps[2] = mstrdup("-i");
+	pps[3] = mstrdup("[D:\\Bio\\BioInfoLessonSTU\\Class4\\data\\dreb2_AtOs.fasta,D:\\Bio\\BioInfoLessonSTU\\Class4\\data\\dreb2_FtAtOs.fasta]");
+	
+	MyBA_Init(argc, pps);
 
 	if(argc == 1)//run test
 	{
