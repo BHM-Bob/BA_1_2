@@ -158,6 +158,14 @@ char* ba::Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter,
 	return NULL;
 }
 
+char* mstrdup(const char* p, ba::memRecord* mem, _LL toBeFreedInStack)
+{
+	char* pret = _strdup(p);
+	if (mem)
+		mem->put(p, strlen(p) + 1, toBeFreedInStack);
+	return pret;
+}
+
 char* ba::StrAdd(List* mem, const char* pstr, ...)
 {
 	va_list parg;
@@ -464,9 +472,9 @@ balist<char>* ba::str::Split(const char* _pc)
 
 //返回pc中出现delimiters的字符的偏移量,from 0
 //会对pc进行地址偏移操作，修改pc值
-_ULL* str_Splitx_FindOnce(char* pc, const char* delimiters)
+_LL* str_Splitx_FindOnce(char* pc, const char* delimiters)
 {
-	MCALLOCS(_ULL, psite, 1);
+	_LL* psite = MCALLOC(1, _LL);
 	if(psite)
 	{
 		for (*psite = 0; *pc != '\0'; (*psite)++, pc++)
@@ -481,20 +489,20 @@ balist<char>* ba::str::Splitx(const char* _pc)
 	if (_pc == NULL || *_pc == '\0' || pc == NULL || len == 0 || *pc == '\0')
 		return (balist<char>*)MyBA_Err("List* str::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
 
-	_ULL* psite = NULL;
+	_LL* psite = NULL;
 	char* pte = pc;
-	List* pli = List_Init();
+	balist<_LL>* pli = new balist<_LL>();
 	for (psite = str_Splitx_FindOnce(pte, _pc); psite != NULL; psite = str_Splitx_FindOnce(pte, _pc))
 	{
 		//if the first chr of pte is in delimiters, *psite is 0
 		pte += *psite + 1;
-		List_Put(pli, (void*)psite);
+		pli->Put(psite);
 	}
-	List_Put(pli, TypeDupR(NULL, 1, len));
+	pli->Put(TypeDupR(NULL, 1, len));
 	balist<char>* pret = new balist<char>();
 	char* pcte = NULL;
 	pte = pc;
-	LIST_FORG(_ULL, p, pli)
+	for(_LL* p = pli->Copy(); p; p = pli->Copy())
 	{
 		if (*p > 0)
 		{
@@ -505,7 +513,8 @@ balist<char>* ba::str::Splitx(const char* _pc)
 		pte += *p + 1;
 		free(p);
 	}
-	List_Destroy(pli);
+	pli->Destroy();
+	delete pli;
 	return pret;
 }
 
@@ -544,4 +553,11 @@ List* ba::str::Find(const char* _pc)
 		PPW("List_Init()==NULL,return *this");
 	}
 	return NULL;
+}
+
+// if mem == NULL, do not record
+char* ba::strdup(const char* p, ba::memRecord* mem, _LL toBeFreedInStack)
+{
+	_ballocs(char, pret, strlen(p), mem, toBeFreedInStack, 1);
+	return pret;
 }

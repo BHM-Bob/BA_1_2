@@ -60,7 +60,7 @@ typedef long long _LL;
 
 #define BA_FREED_PTR (void*)0x1
 
-#define PPT() printf("\nTime now : In %s\n, %s at line %lu ,<%s> <%.10f s>,\n",__FILE__, __func__,__LINE__,Get_Time_Without_S(),(float)( (float)(clock())/CLOCKS_PER_SEC))
+#define PPT() printf("\nTime now : In %s\n, %s at line %lu ,<%s> <%.10f s>,\n",__FILE__, __func__,__LINE__,GetTimeWithout(pba->STmem),(float)( (float)(clock())/CLOCKS_PER_SEC))
 #define PPX(p) std::cout << "\n <" << (float)( (float)(clock())/CLOCKS_PER_SEC) << " s>In " << __FILE__ << ", " << __func__ << " at line " << __LINE__ << " ," << #p << " is <" << p << ">\n" << std::endl;
 // do not cacu it's len
 #define PPSS(p) printf("\n <%.10f s>In %s\n, %s at line %lu , "#p" is <%s>\n",(float)( (float)(clock())/CLOCKS_PER_SEC),__FILE__,__func__,__LINE__,(p))
@@ -75,7 +75,6 @@ typedef long long _LL;
 #define _SIS_ {printf("\nStopping Now,Enter Anykey To Continue\nAt %s in line %lu  ",__func__,__LINE__);fflush(stdin);int c = _getch();printf("   Scanfed\n");fflush(stdin);}
 
 #define MCALLOC(num,type) (type*)calloc((size_t)(num),sizeof(type))
-#define MCALLOCS(type,ret,num) type* ret = (type*)calloc((size_t)(num),sizeof(type))
 
 #define BALLOC_L(num,type) (type*)MyBA_CALLOC_L((size_t)(num),sizeof(type))
 #define BALLOC_S(num,type) (type*)MyBA_CALLOC_S((size_t)(num),sizeof(type))
@@ -84,7 +83,6 @@ typedef long long _LL;
 #define BALLOCS_S(type,ret,num,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_S((size_t)(num),sizeof(type));if((ret) == NULL){err_opts;return err_ret;}
 
 #define BALLOC_R(num,type,pli) (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli)
-#define BALLOCS_R(type,ret,num,pli,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli);if((ret) == NULL){err_opts;return err_ret;}
 
 #define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p; p = (type*)List_Get(pli))
 #define FORI(start, end) for(_LL i = start; i < end; i++)
@@ -96,12 +94,6 @@ void SetConsoleCursor(int x, int y);
 COORD GetConsoleCursor(void);
 
 int GetDayOfMonth(int year, int month);
-
-char* Get_Time_Without_L(void);
-char* Get_Time_Without_S(void);
-
-char* Get_Time_L(void);
-char* Get_Time_S(void);
 
 char* Get_Time_For_File_Name(char char_to_replace_unspport_char);
 
@@ -143,7 +135,6 @@ List* List_Put(List* plist, void* pdata);
 void List_SetVar(List* plist, void* pdata, void* newVar);
 List* List_Destroy(List* plist);
 
-//******************************************************************
 //******************************************************************
 
 class BA_Base
@@ -317,6 +308,29 @@ struct BALog
 	int code;
 };
 
+namespace ba
+{
+	class memRecord;//类的前置声明
+	class singleStack
+	{
+	public:
+		char* funcName = NULL;
+		memRecord* mem = NULL;
+		singleStack* up = NULL;
+		singleStack* next = NULL;
+
+		singleStack(const char* _funcName, singleStack* _up);
+	};
+
+	class stack//向外提供服务，BA内部函数不使用
+	{
+	public:
+		std::deque<singleStack*> stacks;
+
+		stack();
+	};
+}
+
 typedef struct MyBA MyBA;
 struct MyBA
 {
@@ -330,13 +344,14 @@ struct MyBA
 	List* LTmem;//Long Term Mem
 	List* STmem;//Short Term Mem
 
+	ba::stack* stacks;//stacks for next generation of mem control and log
+
 	clock_t GUT_t;
 	bool GUT_state;
 	clock_t JDT_t;
 
 	std::default_random_engine randomEngine;
 
-	bool isSDL2;
 	bool isSAFEMODE;
 
 	List* pLog;
@@ -348,7 +363,6 @@ struct MyBA
 };
 extern MyBA* pba;
 void MyBA_Init(int argc = 1, char** argvs = NULL, bool safeMode = false);
-void MyBA_Stack(const char* nowFuncName);
 float MyBA_GetUsedTime(void);
 // BALLOC_L
 void MyBA_PutLog(const char* pc, const char* head = "Normal Log:");

@@ -70,14 +70,14 @@ void MyBA_Init(int argc, char** argvs, bool safeMode)
 		pba->LTmem = List_Init();
 		pba->STmem = List_Init();
 
+		pba->stacks = new ba::stack();
+		ba::singleStack* ps = new ba::singleStack("MyBA_Init", NULL);
+		pba->stacks->stacks.emplace_front(ps);
+
 		pba->exitFunc = List_Init();
 		pba->exitFuncData = List_Init();
 
-#ifdef USE_SDL2
-		pba->isSDL2 = 1;
-#endif
-
-		MCALLOCS(BALog, plog, 1);
+		BALog* plog = MCALLOC(1, BALog);
 		if (plog == NULL)
 		{
 			PPW("MyBA_Init:plog == NULL,pass");
@@ -85,7 +85,7 @@ void MyBA_Init(int argc, char** argvs, bool safeMode)
 		else
 		{
 			plog->t = clock();
-			plog->pdate = Get_Time_Without_L();
+			plog->pdate = GetTimeWithout(pba->LTmem);
 			plog->pc = _strdup("MyBA Start");
 		}
 		pba->pLog = List_Init();
@@ -130,7 +130,7 @@ void MyBA_PutLog(const char* pc, const char* head)
 			head = mstrdup("Normal Log:", pba->LTmem);
 		BALLOCS_L(BALog, plog, 1, , );
 		plog->t = clock();
-		plog->pdate = Get_Time_Without_L();
+		plog->pdate = GetTimeWithout(pba->LTmem);
 		_ULL sumlen = strlen(pc) + strlen(head);
 		plog->pc = ba::StrAdd(pba->LTmem, head, pc, NULL);
 		pba->pLog->Put(pba->pLog, plog);
@@ -163,7 +163,7 @@ void MyBA_PutLogs(const char* head, ...)
 
 		BALLOCS_L(BALog, plog, 1, , );
 		plog->t = clock();
-		plog->pdate = Get_Time_Without_L();
+		plog->pdate = GetTimeWithout(pba->LTmem);
 		plog->pc = pret;
 		pba->pLog->Put(pba->pLog, plog);
 	}
@@ -404,6 +404,19 @@ void MyBA_SafeMode(void)
 	pba->isSAFEMODE = true;
 }
 
+ba::singleStack::singleStack(const char* _funcName, singleStack* _up)
+{
+	mem = new memRecord();
+	mem->stack = this;
+	funcName = strdup(_funcName, mem, 0);
+	up = _up;
+}
+
+ba::stack::stack()
+{
+
+}
+
 void JDT(_ULL now, _ULL sum)
 {
 	if (pba->JDT_t == 0)
@@ -464,8 +477,6 @@ char* mstrdup(const char* p, List* mem)
 	return pret;
 }
 
-//_ULL* pi = TypeDupR(mem, 2, 99ULL, 99ULL);
-// if mem == NULL, use MCALLOC
 float* TypeDupR(List* mem, _ULL num, float firstData, ...)
 {
 	float* pret = BALLOC_R(num, float, mem);
@@ -496,26 +507,6 @@ float* TypeDupR(List* mem, _ULL num, float firstData, ...)
 //	return pret;
 //}
 
-char* Get_Time_Without_L(void)
-{
-	BALLOCS_L(char, p, 26, NULL, PPW("Get_Time_Without_L:BALLOCS_L Faliue,return NULL"));
-	time_t tim = time(NULL);
-	if (ctime_s(p, 26, &tim) != 0)
-		return NULL;
-	*(p + 24) = (char)' ';
-	return p;
-}
-
-char* Get_Time_Without_S(void)
-{
-	BALLOCS_S(char, p, 26, NULL, PPW("Get_Time_Without_S:BALLOCS_S Faliue,return NULL"));
-	time_t tim = time(NULL);
-	if (ctime_s(p, 26, &tim) != 0)
-		return NULL;
-	*(p + 24) = (char)' ';
-	return p;
-}
-
 char* GetTimeWithout(List* mem)
 {
 	char* p = NULL;
@@ -530,28 +521,10 @@ char* GetTimeWithout(List* mem)
 	return p;
 }
 
-char* Get_Time_L(void)
-{
-	BALLOCS_L(char, p, 26, NULL, PPW("Get_Time_L:BALLOCS_L Faliue,return NULL"));
-	time_t tim = time(NULL);
-	if (ctime_s(p, 26, &tim) != 0)
-		return NULL;
-	return p;
-}
-
-char* Get_Time_S(void)
-{
-	BALLOCS_S(char, p, 26, NULL, PPW("Get_Time_S:BALLOCS_S Faliue,return NULL"));
-	time_t tim = time(NULL);
-	if (ctime_s(p, 26, &tim) != 0)
-		return NULL;
-	return p;
-}
-
-//Get_Time_Without_S
+//GetTimeWithout(pba->STmem)
 char* Get_Time_For_File_Name(char char_to_replace_unspport_char)
 {
-	char* p = Get_Time_Without_S();
+	char* p = GetTimeWithout(pba->STmem);
 	*(p + 13) = *(p + 16) = char_to_replace_unspport_char;
 	return p;
 }
@@ -687,7 +660,7 @@ List* List_Destroy(List* plist)
 
 List* List_Init(void* pdata)
 {
-	MCALLOCS(List, plist, 1);
+	List* plist = MCALLOC(1, List);
 	if (plist == NULL)
 	{
 		PPW("List * List_Init(void):plist == NULL,return NULL");
