@@ -83,7 +83,7 @@ namespace ba {
 			PPWs("ba::balloc::Waring: ", errWaring);
 			return (Ty*)errRetCodeAsPtr;
 		}
-		if(mem)
+		if (mem)
 		{
 			mem->put(ret, sizeof(Ty), toBeFreedInStack);
 		}

@@ -72,6 +72,8 @@ namespace ba
 	char* strdup(const char* p, ba::memRecord* mem = NULL, _LL toBeFreedInStack = 0);
 	//end with a NULL
 	char* StrAdd(List* mem, const char* pstr, ...);
+	//end with a NULL
+	char* stradd(ba::memRecord* mem, _LL toBeFreedInStack, const char* pstr, ...);
 
 
 

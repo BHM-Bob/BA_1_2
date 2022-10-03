@@ -80,7 +80,7 @@ ba::command::command(int _argc, char** _argvs)
 							--nowCmdIdx;
 						}
 						else
-						{
+						{//chrTmp + 1 is i, chrTmp2 is a.txt
 							PutArg(chrTmp + 1, chrTmp2);
 						}
 						break;
