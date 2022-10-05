@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\tests">
+      <UniqueIdentifier>{76273e91-4329-42f0-b21a-9e1de0591b89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -30,9 +33,6 @@
     <ClCompile Include="BA_File.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="test.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="BA_BioInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -44,6 +44,15 @@
     </ClCompile>
     <ClCompile Include="BA_CMD.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="test_json.cpp">
+      <Filter>源文件\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_cmd.cpp">
+      <Filter>源文件\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_thread.cpp">
+      <Filter>源文件\tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -75,6 +84,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="BA_CMD.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BA_JSON.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -10,6 +10,9 @@
 #define BA_1_2_H
 
 #include"BA_Base.hpp"
+#include"BA_Mem.hpp"
+#include"BA_Thread.hpp"
+#include"BA_JSON.hpp"
 #include"BA_Math.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"

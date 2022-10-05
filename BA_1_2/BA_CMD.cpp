@@ -103,7 +103,7 @@ ba::command ba::command::runStack(void)
 	{
 		//run stack
 		std::string funcNames;
-		int (*func)(List * mem, std::any & data, char* dataType, cmdStack* stack) = NULL;
+		int (*func)(command* cmd, List * mem, std::any & data, char* dataType, cmdStack* stack) = NULL;
 		for (auto d = name2func.begin(); d != name2func.end(); d++)
 			funcNames += d->first;
 		cmdStack* st = NULL;
@@ -113,7 +113,7 @@ ba::command ba::command::runStack(void)
 			if (funcNames.find(st->funcObjName) != std::string::npos)
 			{
 				func = name2func[st->funcObjName];
-				func(mem, std::ref(data), &dataType, st);
+				func(this, mem, std::ref(data), &dataType, st);
 			}
 			else
 			{
@@ -170,7 +170,7 @@ int ba::command::PutArg(char* argType, char* argName)
 	return 0;
 }
 
-int ba::cmd::version(List* mem, std::any& data, char* dataType, cmdStack* stack)
+int ba::cmdFuncs::version(command* cmd, List* mem, std::any& data, char* dataType, cmdStack* stack)
 {
 	char* ver = BALLOC_R(100, char, mem);
 	sprintf_s(ver, 100, "MyBA (Ver: %10.4f; Build: %s %s)\n", pba->BA_Ver, __DATE__, __TIME__);
@@ -179,10 +179,10 @@ int ba::cmd::version(List* mem, std::any& data, char* dataType, cmdStack* stack)
 	return 0;
 }
 
-int ba::cmd::openlog(List* mem, std::any& data, char* dataType, cmdStack* stack)
+int ba::cmdFuncs::openlog(command* cmd, List* mem, std::any& data, char* dataType, cmdStack* stack)
 {
 	FILE* pf = NULL;
-	char* root = _getcwd(NULL, 0);
+	char* root = cmd->wd;
 	if (fopen_s(&pf, ba::StrAdd(pba->STmem, root, "\\mba.log", NULL), "r"))
 	{
 		PPW("Unable to open mba.log file");
@@ -236,12 +236,19 @@ int ba::cmd::openlog(List* mem, std::any& data, char* dataType, cmdStack* stack)
 	return 0;
 }
 
-int ba::cmd::open(List* mem, std::any& data, char* dataType, cmdStack* stack)
+int ba::cmdFuncs::cd(command* cmd, List* mem, std::any& data, char* dataType, cmdStack* stack)
+{
+	std::string wd = stack->args["i"];
+	cmd->wd = mstrdup(wd.c_str(), mem);
+	return 0;
+}
+
+int ba::cmdFuncs::open(command* cmd, List* mem, std::any& data, char* dataType, cmdStack* stack)
 {
 	std::string ipath = stack->args["i"];
 	balist<char>* paths = NULL;
 	ba::str* strT = new ba::str();
-	char* root = _getcwd(NULL, 0), *pt = NULL, *r = NULL;
+	char* root = cmd->wd, *pt = NULL, *r = NULL;
 	if (ipath.size() == 0)
 	{
 		PPW("ipath.size() == 0");

@@ -43,6 +43,20 @@ void MyBA_CMD(int argc = 1, char** argvs = NULL);
 
 namespace ba {
 
+	class command;//类的前置声明
+	class cmdStack;//类的前置声明
+
+	namespace cmdFuncs {
+		//=version
+		int version(command* cmd, List* mem, std::any& data, char* dataType, cmdStack* stack);
+		//=openlog
+		int openlog(command* cmd, List* mem, std::any& data, char* dataType, cmdStack* stack);
+		//=cd -i D:\\folder
+		int cd(command* cmd, List* mem, std::any& data, char* dataType, cmdStack* stack);
+		//=open -i a.txt
+		int open(command* cmd, List* mem, std::any& data, char* dataType, cmdStack* stack);
+	}
+
 	class cmdStack : BA_Base
 	{
 	public:
@@ -52,12 +66,6 @@ namespace ba {
 
 		cmdStack(char* _funcObjName);
 	};
-
-	namespace cmd {
-		int version(List* mem, std::any & data, char* dataType, cmdStack* stack);
-		int openlog(List* mem, std::any& data, char* dataType, cmdStack* stack);
-		int open(List* mem, std::any& data, char* dataType, cmdStack* stack);
-	}
 
 	class command : BA_Base
 	{
@@ -70,6 +78,8 @@ namespace ba {
 		bool cmdEnd = false;
 		bool cmdLineEnd = false;
 		_LL nowCmdIdx = 0;
+
+		char* wd = _getcwd(NULL, 0);
 
 		bool isErr = false;
 
@@ -89,11 +99,11 @@ namespace ba {
 		int PutArg(char* argType, char* argName);
 
 		std::map<std::string,
-			int (*)(List* mem, std::any& data,
+			int (*)(command* cmd, List* mem, std::any& data,
 				char* dataType, cmdStack* stack)> name2func = {
-			{"version", cmd::version},
-			{"openlog", cmd::openlog},
-			{"open", cmd::open},
+			{"version", cmdFuncs::version},
+			{"openlog", cmdFuncs::openlog},
+			{"open", cmdFuncs::open},
 		};
 
 	};

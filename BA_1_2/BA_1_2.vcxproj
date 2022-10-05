@@ -154,8 +154,10 @@
     <ClCompile Include="BA_Mem.cpp" />
     <ClCompile Include="BA_String.cpp" />
     <ClCompile Include="BA_Thread.cpp" />
+    <ClCompile Include="test_cmd.cpp" />
+    <ClCompile Include="test_json.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="test.cpp" />
+    <ClCompile Include="test_thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BA_1_2.hpp" />
@@ -163,6 +165,7 @@
     <ClInclude Include="BA_BioInfo.hpp" />
     <ClInclude Include="BA_CMD.hpp" />
     <ClInclude Include="BA_File.hpp" />
+    <ClInclude Include="BA_JSON.hpp" />
     <ClInclude Include="BA_Math.hpp" />
     <ClInclude Include="BA_Mem.hpp" />
     <ClInclude Include="BA_String.hpp" />
