@@ -153,7 +153,6 @@
     <ClCompile Include="BA_Math.cpp" />
     <ClCompile Include="BA_Mem.cpp" />
     <ClCompile Include="BA_String.cpp" />
-    <ClCompile Include="BA_Thread.cpp" />
     <ClCompile Include="test_cmd.cpp" />
     <ClCompile Include="test_json.cpp" />
     <ClCompile Include="main.cpp" />

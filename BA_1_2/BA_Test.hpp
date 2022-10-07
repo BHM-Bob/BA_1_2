@@ -34,6 +34,8 @@ namespace ba
         namespace _cmd
         {
             void open(void);
+            void openlog(void);
+            void _missMatch(void);
         }
         namespace _thread
         {

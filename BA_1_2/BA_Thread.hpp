@@ -8,9 +8,8 @@
 
 #include"BA_BASE.HPP"
 
-//void (*_pF)(_ULL, MyThreadQueue&, MyThreadQueue&, MyThreadQueue&, void*)
-//id, getQ, putQ, sig, data
-
+//void (*_pF)(_LL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<float>&, balist<bool>&, void*)
+//id, getQ, putQ, process, sig, data
 template<typename dataTypePut, typename dataTypeGet>
 class MyThreadsPool
 {
@@ -33,7 +32,7 @@ public:
 		void* otherData = NULL, const char* _name = NULL);
 
 	void PutTask(dataTypePut* pData, std::mutex* m);
-	List* LoopToQuit(std::mutex* m);
+	balist<dataTypeGet>* LoopToQuit(std::mutex* m);
 	void Destroy(std::mutex* m);
 };
 
@@ -71,9 +70,9 @@ inline void MyThreadsPool<dataTypePut, dataTypeGet>::PutTask(dataTypePut* pData,
 //send 'wait to quit' signal to every que,
 //and start to loop waiting
 template<typename dataTypePut, typename dataTypeGet>
-inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(std::mutex* m)
+inline balist<dataTypeGet>* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(std::mutex* m)
 {
-	List* retList = List_Init();
+	balist<dataTypeGet>* retList = new balist<dataTypeGet>();
 	for (_LL idx = 0; idx < sumThreads; idx++)
 		putDataQues[idx].ThrPut((dataTypePut*)0x1, m);
 	_LL sumTasksTillNow = 0;
@@ -102,13 +101,13 @@ inline List* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(std::mutex* m)
 
 		for (_LL idx = 0; idx < sumThreads; idx++)
 			while (getDataQues[idx].ThrSize(m) > 0)
-				List_Put(retList, getDataQues[idx].ThrGet(m));
+				retList->Put(getDataQues[idx].ThrGet(m));
 		Sleep(1000);
 	}
 	for (_LL idx = 0; idx < sumThreads; idx++)
 	{
 		while (getDataQues[idx].ThrSize(m) > 0)
-			List_Put(retList, getDataQues[idx].ThrGet(m));
+			retList->Put(getDataQues[idx].ThrGet(m));
 		ppThs[idx]->join();
 		printf("\r%s: waiting to join subThreads: %llu / %llu  --  %8.3f sec",
 			name, sumTasksTillNow, sumTasks,
@@ -126,8 +125,5 @@ inline void MyThreadsPool<dataTypePut, dataTypeGet>::Destroy(std::mutex* m)
 	delete[] putDataQues;
 	delete[] procQues;
 }
-
-
-
 
 #endif

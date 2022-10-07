@@ -39,9 +39,6 @@
     <ClCompile Include="BA_Mem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="BA_Thread.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="BA_CMD.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

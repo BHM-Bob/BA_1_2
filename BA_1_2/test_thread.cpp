@@ -1,4 +1,4 @@
-
+﻿
 #include"BA_Base.hpp"
 #include"BA_CMD.hpp"
 #include"BA_Mem.hpp"
@@ -40,8 +40,7 @@ void ba::test::_thread::WordsCount(void)
 {
     _LL sumThreads = 8;
     std::map<std::string, _ULL>* tree = new std::map<std::string, _ULL>();
-    MyThreadsPool tp = MyThreadsPool(sumThreads, 
-        WordsCount_SubThr, (void*)tree);
+    MyThreadsPool tp = MyThreadsPool(sumThreads, WordsCount_SubThr, (void*)tree);
     ba::str text = ba::str(
         ReadTXT("E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter (complete works).txt"));
     ba::str* subStr = NULL;
@@ -50,7 +49,7 @@ void ba::test::_thread::WordsCount(void)
         subStr = text(i * stepLen, (i == sumThreads - 1) ? text.len : (i + 1) * stepLen);
         tp.PutTask(subStr, &m);
     }
-    List* result = tp.LoopToQuit(&m);
+    auto result = tp.LoopToQuit(&m);
     //FILE* pf = NULL;
     //fopen_s(&pf, "E:\\My_Progs\\z_Progs_Data_HC\\text\\Harry Potter R.csv", "w");
     //if (pf)

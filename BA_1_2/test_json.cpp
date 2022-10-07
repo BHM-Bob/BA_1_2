@@ -1,4 +1,5 @@
-﻿
+﻿// from https://github.com/nlohmann/json
+
 #include"BA_Base.hpp"
 #include"BA_CMD.hpp"
 #include"BA_Mem.hpp"

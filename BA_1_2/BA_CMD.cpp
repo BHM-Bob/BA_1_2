@@ -126,7 +126,7 @@ ba::command ba::command::runStack(void)
 
 ba::command ba::command::endWork(void)
 {
-	if (!isErr)
+	if (!isErr && data.has_value())
 	{
 		//output data flow
 		char* chrTmp = NULL, * chrTmp2 = NULL;

@@ -12,7 +12,8 @@ int main(int argc, char** argvs)
 {
 	MyBA_Init(argc, argvs);
 
-	ba::test::_json::concat();
+	//ba::test::_thread::WordsCount();
+	ba::test::_cmd::openlog();
 
 	return MyBA_Quit();
 }

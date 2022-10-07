@@ -19,3 +19,15 @@ void ba::test::_cmd::open(void)
 	argvs[3] = mstrdup("[D:\\Bio\\BioInfoLessonSTU\\Class4\\data\\dreb2_AtOs.fasta,D:\\Bio\\BioInfoLessonSTU\\Class4\\data\\dreb2_FtAtOs.fasta]");
 	MyBA_CMD(argc, argvs);
 }
+
+void ba::test::_cmd::openlog(void)
+{
+	int argc = 2;
+	char** argvs = MCALLOC(argc, char*);
+	argvs[1] = mstrdup("=openlog");
+	MyBA_CMD(argc, argvs);
+}
+
+void ba::test::_cmd::_missMatch(void)
+{
+}
