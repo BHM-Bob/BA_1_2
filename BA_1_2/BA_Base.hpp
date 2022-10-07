@@ -10,46 +10,50 @@
 
 #define __STDC_WANT_LIB_EXT1__ 1
 
-#include <any>
-#include <algorithm>
+// C
 #include <assert.h>
+#include <ctype.h>
+#include <direct.h>
+#include <locale.h>
+#include <limits.h>
+#include <setjmp.h>
+// std
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-#include <ctype.h>
-#include <conio.h>
-#include <deque>
-#include <direct.h>
-#include <filesystem>
-#include <fstream>
-#include <functional>
-#include <locale.h>
-#include <list>
-#include <limits.h>
-#include <map>
-#include <mutex>
-#include <numeric>
-#include <io.h>
-#include <iostream>
 #include <random>
-#include <setjmp.h>
+// STL
+#include <algorithm>
+#include <functional>
+#include <array>
+#include <vector>
+#include <deque>
+#include <list>
+#include <set>
+#include <unordered_set>
+#include <map>
+#include <unordered_map>
+// type
+#include <any>
 #include <string>
 #include <sys/types.h>
-#include <time.h>
+// IO
+#include <conio.h>
+#include <io.h>
+#include <iostream>
+#include <filesystem>
+#include <fstream>
+// thread
+#include <mutex>
 #include <thread>
-#include <vector>
-
-//using namespace std;
-
-#include<Windows.h>
-#include<WinBase.h>
+// windows platform for console cursor OP
+#include <Windows.h>
+#include <WinBase.h>
 
 /*
-D:\OpenCV\opencv\build\include\opencv2
-
-D:\OpenCV\opencv\build\x64\vc15\lib\opencv_world454d.lib
-
-D:\OpenCV\opencv\build\x64\vc15\lib
+D:\soft\opencv\opencv\build\include\opencv2
+D:\soft\opencv\opencv\build\x64\vc15\lib\opencv_world454d.lib
+D:\soft\opencv\opencv\build\x64\vc15\lib
 */
 #ifdef USE_OPENCV
 #include<opencv2/opencv.hpp>
@@ -135,6 +139,11 @@ List* List_Put(List* plist, void* pdata);
 void List_SetVar(List* plist, void* pdata, void* newVar);
 List* List_Destroy(List* plist);
 
+// func that use List
+//******************************************************************
+
+
+char* GetTimeWithout(List* mem = NULL);
 //******************************************************************
 
 class BA_Base
@@ -289,14 +298,6 @@ public:
 	// () 运算符重载, setVar via key
 	badict operator()(const char* _key, std::any _data);
 };
-
-
-
-//***********************************************************************************************************************
-
-
-char* GetTimeWithout(List* mem = NULL);
-
 
 //***********************************************************************************************************************
 typedef struct BALog BALog;

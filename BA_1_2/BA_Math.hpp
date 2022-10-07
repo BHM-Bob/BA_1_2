@@ -11,14 +11,6 @@
 
 #include"BA_Base.hpp"
 
-float abs_f(float a);
-double abs_d(double a);
-
-// [start, end)
-_LL BA_Rand(_LL start, _LL end);
-// [start, end)
-_LL* BA_Rand(_LL start, _LL end, _LL len, List* mem = NULL);
-
 void* MyBA_ZerosD(int* shape, int dims);
 
 class BA_Shape

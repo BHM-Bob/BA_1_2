@@ -4,43 +4,11 @@
 //2021年11月18日 23点35分
 
 //#define USE_OPENCV
-//#define USE_WINDOWS
-//#define USE_SDL2
 
 #include"BA_Base.hpp"
 #include"BA_Mem.hpp"
 #include"BA_Math.hpp"
 #include"BA_File.hpp"
-
-float abs_f(float a)
-{
-	if (a < 0)
-		return -a;
-	return a;
-}
-
-double abs_d(double a)
-{
-	if (a < 0)
-		return -a;
-	return a;
-}
-
-// [start, end)
-_LL BA_Rand(_LL start, _LL end)
-{
-	return start + rand() % (end - start);
-}
-
-// [start, end)
-_LL* BA_Rand(_LL start, _LL end, _LL len, List* mem)
-{
-	mem = mem ? mem : pba->LTmem;
-	_LL* ret = BALLOC_R(len, _LL, mem);
-	for (_LL i = 0; i < len; i++)
-		ret[i] = BA_Rand(start, end);
-	return ret;
-}
 
 int* MyBA_Zeros_AllocD(int* ret, int* shape, int dims, int nowdim)
 {

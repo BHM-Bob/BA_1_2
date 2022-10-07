@@ -44,8 +44,20 @@ namespace ba
         namespace _json
         {
             void simpleJsonLife(void);
+            //https://github.com/nlohmann/json#stl-like-access
+            void stlAccess(void);
+            void myAccess(void);
+            //https://github.com/nlohmann/json#conversion-from-stl-containers
+            void convertionWithSTL(void);
             //https://github.com/nlohmann/json#custom-data-source
             void customData(void);
+            //https://github.com/nlohmann/json#implicit-conversions
+            void conversions(void);
+            //https://github.com/nlohmann/json#arbitrary-types-conversions
+            void customDataConv(void);
+            void concat(void);
+            //https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-ubjson-and-bjdata
+            void binaryFormatStore(void);
         }
     }
 }

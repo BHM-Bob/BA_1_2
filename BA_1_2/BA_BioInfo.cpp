@@ -3,10 +3,11 @@
 //Writen By BHM
 //2022年4月9日 23点00分
 
-#include"BA_Base.hpp"
-#include"BA_File.hpp"
-#include"BA_String.hpp"
+#include "BA_Base.hpp"
+#include "BA_File.hpp"
+#include "BA_String.hpp"
 #include "BA_BioInfo.hpp"
+#include "BA_JSON.hpp"
 
 //BA_String seqA = BA_String("GGATCGA");
 //BA_String seqB = BA_String("GAATTCAGTTA");
