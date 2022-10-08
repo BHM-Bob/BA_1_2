@@ -1,7 +1,7 @@
 #ifndef CPPJIEBA_HMMMODEL_H
 #define CPPJIEBA_HMMMODEL_H
 
-#include "limonp/StringUtil.hpp"
+#include "../limonp/StringUtil.hpp"
 #include "Trie.hpp"
 
 namespace cppjieba {

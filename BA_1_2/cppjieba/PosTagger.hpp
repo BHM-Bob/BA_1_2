@@ -1,7 +1,7 @@
 #ifndef CPPJIEBA_POS_TAGGING_H
 #define CPPJIEBA_POS_TAGGING_H
 
-#include "limonp/StringUtil.hpp"
+#include "../limonp/StringUtil.hpp"
 #include "SegmentTagged.hpp"
 #include "DictTrie.hpp"
 

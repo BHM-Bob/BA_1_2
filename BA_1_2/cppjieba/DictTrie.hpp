@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <cmath>
 #include <limits>
-#include "limonp/StringUtil.hpp"
-#include "limonp/Logging.hpp"
+#include "../limonp/StringUtil.hpp"
+#include "../limonp/Logging.hpp"
 #include "Unicode.hpp"
 #include "Trie.hpp"
 

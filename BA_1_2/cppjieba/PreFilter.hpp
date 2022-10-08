@@ -2,7 +2,7 @@
 #define CPPJIEBA_PRE_FILTER_H
 
 #include "Trie.hpp"
-#include "limonp/Logging.hpp"
+#include "../limonp/Logging.hpp"
 
 namespace cppjieba {
 
