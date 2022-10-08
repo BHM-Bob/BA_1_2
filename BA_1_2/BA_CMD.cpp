@@ -197,9 +197,9 @@ int ba::cmdFuncs::openlog(command* cmd, List* mem, std::any& data, char* dataTyp
 		return -2;
 	}
 	fseek(pf, 0L, SEEK_END);//文件指针置于结尾
-	long len1 = ftell(pf);//获取结尾指针值
+	_LL len1 = ftell(pf);//获取结尾指针值
 	fseek(pf, 0L, SEEK_SET);//文件指针至于开头
-	long len2 = ftell(pf);//获取开头指针值
+	_LL len2 = ftell(pf);//获取开头指针值
 	char* strTmp = MCALLOC(len1 - len2 + 1, char);
 	char* str = BALLOC_R(2 * (len1 - len2) + 1, char, mem);
 	if (!strTmp || !str)

@@ -16,6 +16,12 @@
     <Filter Include="源文件\tests">
       <UniqueIdentifier>{76273e91-4329-42f0-b21a-9e1de0591b89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\jieba">
+      <UniqueIdentifier>{763c87a7-f49c-43bf-9699-5597d2c21305}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\limonp">
+      <UniqueIdentifier>{d5ab8c8a-27d3-47ab-a60b-299d16d4a618}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -49,6 +55,9 @@
       <Filter>源文件\tests</Filter>
     </ClCompile>
     <ClCompile Include="test_thread.cpp">
+      <Filter>源文件\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test_jieba.cpp">
       <Filter>源文件\tests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -85,6 +94,111 @@
     </ClInclude>
     <ClInclude Include="BA_JSON.hpp">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\DictTrie.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\FullSegment.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\HMMModel.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\HMMSegment.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\Jieba.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\KeywordExtractor.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\MixSegment.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\MPSegment.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\PosTagger.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\PreFilter.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\QuerySegment.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\SegmentBase.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\SegmentTagged.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\TextRankExtractor.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\Trie.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="cppjieba\Unicode.hpp">
+      <Filter>头文件\jieba</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\ArgvContext.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\BlockingQueue.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\BoundedBlockingQueue.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\BoundedQueue.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\Closure.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\Colors.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\Condition.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\Config.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\FileLock.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\ForcePublic.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\LocalVector.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\Logging.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\Md5.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\MutexLock.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\NonCopyable.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\StdExtension.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\StringUtil.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\Thread.hpp">
+      <Filter>头文件\limonp</Filter>
+    </ClInclude>
+    <ClInclude Include="limonp\ThreadPool.hpp">
+      <Filter>头文件\limonp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

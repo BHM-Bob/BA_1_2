@@ -40,6 +40,7 @@ float MyBA_Ver(void)
 	* 1.3501 : 2.6.0.1 :2022年07月31日: 添加QUI；修改部分注释
 	* 1.3600 : 2.7.0.0 :2022年07月31日: 添加dict(使用any & template), 修改MakeSDLCol和MakeSDLRect参数mem为NULL时行为
 	* 1.3621 : 2.7.2.1 :2022年08月07日: 将Que和balist合并；修复BA_String::Splitx bug；修改部分注释
+	* 1.3750 : 2.8.5.0 :2022年10月07日: Console分支：删除GUI，删除部分无用组件代码，部分添加namespace，添加开源项目nlohmann/json
 	*/
 }
 
@@ -423,7 +424,7 @@ void JDT(_ULL now, _ULL sum)
 		pba->JDT_t = clock();
 	float a = (float)(now / ((float)sum)) * 100.0f;
 	float sec = (float)((clock() - pba->JDT_t) / (float)CLOCKS_PER_SEC);
-	printf("\r[-Done %5.1f%%,%7.2f s--Need%7.2f s-]         ", a, sec, (float)((sec / a) * (100.0f - a)));
+	printf("\r[-Done %5.1f%%,%7.2f s--Need%7.2f s-]         ", a, sec, (float)((sec / a) * (100.f - a)));
 }
 
 float* floatDup(List* mem, _ULL num, ...)

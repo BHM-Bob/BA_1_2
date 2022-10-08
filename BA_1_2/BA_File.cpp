@@ -51,7 +51,7 @@ char* ReadTXT(const char* path, _ULL loadSize, List* mem)
 
 char* GetFileType(char* ppath, List* mem)
 {
-	int i = 0;
+    _LL i = 0;
 	char* pte = ppath + strlen(ppath) - 1;
 	for (; *pte != '.'; pte--, i++);//*pte=='.'  ,  i = type_len
     char* ret = BALLOC_R(i + 1, char, mem);

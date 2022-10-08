@@ -118,7 +118,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <Optimization>Disabled</Optimization>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
@@ -154,6 +154,7 @@
     <ClCompile Include="BA_Mem.cpp" />
     <ClCompile Include="BA_String.cpp" />
     <ClCompile Include="test_cmd.cpp" />
+    <ClCompile Include="test_jieba.cpp" />
     <ClCompile Include="test_json.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="test_thread.cpp" />
@@ -170,6 +171,41 @@
     <ClInclude Include="BA_String.hpp" />
     <ClInclude Include="BA_Test.hpp" />
     <ClInclude Include="BA_Thread.hpp" />
+    <ClInclude Include="cppjieba\DictTrie.hpp" />
+    <ClInclude Include="cppjieba\FullSegment.hpp" />
+    <ClInclude Include="cppjieba\HMMModel.hpp" />
+    <ClInclude Include="cppjieba\HMMSegment.hpp" />
+    <ClInclude Include="cppjieba\Jieba.hpp" />
+    <ClInclude Include="cppjieba\KeywordExtractor.hpp" />
+    <ClInclude Include="cppjieba\MixSegment.hpp" />
+    <ClInclude Include="cppjieba\MPSegment.hpp" />
+    <ClInclude Include="cppjieba\PosTagger.hpp" />
+    <ClInclude Include="cppjieba\PreFilter.hpp" />
+    <ClInclude Include="cppjieba\QuerySegment.hpp" />
+    <ClInclude Include="cppjieba\SegmentBase.hpp" />
+    <ClInclude Include="cppjieba\SegmentTagged.hpp" />
+    <ClInclude Include="cppjieba\TextRankExtractor.hpp" />
+    <ClInclude Include="cppjieba\Trie.hpp" />
+    <ClInclude Include="cppjieba\Unicode.hpp" />
+    <ClInclude Include="limonp\ArgvContext.hpp" />
+    <ClInclude Include="limonp\BlockingQueue.hpp" />
+    <ClInclude Include="limonp\BoundedBlockingQueue.hpp" />
+    <ClInclude Include="limonp\BoundedQueue.hpp" />
+    <ClInclude Include="limonp\Closure.hpp" />
+    <ClInclude Include="limonp\Colors.hpp" />
+    <ClInclude Include="limonp\Condition.hpp" />
+    <ClInclude Include="limonp\Config.hpp" />
+    <ClInclude Include="limonp\FileLock.hpp" />
+    <ClInclude Include="limonp\ForcePublic.hpp" />
+    <ClInclude Include="limonp\LocalVector.hpp" />
+    <ClInclude Include="limonp\Logging.hpp" />
+    <ClInclude Include="limonp\Md5.hpp" />
+    <ClInclude Include="limonp\MutexLock.hpp" />
+    <ClInclude Include="limonp\NonCopyable.hpp" />
+    <ClInclude Include="limonp\StdExtension.hpp" />
+    <ClInclude Include="limonp\StringUtil.hpp" />
+    <ClInclude Include="limonp\Thread.hpp" />
+    <ClInclude Include="limonp\ThreadPool.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

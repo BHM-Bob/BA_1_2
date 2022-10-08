@@ -19,14 +19,6 @@
 #include"BA_BioInfo.hpp"
 #include"BA_JSON.hpp"
 
-void BA_String_Test(void);
-void BA_Array_Test(void);
-void BA_Array_Test2(void);
-float BA_ArrayTest_1(float* p);
-BA_Array BA_Array_GetTest();
-void BA_Dir_Test(void);
-void BA_ThreadPool_Test(void);
-
 namespace ba
 {
     namespace test
@@ -60,6 +52,10 @@ namespace ba
             void concat(void);
             //https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-ubjson-and-bjdata
             void binaryFormatStore(void);
+        }
+        namespace _jieba
+        {
+            void jiebaDemo(void);
         }
     }
 }
