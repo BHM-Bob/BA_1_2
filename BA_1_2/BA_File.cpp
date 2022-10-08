@@ -147,7 +147,7 @@ char* StringRead(FILE* pf, List* mem)
 //    return pli;
 //}
 
-BA_Dir::BA_Dir(const char* _root)
+ba::dir::dir(const char* _root)
 {
     if (root)
     {
@@ -206,7 +206,7 @@ BA_Dir::BA_Dir(const char* _root)
     }
 }
 
-BA_Dir::BA_Dir(const char* _root, const char* _type)
+ba::dir::dir(const char* _root, const char* _type)
 {
 
     _ULL _rootLen = strlen(_root);
@@ -259,7 +259,7 @@ BA_Dir::BA_Dir(const char* _root, const char* _type)
     }
 }
 
-void BA_Dir::Print(void)
+void ba::dir::Print(void)
 {
     int js = 0;
     for (_ULL a = 0; a < 100; a++)
@@ -277,4 +277,30 @@ void BA_Dir::Print(void)
     for (_ULL a = 0; a < 100; a++)
         printf("=");
     printf("\n");
+}
+
+_LL ba::getFileSize(std::ifstream& ifs)
+{
+    std::streampos now = ifs.tellg();
+    // get length of file:
+    ifs.seekg(0, ifs.end);
+    _LL len = ifs.tellg();
+    ifs.seekg(0, now);
+    return len;
+}
+
+char* ba::read(std::ifstream& ifs, List* mem)
+{
+    _LL len = getFileSize(ifs);
+    char* s = BALLOC_R(len+1, char, mem);
+    ifs.read(s, len);
+    return s;
+}
+
+char* ba::read(std::ifstream& ifs, memRecord* mem)
+{
+    _LL len = getFileSize(ifs);
+    char* s = _balloc(char, len, mem);
+    ifs.read(s, len);
+    return s;
 }

@@ -12,6 +12,32 @@
 #include"BA_Thread.hpp"
 #include"BA_String.hpp"
 
+std::string& ba::jieba::cut(char* pc, const char* spliter,
+	const char* inCode, const char* outCode)
+{
+	s.clear();
+	result.clear();
+	if (strcmp(inCode, "gbk") == 0)
+		tmp = ba::transferStrCode(pc, "gbk", "utf-8");
+	else
+		tmp = pc;
+	s = tmp;
+	free(tmp);
+	jb.Cut(s, words, true);
+	if (strcmp(outCode, "gbk") == 0)
+	{
+		for (int i = 0; i < words.size(); i++)
+		{
+			tmp = ba::transferStrCode(words[i].c_str(), "utf-8", "gbk");
+			words[i].assign(tmp);
+			free(tmp);
+		}
+	}
+	s.clear();
+	result = limonp::Join(words.begin(), words.end(), spliter);
+	return result;
+}
+
 char* ba::Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite)
 {
 	if ((pc == NULL) && (*pc == '\0'))
@@ -578,4 +604,63 @@ char* ba::strdup(const char* p, ba::memRecord* mem, _LL toBeFreedInStack)
 {
 	_ballocs(char, pret, strlen(p), mem, toBeFreedInStack, 1);
 	return pret;
+}
+
+char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
+{
+	if (strcmp(ori, "gbk") == 0)
+	{
+		if (strcmp(to, "utf-8") == 0)
+		{//gbk -> utf-8
+			int len = MultiByteToWideChar(CP_ACP, 0, pc, -1, NULL, 0);
+			wchar_t* wstr = new wchar_t[len + 1];
+			memset(wstr, 0, len + 1);
+			MultiByteToWideChar(CP_ACP, 0, pc, -1, wstr, len);
+			len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
+			char* str = new char[len + 1];
+			memset(str, 0, len + 1);
+			WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+			if (wstr) delete[] wstr;
+			return str;
+		}
+	}
+	else if (strcmp(ori, "utf-8") == 0)
+	{
+		if (strcmp(to, "gbk") == 0)
+		{//utf-8 -> gbk
+			int len = MultiByteToWideChar(CP_UTF8, 0, pc, -1, NULL, 0);
+			wchar_t* wstr = new wchar_t[len + 1];
+			memset(wstr, 0, len + 1);
+			MultiByteToWideChar(CP_UTF8, 0, pc, -1, wstr, len);
+			len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
+			char* str = new char[len + 1];
+			memset(str, 0, len + 1);
+			WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, len, NULL, NULL);
+			if (wstr) delete[] wstr;
+			return str;
+		}
+	}
+	PPW("unable to tansfer code");
+	PPWs(ori, to);
+	return nullptr;
+}
+
+int ba::detectTextCode(std::ifstream & pf)
+{
+	unsigned char c;
+	pf.read((char*)&c, sizeof(c));//读取第一个字节
+	int p = c << 8;
+	pf.read((char*)&c, sizeof(c));//l读取第二个字节
+	p |= c;
+	switch (p) // 判断文本前两个字节
+	{
+	case 0xefbb://61371 UTF-8
+		return 1;
+	case 0xfffe://65534 Unicode
+		return 2;
+	case 0xfeff://65279 Unicode big endian
+		return 3;
+	default://GBK
+		return 0;
+	}
 }

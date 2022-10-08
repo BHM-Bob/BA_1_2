@@ -4,19 +4,38 @@
 //2021年11月24日 21点11分
 
 //#define USE_OPENCV
-//#define USE_WINDOWS
 
 #ifndef BA_STRING_H
 #define BA_STRING_H
 
 #include"BA_Base.hpp"
 #include"BA_Math.hpp"
+#include"BA_Mem.hpp"
+#include"cppjieba/Jieba.hpp"
 
 // TODO : add utf-8, unicode, ANSI support
 // https://blog.csdn.net/flushhip/article/details/82836867
 
 namespace ba
 {
+	class jieba : BA_Base
+	{
+	public:
+		const char* DICT_PATH = "D:/AI/PreTrainModel/jieba/jieba.dict.utf8";
+		const char* HMM_PATH = "D:/AI/PreTrainModel/jieba/hmm_model.utf8";
+		const char* USER_DICT_PATH = "D:/AI/PreTrainModel/jieba/user.dict.utf8";
+		const char* IDF_PATH = "D:/AI/PreTrainModel/jieba/idf.utf8";
+		const char* STOP_WORD_PATH = "D:/AI/PreTrainModel/jieba/stop_words.utf8";
+		cppjieba::Jieba jb = cppjieba::Jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH, IDF_PATH, STOP_WORD_PATH);
+		std::vector<std::string> words;
+		std::vector<cppjieba::Word> jiebawords;
+		std::string s;
+		std::string result;
+		char* tmp = NULL;
+
+		std::string& cut(char* pc, const char* spliter = "/",
+			const char* inCode = "gbk", const char* outCode = "gbk");
+	};
 
 	class str
 	{
@@ -70,11 +89,15 @@ namespace ba
 
 	// if mem == NULL, do not record
 	char* strdup(const char* p, ba::memRecord* mem = NULL, _LL toBeFreedInStack = 0);
-	//end with a NULL
+	// end with a NULL
 	char* StrAdd(List* mem, const char* pstr, ...);
-	//end with a NULL
+	// end with a NULL
 	char* stradd(ba::memRecord* mem, _LL toBeFreedInStack, const char* pstr, ...);
-
+	// 0=ANSI(gbk), 1=utf-8
+	int detectTextCode(std::ifstream & pf);
+	// gbk, utf-8
+	// remain pc unfreed
+	char* transferStrCode(const char* pc, const char* ori, const char* to);
 
 
 	///////////////////////////////////////////////////////////////////////////////////////

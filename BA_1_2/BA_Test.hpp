@@ -56,6 +56,14 @@ namespace ba
         namespace _jieba
         {
             void jiebaDemo(void);
+            void jiebaDealFile(void);
+            void jiebaClass(void);
+        }
+        namespace _comprehensive
+        {
+            void jiebaThreads_SubThr(_LL id, balist<char>& getQ,
+                balist<char>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
+            void jiebaThreads(void);
         }
     }
 }

@@ -29,7 +29,7 @@ public:
 
 	MyThreadsPool(_LL _sumThreads,
 		void (*_pF)(_LL, balist<dataTypePut>&, balist<dataTypeGet>&, balist<float>&, balist<bool>&, void*),
-		void* otherData = NULL, const char* _name = NULL);
+		void* otherData = NULL, const char* _name = NULL, _LL intervalLanchTime = 1);
 
 	void PutTask(dataTypePut* pData, std::mutex* m);
 	balist<dataTypeGet>* LoopToQuit(std::mutex* m);
@@ -39,7 +39,7 @@ public:
 template<typename dataTypePut, typename dataTypeGet>
 MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_LL _sumThreads,
 	void(*_pF)(_LL, balist<dataTypePut>&, balist<dataTypeGet>&,
-		balist<float>&, balist<bool>&, void*), void* otherData, const char* _name)
+		balist<float>&, balist<bool>&, void*), void* otherData, const char* _name, _LL intervalLanchTime)
 {
 	sumThreads = _sumThreads;
 	ppThs = BALLOC_R(_sumThreads, std::thread*, mem);
@@ -55,6 +55,7 @@ MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_LL _sumThreads,
 	{
 		ppThs[i] = new std::thread(_pF, i, std::ref(putDataQues[i]),
 			std::ref(getDataQues[i]), std::ref(procQues[i]), std::ref(sig), otherData);
+		Sleep(intervalLanchTime);
 	}
 }
 

@@ -9,7 +9,33 @@
 #ifndef BA_FILE_H
 #define BA_FILE_H
 
-#include"BA_Base.hpp"
+#include "BA_Base.hpp"
+#include "BA_Mem.hpp"
+
+namespace ba
+{
+	_LL getFileSize(std::ifstream& ifs);
+	char* read(std::ifstream& ifs, List* mem = NULL);
+	char* read(std::ifstream& ifs, memRecord* mem = NULL);
+
+
+	class dir : public BA_Base
+	{
+	public:
+		balist<char>* dirs = new balist<char>;//char* as a dot,not full path, don't contain "." and ".."
+		balist<char>* files = new balist<char>;//char* as a dot,not full path
+		char* root = NULL;//root as "D:\\A_DIR"
+
+		bool isErr = false;
+
+		//_root as "D:\\A_DIR"
+		dir(const char* _root);
+		//_root as "D:\\A_DIR", _type as "txt"
+		dir(const char* _root, const char* _type);
+
+		void Print(void);
+	};
+}
 
 char* StringWrite(FILE* pf, char* pc);
 
@@ -25,23 +51,6 @@ char* GetFileType(char* ppath, List* mem = NULL);
 bool Check_File_Exist(char* path);
 
 bool Encrypt_File(char* path, char* Passwords);
-
-class BA_Dir : public BA_Base
-{
-public:
-	balist<char>* dirs = new balist<char>;//char* as a dot,not full path, don't contain "." and ".."
-	balist<char>* files = new balist<char>;//char* as a dot,not full path
-	char* root = NULL;//root as "D:\\A_DIR"
-
-	bool isErr = false;
-
-	//_root as "D:\\A_DIR"
-	BA_Dir(const char* _root);
-	//_root as "D:\\A_DIR", _type as "txt"
-	BA_Dir(const char* _root,const char* _type);
-
-	void Print(void);
-};
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////

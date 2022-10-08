@@ -1,14 +1,12 @@
-ï»¿// from https://github.com/yanyiwu/cppjieba
+// from https://github.com/yanyiwu/cppjieba
 
 #include"BA_Base.hpp"
 #include"BA_CMD.hpp"
 #include"BA_Mem.hpp"
 #include"BA_Thread.hpp"
-#include"BA_Math.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
 #include"BA_Test.hpp"
-#include"BA_BioInfo.hpp"
 #include"BA_JSON.hpp"
 #include"cppjieba/Jieba.hpp"
 
@@ -32,33 +30,37 @@ void ba::test::_jieba::jiebaDemo(void)
     string s;
     string result;
 
-    s = "ä»–æ¥åˆ°äº†ç½‘æ˜“æ­ç ”å¤§å¦";
-    cout << s << endl;
+    s = ba::transferStrCode("ËûÀ´µ½ÁËÍøÒ×º¼ÑĞ´óÏÃ", "gbk", "utf-8");
+    cout << ba::transferStrCode(s.c_str(), "utf-8", "gbk") << endl;
     cout << "[demo] Cut With HMM" << endl;
     jieba.Cut(s, words, true);
-    cout << limonp::Join(words.begin(), words.end(), "/") << endl;
+    //cout << limonp::Join(words.begin(), words.end(), "/") << endl;
+    for (int i = 0; i < words.size(); i++)
+        cout << ba::transferStrCode(words[i].c_str(), "utf-8", "gbk") << "/";
 
     cout << "[demo] Cut Without HMM " << endl;
     jieba.Cut(s, words, false);
-    cout << limonp::Join(words.begin(), words.end(), "/") << endl;
+    //cout << limonp::Join(words.begin(), words.end(), "/") << endl;
+    for (int i = 0; i < words.size(); i++)
+        cout << ba::transferStrCode(words[i].c_str(), "utf-8", "gbk") << "/";
 
-    s = "æˆ‘æ¥åˆ°åŒ—äº¬æ¸…åå¤§å­¦";
+    s = "ÎÒÀ´µ½±±¾©Çå»ª´óÑ§";
     cout << s << endl;
     cout << "[demo] CutAll" << endl;
     jieba.CutAll(s, words);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
 
-    s = "å°æ˜ç¡•å£«æ¯•ä¸šäºä¸­å›½ç§‘å­¦é™¢è®¡ç®—æ‰€ï¼Œååœ¨æ—¥æœ¬äº¬éƒ½å¤§å­¦æ·±é€ ";
+    s = "Ğ¡Ã÷Ë¶Ê¿±ÏÒµÓÚÖĞ¹ú¿ÆÑ§Ôº¼ÆËãËù£¬ºóÔÚÈÕ±¾¾©¶¼´óÑ§ÉîÔì";
     cout << s << endl;
     cout << "[demo] CutForSearch" << endl;
     jieba.CutForSearch(s, words);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
 
     cout << "[demo] Insert User Word" << endl;
-    jieba.Cut("ç”·é»˜å¥³æ³ª", words);
+    jieba.Cut("ÄĞÄ¬Å®Àá", words);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
-    jieba.InsertUserWord("ç”·é»˜å¥³æ³ª");
-    jieba.Cut("ç”·é»˜å¥³æ³ª", words);
+    jieba.InsertUserWord("ÄĞÄ¬Å®Àá");
+    jieba.Cut("ÄĞÄ¬Å®Àá", words);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
 
     cout << "[demo] CutForSearch Word With Offset" << endl;
@@ -67,7 +69,7 @@ void ba::test::_jieba::jiebaDemo(void)
 
     cout << "[demo] Lookup Tag for Single Token" << endl;
     const int DemoTokenMaxLen = 32;
-    char DemoTokens[][DemoTokenMaxLen] = { "æ‹–æ‹‰æœº", "CEO", "123", "ã€‚" };
+    char DemoTokens[][DemoTokenMaxLen] = { "ÍÏÀ­»ú", "CEO", "123", "¡£" };
     vector<pair<string, string> > LookupTagres(sizeof(DemoTokens) / DemoTokenMaxLen);
     vector<pair<string, string> >::iterator it;
     for (it = LookupTagres.begin(); it != LookupTagres.end(); it++) {
@@ -78,7 +80,7 @@ void ba::test::_jieba::jiebaDemo(void)
 
     cout << "[demo] Tagging" << endl;
     vector<pair<string, string> > tagres;
-    s = "æˆ‘æ˜¯æ‹–æ‹‰æœºå­¦é™¢æ‰‹æ‰¶æ‹–æ‹‰æœºä¸“ä¸šçš„ã€‚ä¸ç”¨å¤šä¹…ï¼Œæˆ‘å°±ä¼šå‡èŒåŠ è–ªï¼Œå½“ä¸ŠCEOï¼Œèµ°ä¸Šäººç”Ÿå·…å³°ã€‚";
+    s = "ÎÒÊÇÍÏÀ­»úÑ§ÔºÊÖ·öÍÏÀ­»ú×¨ÒµµÄ¡£²»ÓÃ¶à¾Ã£¬ÎÒ¾Í»áÉıÖ°¼ÓĞ½£¬µ±ÉÏCEO£¬×ßÉÏÈËÉúáÛ·å¡£";
     jieba.Tag(s, tagres);
     cout << s << endl;
     cout << tagres << endl;
@@ -89,4 +91,37 @@ void ba::test::_jieba::jiebaDemo(void)
     jieba.extractor.Extract(s, keywordres, topk);
     cout << s << endl;
     cout << keywordres << endl;
+}
+
+void ba::test::_jieba::jiebaDealFile(void)
+{
+    cppjieba::Jieba jieba(DICT_PATH,
+        HMM_PATH,
+        USER_DICT_PATH,
+        IDF_PATH,
+        STOP_WORD_PATH);
+    vector<string> words;
+    vector<cppjieba::Word> jiebawords;
+    string s;
+    string result;
+
+    std::ifstream ifs(R"(D:\AI\DataSet\Seq2ImgFluently\seq\text Seq\½­ÉÏÔÂ.txt)",
+        std::ifstream::in);
+    char* pc = ba::read(ifs, (List*)NULL);
+    if (ba::detectTextCode(ifs) == 0)//gbk
+        s = ba::transferStrCode(pc, "gbk", "utf-8");
+    else
+        s = pc;
+    jieba.Cut(s, words, true);
+    for (int i = 0; i < 100; i++)
+        cout << ba::transferStrCode(words[i].c_str(), "utf-8", "gbk") << "/";
+}
+
+void ba::test::_jieba::jiebaClass(void)
+{
+    ba::jieba jb = ba::jieba();
+    std::ifstream ifs(R"(D:\AI\DataSet\Seq2ImgFluently\seq\text Seq\½­ÉÏÔÂ.txt)",
+        std::ifstream::in);
+    char* pc = ba::read(ifs, (List*)NULL);
+    std::cout << jb.cut(pc) << std::endl;
 }
