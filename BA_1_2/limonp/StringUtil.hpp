@@ -86,12 +86,12 @@ inline bool IsSpace(unsigned c) {
 }
 
 inline std::string& LTrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<unsigned, bool>(IsSpace))));
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not_fn(std::cref(IsSpace))));
   return s;
 }
 
 inline std::string& RTrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<unsigned, bool>(IsSpace))).base(), s.end());
+  s.erase(std::find_if(s.rbegin(), s.rend(), std::not_fn(std::cref(IsSpace))).base(), s.end());
   return s;
 }
 
@@ -100,12 +100,14 @@ inline std::string& Trim(std::string &s) {
 }
 
 inline std::string& LTrim(std::string & s, char x) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::bind2nd(std::equal_to<char>(), x))));
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+      std::not_fn(std::bind(std::equal_to<char>(), placeholders::_1, x))));
   return s;
 }
 
 inline std::string& RTrim(std::string & s, char x) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::bind2nd(std::equal_to<char>(), x))).base(), s.end());
+  s.erase(std::find_if(s.rbegin(), s.rend(),
+      std::not_fn(std::bind(std::equal_to<char>(), placeholders::_1, x))).base(), s.end());
   return s;
 }
 

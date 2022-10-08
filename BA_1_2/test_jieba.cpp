@@ -1,4 +1,4 @@
-// from https://github.com/yanyiwu/cppjieba
+ï»¿// from https://github.com/yanyiwu/cppjieba
 
 #include"BA_Base.hpp"
 #include"BA_CMD.hpp"
@@ -15,10 +15,10 @@
 using namespace std;
 
 const char* const DICT_PATH = "D:/AI/PreTrainModel/jieba/jieba.dict.utf8";
-const char* const HMM_PATH = "D:/AI/PreTrainModel/hmm_model.utf8";
-const char* const USER_DICT_PATH = "D:/AI/PreTrainModel/user.dict.utf8";
-const char* const IDF_PATH = "D:/AI/PreTrainModel/idf.utf8";
-const char* const STOP_WORD_PATH = "D:/AI/PreTrainModel/stop_words.utf8";
+const char* const HMM_PATH = "D:/AI/PreTrainModel/jieba/hmm_model.utf8";
+const char* const USER_DICT_PATH = "D:/AI/PreTrainModel/jieba/user.dict.utf8";
+const char* const IDF_PATH = "D:/AI/PreTrainModel/jieba/idf.utf8";
+const char* const STOP_WORD_PATH = "D:/AI/PreTrainModel/jieba/stop_words.utf8";
 
 void ba::test::_jieba::jiebaDemo(void)
 {
@@ -32,7 +32,7 @@ void ba::test::_jieba::jiebaDemo(void)
     string s;
     string result;
 
-    s = "ËûÀ´µ½ÁËÍøÒ×º¼ÑĞ´óÏÃ";
+    s = "ä»–æ¥åˆ°äº†ç½‘æ˜“æ­ç ”å¤§å¦";
     cout << s << endl;
     cout << "[demo] Cut With HMM" << endl;
     jieba.Cut(s, words, true);
@@ -42,23 +42,23 @@ void ba::test::_jieba::jiebaDemo(void)
     jieba.Cut(s, words, false);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
 
-    s = "ÎÒÀ´µ½±±¾©Çå»ª´óÑ§";
+    s = "æˆ‘æ¥åˆ°åŒ—äº¬æ¸…åå¤§å­¦";
     cout << s << endl;
     cout << "[demo] CutAll" << endl;
     jieba.CutAll(s, words);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
 
-    s = "Ğ¡Ã÷Ë¶Ê¿±ÏÒµÓÚÖĞ¹ú¿ÆÑ§Ôº¼ÆËãËù£¬ºóÔÚÈÕ±¾¾©¶¼´óÑ§ÉîÔì";
+    s = "å°æ˜ç¡•å£«æ¯•ä¸šäºä¸­å›½ç§‘å­¦é™¢è®¡ç®—æ‰€ï¼Œååœ¨æ—¥æœ¬äº¬éƒ½å¤§å­¦æ·±é€ ";
     cout << s << endl;
     cout << "[demo] CutForSearch" << endl;
     jieba.CutForSearch(s, words);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
 
     cout << "[demo] Insert User Word" << endl;
-    jieba.Cut("ÄĞÄ¬Å®Àá", words);
+    jieba.Cut("ç”·é»˜å¥³æ³ª", words);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
-    jieba.InsertUserWord("ÄĞÄ¬Å®Àá");
-    jieba.Cut("ÄĞÄ¬Å®Àá", words);
+    jieba.InsertUserWord("ç”·é»˜å¥³æ³ª");
+    jieba.Cut("ç”·é»˜å¥³æ³ª", words);
     cout << limonp::Join(words.begin(), words.end(), "/") << endl;
 
     cout << "[demo] CutForSearch Word With Offset" << endl;
@@ -67,7 +67,7 @@ void ba::test::_jieba::jiebaDemo(void)
 
     cout << "[demo] Lookup Tag for Single Token" << endl;
     const int DemoTokenMaxLen = 32;
-    char DemoTokens[][DemoTokenMaxLen] = { "ÍÏÀ­»ú", "CEO", "123", "¡£" };
+    char DemoTokens[][DemoTokenMaxLen] = { "æ‹–æ‹‰æœº", "CEO", "123", "ã€‚" };
     vector<pair<string, string> > LookupTagres(sizeof(DemoTokens) / DemoTokenMaxLen);
     vector<pair<string, string> >::iterator it;
     for (it = LookupTagres.begin(); it != LookupTagres.end(); it++) {
@@ -78,7 +78,7 @@ void ba::test::_jieba::jiebaDemo(void)
 
     cout << "[demo] Tagging" << endl;
     vector<pair<string, string> > tagres;
-    s = "ÎÒÊÇÍÏÀ­»úÑ§ÔºÊÖ·öÍÏÀ­»ú×¨ÒµµÄ¡£²»ÓÃ¶à¾Ã£¬ÎÒ¾Í»áÉıÖ°¼ÓĞ½£¬µ±ÉÏCEO£¬×ßÉÏÈËÉúáÛ·å¡£";
+    s = "æˆ‘æ˜¯æ‹–æ‹‰æœºå­¦é™¢æ‰‹æ‰¶æ‹–æ‹‰æœºä¸“ä¸šçš„ã€‚ä¸ç”¨å¤šä¹…ï¼Œæˆ‘å°±ä¼šå‡èŒåŠ è–ªï¼Œå½“ä¸ŠCEOï¼Œèµ°ä¸Šäººç”Ÿå·…å³°ã€‚";
     jieba.Tag(s, tagres);
     cout << s << endl;
     cout << tagres << endl;
