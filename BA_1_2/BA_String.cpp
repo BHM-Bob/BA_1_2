@@ -634,6 +634,11 @@ char* ba::strdup(const char* p, ba::memRecord* mem, _LL toBeFreedInStack)
 
 char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 {
+	if (strcmp(ori, to) == 0)
+	{
+		PPW("Same code, do nothing");
+		return (char*)pc;
+	}
 	int len = 0;
 	wchar_t* wstr = NULL;
 	char* str = NULL;
@@ -656,9 +661,10 @@ char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 		}
 		else if (strcmp(ori, "unicode") == 0)
 		{// Unicode(char) -> Unicode(wchar)
-			len = mbstowcs(NULL, pc, 0);
+			len = strlen(pc) + 1;
 			wstr = new wchar_t[len + 1];
 			memset(wstr, 0, len + 1);
+			mbstowcs_s(NULL, wstr, len, pc, _TRUNCATE);
 		}
 	}
 	// unicode(wstr) -> to
@@ -684,10 +690,11 @@ char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 		}
 		else if (strcmp(to, "unicode") == 0)
 		{//Unicode(wchar) -> Unicode(char)
-			len = wcstombs(NULL, wstr, 0);
-			str = new char[len + 1];
-			memset(str, 0, len + 1);
-			wcstombs(str, wstr, len);
+			size_t len2 = 0;
+			wcstombs_s(&len2, NULL, 0, wstr, 0);
+			str = new char[len2 + 1];
+			memset(str, 0, len2 + 1);
+			wcstombs_s(&len2, str, len2 + 1, wstr, len+1);
 			if (wstr) delete[] wstr;
 			return str;
 		}

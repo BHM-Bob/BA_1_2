@@ -15,7 +15,7 @@
 namespace ba
 {
 	_LL getFileSize(std::ifstream& ifs);
-	// 0=ANSI(gbk), 1=utf-8
+	// 0=ANSI(gbk), 1=utf-8, 2=unicode
 	int detectTextCode(std::ifstream& ifs);
 	// inner close
 	char* read(std::ifstream& ifs, List* mem = NULL);

@@ -35,7 +35,7 @@ void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
 		if (fileCode >= 0 && fileCode <= 2)
 		{
 			pc = ba::read(ifs, (List*)NULL);
-			jb.cut2vector(pc, fileCode == 0 ? "gbk" : "utf-8");
+			jb.cut2vector(pc, fileCode);
 			free(pc);
 			result = new std::vector<int>();
 			for (std::string w : jb.words)
@@ -71,4 +71,7 @@ void ba::test::_comprehensive::jiebaThreads(void)
 	ifs.write((char*)&v[0], sizeof(uint8_t) * v.size());
 	ifs.close();
 	tp.Destroy(&m1);
+	//import bson
+	// with open(path, 'rb') as f:
+	//   data = bson.decode_all(f.read())
 }

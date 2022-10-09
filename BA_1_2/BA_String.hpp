@@ -18,6 +18,13 @@
 
 namespace ba
 {
+	// gbk, utf-8, unicode
+	// remain pc unfreed
+	char* transferStrCode(const char* pc, const char* ori, const char* to);
+	// 0=gbk, 1=utf-8, 2=unicode
+	// remain pc unfreed
+	char* transferStrCode(const char* pc, int ori, int to);
+
 	class jieba : BA_Base
 	{
 	public:
@@ -85,8 +92,6 @@ namespace ba
 	};
 
 	/*来源于 VN7 v1.1 项目*//*VN7 v1.2 进行了更新*/
-	//当然,这玩意儿可用strstr(pstr1,pstr2)做出来,而且更方便,脑子梗,一时没想起来,唉,浪费一个多小时,更别说CSH.c
-	//里的Landing_Account调试时,一个极其明显但又不突出,不好找,关键是没调试器,的BUG找了一个多小时,胃疼,胃胀
 	char* Find_Words(char* pc, const char* ps1, const char* ps2, unsigned long long* psite);
 
 	char* Mstrtok(char* pc, char* single_delimiters, char* integration_elimiter,
@@ -98,12 +103,6 @@ namespace ba
 	char* StrAdd(List* mem, const char* pstr, ...);
 	// end with a NULL
 	char* stradd(ba::memRecord* mem, _LL toBeFreedInStack, const char* pstr, ...);
-	// gbk, utf-8, unicode
-	// remain pc unfreed
-	char* transferStrCode(const char* pc, const char* ori, const char* to);
-	// 0=gbk, 1=utf-8, 2=unicode
-	// remain pc unfreed
-	char* transferStrCode(const char* pc, int ori, int to);
 
 
 	///////////////////////////////////////////////////////////////////////////////////////
