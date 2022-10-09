@@ -1,4 +1,4 @@
-#include"BA_Base.hpp"
+﻿#include"BA_Base.hpp"
 #include"BA_CMD.hpp"
 #include"BA_Mem.hpp"
 #include"BA_Thread.hpp"
@@ -13,7 +13,7 @@ using json = nlohmann::json;
 std::mutex m1;
 
 void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
-	balist<std::vector<int>>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
+	balist<jiebaThreads_pack>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
 {
 	const char* wordsDict = R"(D:\AI\DataSet\Seq2ImgFluently\w2v\words.json)";
 	const char* textRoot = R"(D:\AI\DataSet\Seq2ImgFluently\seq\text Seq)";
@@ -24,40 +24,44 @@ void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
 	ifs.close();
 	int idx = 0, sum = getQ.ThrSize(&m1), fileCode = -1;
 	std::vector<int>* result = NULL;
+	jiebaThreads_pack* pack = NULL;
 	char* word = NULL;
 	for (char* name = getQ.ThrGet(&m1), *path = NULL, *pc = NULL;
 		name && name != (char*)1; name = getQ.ThrGet(&m1), idx++)
 	{
-		path = StrAdd(NULL, textRoot, "\\", name, NULL); PPX(pba->GUT(1));
+		path = StrAdd(NULL, textRoot, "\\", name, NULL);
 		ifs.open(path, std::ifstream::in);
 		fileCode = ba::detectTextCode(ifs);
 		pc = ba::read(ifs, (List*)NULL);
 		free(path);
 		jb.cut2vector(pc, fileCode == 0 ? "gbk" : "utf-8");
 		free(pc);
-		result = new std::vector<int>(); PPX(pba->GUT(0));
+		result = new std::vector<int>();
 		for (std::string w : jb.words)
-		{
 			if (w2i.contains(w))
 				result->emplace_back(w2i[w]);
-		}PPX(pba->GUT(0));
-		putQ.ThrPut(result, &m1);
-		proc.ThrPut(TypeDupR(NULL, 1, 100.f * (float)idx / sum), &m1);
+		pack = new jiebaThreads_pack(name, result);
+		putQ.ThrPut(pack, &m1);
 	}
-	sig.ThrPut(0, &m1);;
+	sig.ThrPut(0, &m1);
 }
 
 void ba::test::_comprehensive::jiebaThreads(void)
 {
-	// read texts, almost ANSI
 	const char* textRoot = R"(D:\AI\DataSet\Seq2ImgFluently\seq\text Seq)";
 	ba::dir dir = ba::dir(textRoot, "txt");
-	PPX(dir.files->Index((char*)1));
-	_LL sumThreads = 1;
-	MyThreadsPool tp = MyThreadsPool(sumThreads, jiebaThreads_SubThr, NULL, NULL, 10000);
-	tp.logMode = true;
-	for (_LL idx = 0, sum = 4; idx < sum; idx++)
+	_LL sumThreads = 2;
+	MyThreadsPool tp = MyThreadsPool(sumThreads, jiebaThreads_SubThr, NULL, NULL, 5000);
+	for (_LL idx = 0, sum = 10; idx < sum; idx++)
 		tp.PutTask(dir.files->Copy(), &m1);
 	auto result = tp.LoopToQuit(&m1);
+	json seq;
+	_LL idx = 0;
+	for (auto p = result->Copy(); p; p = result->Copy(), idx++)
+		seq[p->name] = *(p->v);
+	std::ofstream ifs(R"(D:\AI\DataSet\Seq2ImgFluently\w2v\cppjieba.bson)", std::ifstream::trunc);
+	auto v = json::to_bson(seq);
+	ifs.write((char*)&v[0], sizeof(uint8_t) * v.size());
+	ifs.close();
 	tp.Destroy(&m1);
 }

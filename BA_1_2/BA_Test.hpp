@@ -61,8 +61,18 @@ namespace ba
         }
         namespace _comprehensive
         {
+            class jiebaThreads_pack {
+            public:
+                char* name;
+                std::vector<int>* v;
+                jiebaThreads_pack(char* _n, std::vector<int>* _v)
+                {
+                    name = _n;
+                    v = _v;
+                }
+            };
             void jiebaThreads_SubThr(_LL id, balist<char>& getQ,
-                balist<std::vector<int>>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
+                balist<jiebaThreads_pack>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
             void jiebaThreads(void);
         }
     }
