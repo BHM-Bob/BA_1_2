@@ -62,7 +62,7 @@ namespace ba
         namespace _comprehensive
         {
             void jiebaThreads_SubThr(_LL id, balist<char>& getQ,
-                balist<char>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
+                balist<std::vector<int>>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
             void jiebaThreads(void);
         }
     }

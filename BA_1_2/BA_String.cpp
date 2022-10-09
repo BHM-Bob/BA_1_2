@@ -12,18 +12,28 @@
 #include"BA_Thread.hpp"
 #include"BA_String.hpp"
 
-std::string& ba::jieba::cut(char* pc, const char* spliter,
-	const char* inCode, const char* outCode)
+
+void ba::jieba::cut2vector(char* pc, const char* inCode)
 {
 	s.clear();
 	result.clear();
 	if (strcmp(inCode, "gbk") == 0)
+	{
 		tmp = ba::transferStrCode(pc, "gbk", "utf-8");
+		s = tmp;
+		free(tmp);
+	}
 	else
-		tmp = pc;
-	s = tmp;
-	free(tmp);
+	{
+		s = pc;
+	}
 	jb.Cut(s, words, true);
+	s.clear();
+}
+std::string& ba::jieba::cut2string(char* pc, const char* spliter,
+	const char* inCode, const char* outCode)
+{
+	cut2vector(pc, inCode);
 	if (strcmp(outCode, "gbk") == 0)
 	{
 		for (int i = 0; i < words.size(); i++)
@@ -33,7 +43,6 @@ std::string& ba::jieba::cut(char* pc, const char* spliter,
 			free(tmp);
 		}
 	}
-	s.clear();
 	result = limonp::Join(words.begin(), words.end(), spliter);
 	return result;
 }
@@ -643,24 +652,4 @@ char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 	PPW("unable to tansfer code");
 	PPWs(ori, to);
 	return nullptr;
-}
-
-int ba::detectTextCode(std::ifstream & pf)
-{
-	unsigned char c;
-	pf.read((char*)&c, sizeof(c));//读取第一个字节
-	int p = c << 8;
-	pf.read((char*)&c, sizeof(c));//l读取第二个字节
-	p |= c;
-	switch (p) // 判断文本前两个字节
-	{
-	case 0xefbb://61371 UTF-8
-		return 1;
-	case 0xfffe://65534 Unicode
-		return 2;
-	case 0xfeff://65279 Unicode big endian
-		return 3;
-	default://GBK
-		return 0;
-	}
 }

@@ -25,6 +25,9 @@ public:
 	std::thread** ppThs = NULL;
 	COORD pos = COORD();
 
+	float st = (float)clock();
+	bool logMode = false;
+
 	List* mem = List_Init();
 
 	MyThreadsPool(_LL _sumThreads,
@@ -77,7 +80,6 @@ inline balist<dataTypeGet>* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(
 	for (_LL idx = 0; idx < sumThreads; idx++)
 		putDataQues[idx].ThrPut((dataTypePut*)0x1, m);
 	_LL sumTasksTillNow = 0;
-	float st = (float)clock();
 	float* hisProc = BALLOC_R(sumThreads, float, mem);
 	float* procTemp = NULL;
 	pos = GetConsoleCursor();
@@ -87,7 +89,8 @@ inline balist<dataTypeGet>* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(
 		for (_LL idx = 0; idx < sumThreads; idx++)
 			sumTasksTillNow += putDataQues[idx].ThrSize(m);
 
-		SetConsoleCursor(pos.X, pos.Y);
+		if(!logMode)
+			SetConsoleCursor(pos.X, pos.Y);
 		printf("%20s: subThreads working: %5llu / %5llu  --  %8.3f sec\n",
 			name, sumTasksTillNow, sumTasks, (float)(clock() - st) / CLOCKS_PER_SEC);
 		for (_LL idx = 0; idx < sumThreads; idx++)
@@ -95,7 +98,7 @@ inline balist<dataTypeGet>* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(
 			for (; procQues[idx].ThrSize(m) > 1; free(procQues[idx].ThrGet(m)));
 			procTemp = procQues[idx].ThrSize(m) > 0 ? procQues[idx].ThrGet(m) : NULL;
 			hisProc[idx] = procTemp ? *procTemp : hisProc[idx];
-			printf("subThreads %llu : %6.3f %%        \n", idx, hisProc[idx]);
+			printf("subThreads %4llu : %6.3f %%\n", idx, hisProc[idx]);
 			if (procTemp)
 				free(procTemp);
 		}
@@ -103,7 +106,7 @@ inline balist<dataTypeGet>* MyThreadsPool<dataTypePut, dataTypeGet>::LoopToQuit(
 		for (_LL idx = 0; idx < sumThreads; idx++)
 			while (getDataQues[idx].ThrSize(m) > 0)
 				retList->Put(getDataQues[idx].ThrGet(m));
-		Sleep(1000);
+		Sleep(2000);
 	}
 	for (_LL idx = 0; idx < sumThreads; idx++)
 	{

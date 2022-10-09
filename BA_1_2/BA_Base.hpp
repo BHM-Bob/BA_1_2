@@ -360,11 +360,11 @@ struct MyBA
 	List* exitFuncData;
 	List* exitFunc;
 
-	float (*GUT)(void);
+	float (*GUT)(bool reset);
 };
 extern MyBA* pba;
 void MyBA_Init(int argc = 1, char** argvs = NULL, bool safeMode = false);
-float MyBA_GetUsedTime(void);
+float MyBA_GetUsedTime(bool reset = false);
 // BALLOC_L
 void MyBA_PutLog(const char* pc, const char* head = "Normal Log:");
 // end with NULL & BALLOC_L

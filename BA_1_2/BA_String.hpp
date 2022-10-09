@@ -33,7 +33,10 @@ namespace ba
 		std::string result;
 		char* tmp = NULL;
 
-		std::string& cut(char* pc, const char* spliter = "/",
+		// remain pc unfreed
+		void cut2vector(char* pc, const char* inCode = "gbk");
+		// remain pc unfreed
+		std::string& cut2string(char* pc, const char* spliter = "/",
 			const char* inCode = "gbk", const char* outCode = "gbk");
 	};
 
@@ -93,8 +96,6 @@ namespace ba
 	char* StrAdd(List* mem, const char* pstr, ...);
 	// end with a NULL
 	char* stradd(ba::memRecord* mem, _LL toBeFreedInStack, const char* pstr, ...);
-	// 0=ANSI(gbk), 1=utf-8
-	int detectTextCode(std::ifstream & pf);
 	// gbk, utf-8
 	// remain pc unfreed
 	char* transferStrCode(const char* pc, const char* ori, const char* to);

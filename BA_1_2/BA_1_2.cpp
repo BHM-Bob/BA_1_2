@@ -170,11 +170,11 @@ void MyBA_PutLogs(const char* head, ...)
 	}
 }
 
-float MyBA_GetUsedTime(void)
+float MyBA_GetUsedTime(bool reset)
 {
 	if (pba == NULL)
 		return -1.;
-	if (pba->GUT_state)
+	if (pba->GUT_state && !reset)
 	{
 		float ret = (float)((float)clock() - pba->GUT_t) / CLOCKS_PER_SEC;
 		pba->GUT_t = clock();
@@ -183,6 +183,7 @@ float MyBA_GetUsedTime(void)
 	else
 	{
 		pba->GUT_state = 1;
+		pba->GUT_t = clock();
 		return 0.;
 	}
 }

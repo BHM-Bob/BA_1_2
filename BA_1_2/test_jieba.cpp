@@ -123,5 +123,5 @@ void ba::test::_jieba::jiebaClass(void)
     std::ifstream ifs(R"(D:\AI\DataSet\Seq2ImgFluently\seq\text Seq\½­ÉÏÔÂ.txt)",
         std::ifstream::in);
     char* pc = ba::read(ifs, (List*)NULL);
-    std::cout << jb.cut(pc) << std::endl;
+    std::cout << jb.cut2string(pc) << std::endl;
 }

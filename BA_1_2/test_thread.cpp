@@ -32,7 +32,7 @@ void ba::test::_thread::WordsCount_SubThr(_LL id, balist<ba::str>& getQ,
         if (nowIdx % 10000 == 0)
             proc.ThrPut(TypeDupR(NULL, 1, 100.f * nowIdx / splitResult->sumque), &m);
     }
-    sig.ThrPut(NULL, &m);
+    sig.ThrPut(0, &m);
     MyBA_Free_R(mem, true);
 }
 

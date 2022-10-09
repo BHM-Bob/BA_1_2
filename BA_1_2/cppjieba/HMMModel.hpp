@@ -1,4 +1,4 @@
-#ifndef CPPJIEBA_HMMMODEL_H
+﻿#ifndef CPPJIEBA_HMMMODEL_H
 #define CPPJIEBA_HMMMODEL_H
 
 #include "../limonp/StringUtil.hpp"

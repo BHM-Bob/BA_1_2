@@ -289,18 +289,46 @@ _LL ba::getFileSize(std::ifstream& ifs)
     return len;
 }
 
+int ba::detectTextCode(std::ifstream& ifs)
+{
+    std::streampos now = ifs.tellg();
+    unsigned char c;
+    ifs.read((char*)&c, sizeof(c));//读取第一个字节
+    int p = c << 8;
+    ifs.read((char*)&c, sizeof(c));//l读取第二个字节
+    p |= c;
+    ifs.seekg(0, now);
+    switch (p) // 判断文本前两个字节
+    {
+    case 0xefbb://61371 UTF-8
+        return 1;
+    case 0xfffe://65534 Unicode
+        return 2;
+    case 0xfeff://65279 Unicode big endian
+        return 3;
+    default://GBK
+        return 0;
+    }
+}
+
 char* ba::read(std::ifstream& ifs, List* mem)
 {
+    if (!ifs.is_open())
+        return (char*)MyBA_Err("char* ba::read(std::ifstream& ifs, List* mem):: ! ifs.is_open(), return NULL", 1);
     _LL len = getFileSize(ifs);
     char* s = BALLOC_R(len+1, char, mem);
     ifs.read(s, len);
+    ifs.close();
     return s;
 }
 
 char* ba::read(std::ifstream& ifs, memRecord* mem)
 {
+    if (!ifs.is_open())
+        return (char*)MyBA_Err("char* ba::read(std::ifstream& ifs, List* mem):: ! ifs.is_open(), return NULL", 1);
     _LL len = getFileSize(ifs);
     char* s = _balloc(char, len, mem);
     ifs.read(s, len);
+    ifs.close();
     return s;
 }
