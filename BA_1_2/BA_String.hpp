@@ -34,6 +34,8 @@ namespace ba
 		char* tmp = NULL;
 
 		// remain pc unfreed
+		void cut2vector(char* pc, int inCode = 0);
+		// remain pc unfreed
 		void cut2vector(char* pc, const char* inCode = "gbk");
 		// remain pc unfreed
 		std::string& cut2string(char* pc, const char* spliter = "/",
@@ -96,9 +98,12 @@ namespace ba
 	char* StrAdd(List* mem, const char* pstr, ...);
 	// end with a NULL
 	char* stradd(ba::memRecord* mem, _LL toBeFreedInStack, const char* pstr, ...);
-	// gbk, utf-8
+	// gbk, utf-8, unicode
 	// remain pc unfreed
 	char* transferStrCode(const char* pc, const char* ori, const char* to);
+	// 0=gbk, 1=utf-8, 2=unicode
+	// remain pc unfreed
+	char* transferStrCode(const char* pc, int ori, int to);
 
 
 	///////////////////////////////////////////////////////////////////////////////////////

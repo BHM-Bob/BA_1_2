@@ -12,14 +12,31 @@
 #include"BA_Thread.hpp"
 #include"BA_String.hpp"
 
+void ba::jieba::cut2vector(char* pc, int inCode)
+{
+	s.clear();
+	result.clear();
+	if (inCode == 0 || inCode == 2)
+	{
+		tmp = ba::transferStrCode(pc, inCode, 1);
+		s = tmp;
+		free(tmp);
+	}
+	else
+	{
+		s = pc;
+	}
+	jb.Cut(s, words, true);
+	s.clear();
+}
 
 void ba::jieba::cut2vector(char* pc, const char* inCode)
 {
 	s.clear();
 	result.clear();
-	if (strcmp(inCode, "gbk") == 0)
+	if (strcmp(inCode, "gbk") == 0 || strcmp(inCode, "unicode") == 0)
 	{
-		tmp = ba::transferStrCode(pc, "gbk", "utf-8");
+		tmp = ba::transferStrCode(pc, inCode, "utf-8");
 		s = tmp;
 		free(tmp);
 	}
@@ -617,39 +634,81 @@ char* ba::strdup(const char* p, ba::memRecord* mem, _LL toBeFreedInStack)
 
 char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 {
-	if (strcmp(ori, "gbk") == 0)
+	int len = 0;
+	wchar_t* wstr = NULL;
+	char* str = NULL;
+	// from -> unicode(wstr)
+	if(pc && ori && to)
 	{
-		if (strcmp(to, "utf-8") == 0)
-		{//gbk -> utf-8
-			int len = MultiByteToWideChar(CP_ACP, 0, pc, -1, NULL, 0);
-			wchar_t* wstr = new wchar_t[len + 1];
+		if (strcmp(ori, "gbk") == 0)
+		{// gbk(char) -> Unicode(wchar)
+			len = MultiByteToWideChar(CP_ACP, 0, pc, -1, NULL, 0);
+			wstr = new wchar_t[len + 1];
 			memset(wstr, 0, len + 1);
 			MultiByteToWideChar(CP_ACP, 0, pc, -1, wstr, len);
+		}
+		else if (strcmp(ori, "utf-8") == 0)
+		{// UTF-8(char) -> Unicode(wchar)
+			len = MultiByteToWideChar(CP_UTF8, 0, pc, -1, NULL, 0);
+			wstr = new wchar_t[len + 1];
+			memset(wstr, 0, len + 1);
+			MultiByteToWideChar(CP_UTF8, 0, pc, -1, wstr, len);
+		}
+		else if (strcmp(ori, "unicode") == 0)
+		{// Unicode(char) -> Unicode(wchar)
+			len = mbstowcs(NULL, pc, 0);
+			wstr = new wchar_t[len + 1];
+			memset(wstr, 0, len + 1);
+		}
+	}
+	// unicode(wstr) -> to
+	if(wstr)
+	{
+		if (strcmp(to, "gbk") == 0)
+		{//Unicode(wchar) -> gbk(char)
+			len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
+			str = new char[len + 1];
+			memset(str, 0, len + 1);
+			WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, len, NULL, NULL);
+			if (wstr) delete[] wstr;
+			return str;
+		}
+		else if (strcmp(to, "utf-8") == 0)
+		{//Unicode(wchar) -> utf-8(char)
 			len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
-			char* str = new char[len + 1];
+			str = new char[len + 1];
 			memset(str, 0, len + 1);
 			WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
 			if (wstr) delete[] wstr;
 			return str;
 		}
-	}
-	else if (strcmp(ori, "utf-8") == 0)
-	{
-		if (strcmp(to, "gbk") == 0)
-		{//utf-8 -> gbk
-			int len = MultiByteToWideChar(CP_UTF8, 0, pc, -1, NULL, 0);
-			wchar_t* wstr = new wchar_t[len + 1];
-			memset(wstr, 0, len + 1);
-			MultiByteToWideChar(CP_UTF8, 0, pc, -1, wstr, len);
-			len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
-			char* str = new char[len + 1];
+		else if (strcmp(to, "unicode") == 0)
+		{//Unicode(wchar) -> Unicode(char)
+			len = wcstombs(NULL, wstr, 0);
+			str = new char[len + 1];
 			memset(str, 0, len + 1);
-			WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, len, NULL, NULL);
+			wcstombs(str, wstr, len);
 			if (wstr) delete[] wstr;
 			return str;
 		}
 	}
 	PPW("unable to tansfer code");
 	PPWs(ori, to);
-	return nullptr;
+	return (char*)1;
+}
+
+char* ba::transferStrCode(const char* pc, int ori, int to)
+{
+	char code2str[3][10] =
+	{
+		"gbk",
+		"utf-8",
+		"unicode",
+	};
+	if (ori <= 2 && to <= 2 && ori >= 0 && to >= 0)
+		return transferStrCode(pc, code2str[ori], code2str[to]);
+	PPW("unable to tansfer code");
+	PPX(ori);
+	PPX(to);
+	return (char*)1;
 }
