@@ -8,6 +8,7 @@
 #include"BA_String.hpp"
 #include"BA_Test.hpp"
 #include"BA_JSON.hpp"
+#include"BA_Jieba.hpp"
 #include"cppjieba/Jieba.hpp"
 
 using namespace std;

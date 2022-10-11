@@ -129,5 +129,115 @@ inline BA_Array BA_Array::operator/(dataType other)
 	return this->Devide(other, true);
 }
 
+namespace ba
+{
+	/*shape as [n, m] mean first(top) axis is n, last(bottom) is m
+	*/
+	template<typename Ty>
+	class tensor
+	{
+	private:
+		List* mem = List_Init();
+		std::vector<_LL> shape;
+		std::vector<_LL> axis;
+		_LL nowAxis = -1;
+		_LL len = 1;
+
+		Ty errV = Ty();
+	public:
+		Ty* data = NULL;
+
+		tensor(std::vector<_LL> _shape, Ty defaultValue = Ty());
+		void setErrValue(Ty _errV);
+
+		tensor<Ty>& operator[](_LL idx);
+		Ty& operator()(_LL idx);
+		void operator=(std::vector<Ty> data);
+	};
+	template<typename Ty>
+	inline tensor<Ty>::tensor(std::vector<_LL> _shape, Ty defaultValue)
+	{
+		if (_shape.size() == 0)
+		{
+			MyBA_Err("tensor<Ty>::tensor(std::vector<_LL> _shape, Ty defaultValue)::null shape", 1);
+		}
+		else
+		{
+			nowAxis = 0;
+			shape = _shape;
+			axis = std::vector<_LL>(shape.size(), -1);
+			for (_LL i : shape)
+				len *= (i > 0 ? i : 0);
+			if (len == 0)
+			{
+				MyBA_Err("tensor<Ty>::tensor(std::vector<_LL> _shape, Ty defaultValue)::negative shape", 1);
+			}
+			else
+			{
+				data = new Ty[len];
+				Ty* tmp = data;
+				for (_LL i = 0; i < len; i++, tmp++)
+					*tmp = defaultValue;
+			}
+		}
+	}
+	template<typename Ty>
+	inline void tensor<Ty>::setErrValue(Ty _errV)
+	{
+		errV = _errV;
+	}
+	template<typename Ty>
+	inline tensor<Ty>& tensor<Ty>::operator[](_LL idx)
+	{
+		if (nowAxis < shape.size() && idx < shape[nowAxis])
+		{
+			axis[nowAxis] = idx;
+			++nowAxis;
+		}
+		else
+		{
+			MyBA_Err("tensor<Ty>& tensor<Ty>::operator[](_LL idx)::can not apply [] in Ty, use ()", 1);
+		}
+		return *this;
+	}
+	template<typename Ty>
+	inline Ty& tensor<Ty>::operator()(_LL idx)
+	{
+		if (nowAxis == shape.size()-1)
+		{
+			axis[nowAxis] = idx;
+			_LL len1 = 0, axisSize = 1;
+			for (_LL i  = shape.size()-1; i >= 0; i--)
+			{
+				len1 += ((axis[i]-1) * axisSize);
+				axisSize *= shape[i];
+			}
+			nowAxis = 0;
+			std::fill(std::begin(axis), std::end(axis), -1);
+			return data[len1];
+		}
+		else
+		{
+			MyBA_Err("tensor<Ty>& tensor<Ty>::operator[](_LL idx)::can apply [] in Ty, use ()", 1);
+			return errV;
+		}
+	}
+	template<typename Ty>
+	inline void tensor<Ty>::operator=(std::vector<Ty> data)
+	{
+		nowAxis = 0;
+		shape = {data.size()};
+		axis = std::vector<_LL>(shape.size(), -1);
+		len = shape[0];
+		data = new Ty[len];
+		Ty* tmp = data;
+		for (Ty t : data)
+		{
+			*tmp = t;
+			++tmp;
+		}
+	}
+}
+
 #endif
 

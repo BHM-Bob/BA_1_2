@@ -4,16 +4,24 @@
 #include"BA_Thread.hpp"
 #include"BA_File.hpp"
 #include"BA_String.hpp"
+#include"BA_Math.hpp"
 #include"BA_Test.hpp"
 #include"BA_JSON.hpp"
+#include"BA_Jieba.hpp"
 #include"cppjieba/Jieba.hpp"
 
 using json = nlohmann::json;
 
 std::mutex m1;
 
+void ba::test::_comprehensive::tensor(void)
+{
+	ba::tensor t = ba::tensor({ 5, 5 }, 0.f);
+	float f = t[3](3);
+}
+
 void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
-	balist<jiebaThreads_pack>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
+	balist<std::pair<char*, std::vector<int>*>>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
 {
 	const char* wordsDict = R"(D:\AI\DataSet\Seq2ImgFluently\w2v\words.json)";
 	const char* textRoot = R"(D:\AI\DataSet\Seq2ImgFluently\seq\text Seq)";
@@ -24,7 +32,7 @@ void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
 	ifs.close();
 	int idx = 0, sum = getQ.ThrSize(&m1), fileCode = -1;
 	std::vector<int>* result = NULL;
-	jiebaThreads_pack* pack = NULL;
+	std::pair<char*, std::vector<int>*>* pack = NULL;
 	char* word = NULL;
 	for (char* name = getQ.ThrGet(&m1), *path = NULL, *pc = NULL;
 		name && name != (char*)1; name = getQ.ThrGet(&m1), idx++)
@@ -41,7 +49,7 @@ void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
 			for (std::string w : jb.words)
 				if (w2i.contains(w))
 					result->emplace_back(w2i[w]);
-			pack = new jiebaThreads_pack(name, result);
+			pack = new std::pair<char*, std::vector<int>*>(name, result);
 			putQ.ThrPut(pack, &m1);
 		}
 		else
@@ -65,7 +73,7 @@ void ba::test::_comprehensive::jiebaThreads(void)
 	json seq;
 	_LL idx = 0;
 	for (auto p = result->Copy(); p; p = result->Copy(), idx++)
-		seq[p->name] = *(p->v);
+		seq[p->first] = *(p->second);
 	std::ofstream ifs(R"(D:\AI\DataSet\Seq2ImgFluently\w2v\cppjieba.bson)", std::ifstream::trunc);
 	auto v = json::to_bson(seq);
 	ifs.write((char*)&v[0], sizeof(uint8_t) * v.size());

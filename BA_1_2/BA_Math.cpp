@@ -6,9 +6,7 @@
 //#define USE_OPENCV
 
 #include"BA_Base.hpp"
-#include"BA_Mem.hpp"
 #include"BA_Math.hpp"
-#include"BA_File.hpp"
 
 int* MyBA_Zeros_AllocD(int* ret, int* shape, int dims, int nowdim)
 {

@@ -9,15 +9,15 @@
 #ifndef BA_TEST_H
 #define BA_TEST_H
 
-#include"BA_Base.hpp"
-#include"BA_CMD.hpp"
-#include"BA_Mem.hpp"
-#include"BA_Thread.hpp"
-#include"BA_Math.hpp"
-#include"BA_File.hpp"
-#include"BA_String.hpp"
-#include"BA_BioInfo.hpp"
-#include"BA_JSON.hpp"
+#include "BA_Base.hpp"
+#include "BA_CMD.hpp"
+#include "BA_Mem.hpp"
+#include "BA_Thread.hpp"
+#include "BA_Math.hpp"
+#include "BA_File.hpp"
+#include "BA_String.hpp"
+#include "BA_BioInfo.hpp"
+#include "BA_JSON.hpp"
 
 namespace ba
 {
@@ -61,18 +61,11 @@ namespace ba
         }
         namespace _comprehensive
         {
-            class jiebaThreads_pack {
-            public:
-                char* name;
-                std::vector<int>* v;
-                jiebaThreads_pack(char* _n, std::vector<int>* _v)
-                {
-                    name = _n;
-                    v = _v;
-                }
-            };
+            void tensor(void);
+
+            // or use std::tuple for more var to deliver
             void jiebaThreads_SubThr(_LL id, balist<char>& getQ,
-                balist<jiebaThreads_pack>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
+                balist<std::pair<char*, std::vector<int>*>>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
             void jiebaThreads(void);
         }
     }

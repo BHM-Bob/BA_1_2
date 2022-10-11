@@ -1,15 +1,9 @@
 ﻿// from https://github.com/nlohmann/json
 
 #include"BA_Base.hpp"
-#include"BA_CMD.hpp"
-#include"BA_Mem.hpp"
-#include"BA_Thread.hpp"
-#include"BA_Math.hpp"
 #include"BA_File.hpp"
-#include"BA_String.hpp"
-#include"BA_Test.hpp"
-#include"BA_BioInfo.hpp"
 #include"BA_JSON.hpp"
+#include"BA_Test.hpp"
 
     /* the library only supports UTF-8 */
 
@@ -157,8 +151,8 @@ void ba::test::_json::stlAccess(void)
     }
 
     // or simpler using count()
-    int foo_present = o.count("foo"); // 1
-    int fob_present = o.count("fob"); // 0
+    _ULL foo_present = o.count("foo"); // 1
+    _ULL fob_present = o.count("fob"); // 0
 
     // delete an entry
     o.erase("foo");
@@ -182,7 +176,6 @@ void ba::test::_json::myAccess(void)
     };
     int i = j["answer"]["everything"];
     PPX(i);
-    std::string;
 }
 
 void ba::test::_json::convertionWithSTL(void)
