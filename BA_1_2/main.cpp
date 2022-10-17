@@ -14,7 +14,7 @@ int main(int argc, char** argvs)
 
 	//ba::test::_thread::WordsCount();
 	//ba::test::_cmd::openlog();
-	ba::test::_comprehensive::glob();
+	ba::test::_comprehensive::jiebaThreads();
 
 	return MyBA_Quit();
 }
