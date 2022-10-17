@@ -9,7 +9,6 @@
 #define BA_STRING_H
 
 #include"BA_Base.hpp"
-#include"BA_Math.hpp"
 #include"BA_Mem.hpp"
 #include"cppjieba/Jieba.hpp"
 

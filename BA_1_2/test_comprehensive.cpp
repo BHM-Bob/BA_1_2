@@ -19,6 +19,17 @@ void ba::test::_comprehensive::tensor(void)
 {
 	ba::tensor t = ba::tensor({ 5, 5 }, 0.f);
 	float f = t[3](3);
+
+	ba::tensor t2 = ba::tensor({ 5, 5 }, 2.f);
+	ba::tensor r = t.map(t2, [&](float r, float l) {return r + l; });
+	PPX(r[3](3));
+	PPX((t - t2*t2)[3](3));
+
+	ba::tensor t3 = ba::tensor({ 5, 5 }, (char*)1);
+	PPX(t3.toType(0ULL, [&](char* p) {return (_ULL)p; })[3](3));
+
+	PPX(t3.map(0ULL, t, [&](char* p, float f) {return (_ULL)p + (_ULL)&f;})[3](3));
+
 }
 
 void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,

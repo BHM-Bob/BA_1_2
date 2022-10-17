@@ -104,7 +104,6 @@ public:
 };
 //***********************************************************************************************************************
 
-
 template<typename dataType>
 inline BA_Array BA_Array::operator+(dataType other)
 {
@@ -131,20 +130,19 @@ inline BA_Array BA_Array::operator/(dataType other)
 
 namespace ba
 {
-	/*shape as [n, m] mean first(top) axis is n, last(bottom) is m
-	*/
+	//shape as [n, m] mean first(top) axis is n, last(bottom) is m
 	template<typename Ty>
 	class tensor
 	{
 	private:
 		List* mem = List_Init();
-		std::vector<_LL> shape;
 		std::vector<_LL> axis;
 		_LL nowAxis = -1;
 		_LL len = 1;
 
 		Ty errV = Ty();
 	public:
+		std::vector<_LL> shape;
 		Ty* data = NULL;
 
 		tensor(std::vector<_LL> _shape, Ty defaultValue = Ty());
@@ -153,6 +151,29 @@ namespace ba
 		tensor<Ty>& operator[](_LL idx);
 		Ty& operator()(_LL idx);
 		void operator=(std::vector<Ty> data);
+
+		//func must be a return of std::bind(callableFunc)
+		//    and toTy callableFunc(Ty i){}
+		//or func must be a Lambda as auto func = [&](Ty i){return (toTy)i;};
+		template<typename toTy, typename funcTy>
+		tensor<toTy>& toType(toTy defaultValue, funcTy func);
+
+		//func must be a return of std::bind(callableFunc)
+		//    and Ty callableFunc(Ty r, Ty l){}
+		//or func must be a Lambda as auto func = [&](Ty r, Ty l){}
+		template<typename funcTy>
+		tensor<Ty>& map(tensor<Ty>& other, funcTy func);
+
+		//func must be a return of std::bind(callableFunc)
+		//    and Ty callableFunc(Ty r, Ty l){}
+		//or func must be a Lambda as auto func = [&](Ty r, Ty l){}
+		template<typename funcTy, typename otherTy, typename toTy>
+		tensor<toTy>& map(toTy defaultValue, tensor<otherTy>& other, funcTy func);
+
+		tensor<Ty>& operator+(tensor<Ty>& other);
+		tensor<Ty>& operator-(tensor<Ty>& other);
+		tensor<Ty>& operator*(tensor<Ty>& other);
+		tensor<Ty>& operator/(tensor<Ty>& other);
 	};
 	template<typename Ty>
 	inline tensor<Ty>::tensor(std::vector<_LL> _shape, Ty defaultValue)
@@ -236,6 +257,70 @@ namespace ba
 			*tmp = t;
 			++tmp;
 		}
+	}
+	template<typename Ty>
+	template<typename toTy, typename funcTy>
+	inline tensor<toTy>& ba::tensor<Ty>::toType(toTy defaultValue, funcTy func)
+	{
+		tensor<toTy>* pt = new tensor<toTy>(shape);
+		Ty* pt1 = data;
+		toTy* pt3 = pt->data;
+		for (_LL i = 0; i < len; i++, pt1++, pt3++)
+			*pt3 = func(*pt1);
+		return *pt;
+	}
+	template<typename Ty>
+	template<typename funcTy>
+	inline tensor<Ty>& ba::tensor<Ty>::map(tensor<Ty>& other, funcTy func)
+	{
+		if (shape == other.shape)
+		{
+			tensor<Ty>* pt = new tensor<Ty>(shape);
+			Ty* pt1 = data, * pt2 = other.data, * pt3 = pt->data;
+			for (_LL i = 0; i < len; i++, pt1++, pt2++, pt3++)
+				*pt3 = func(*pt1, *pt2);
+			return *pt;
+		}
+		MyBA_Err("inline tensor<Ty>& ba::tensor<Ty>::map(tensor<Ty>& other, funcTy func):: shape != other.shape, return *this", 1);
+		return *this;
+	}
+	template<typename Ty>
+	template<typename funcTy, typename otherTy, typename toTy>
+	inline tensor<toTy>& ba::tensor<Ty>::map(toTy defaultValue, tensor<otherTy>& other, funcTy func)
+	{
+		if (shape == other.shape)
+		{
+			tensor<toTy>* pt = new tensor<toTy>(shape);
+			Ty* pt1 = data;
+			otherTy* pt2 = other.data;
+			toTy *pt3 = pt->data;
+			for (_LL i = 0; i < len; i++, pt1++, pt2++, pt3++)
+				*pt3 = func(*pt1, *pt2);
+			return *pt;
+		}
+		MyBA_Err("inline tensor<Ty>& ba::tensor<Ty>::map(tensor<Ty>& other, funcTy func)::shape != other.shape, return defaultValue tensor, shape same as this->shape", 1);
+		tensor<toTy>* r = new tensor<toTy>(this->shape, defaultValue);
+		return *r;
+	}
+	template<typename Ty>
+	inline tensor<Ty>& ba::tensor<Ty>::operator+(tensor<Ty>& other)
+	{
+		return this->map(other, [&](Ty r, Ty l) {return r + l; });
+	}
+	template<typename Ty>
+	inline tensor<Ty>& ba::tensor<Ty>::operator-(tensor<Ty>& other)
+	{
+		return this->map(other, [&](Ty r, Ty l) {return r - l; });
+	}
+	template<typename Ty>
+	inline tensor<Ty>& ba::tensor<Ty>::operator*(tensor<Ty>& other)
+	{
+		return this->map(other, [&](Ty r, Ty l) {return r * l; });
+	}
+	template<typename Ty>
+	inline tensor<Ty>& ba::tensor<Ty>::operator/(tensor<Ty>& other)
+	{
+		return this->map(other, [&](Ty r, Ty l) {return r / l; });
 	}
 }
 

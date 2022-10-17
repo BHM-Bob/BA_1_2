@@ -585,7 +585,7 @@ char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 		PPW("Same code, do nothing");
 		return (char*)pc;
 	}
-	int len = 0;
+	size_t len = 0;
 	wchar_t* wstr = NULL;
 	char* str = NULL;
 	// from -> unicode(wstr)

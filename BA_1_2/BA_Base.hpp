@@ -47,7 +47,7 @@
 // thread
 #include <mutex>
 #include <thread>
-// windows platform for console cursor OP
+// windows platform for console cursor OP and string code transfer
 #include <Windows.h>
 #include <WinBase.h>
 
@@ -227,7 +227,7 @@ public:
 	void ThrPut(dataType* pdata, std::mutex* m,
 		const char* name = NULL, bool justUseNamePtr = false);
 	// multi threads
-	dataType* ThrGet(std::mutex* m);
+	dataType* ThrGet(std::mutex* m, _LL wait = 100, _LL block = -1);
 	// multi threads
 	_LL ThrSize(std::mutex* m);
 	// end with a NULL
@@ -806,15 +806,19 @@ void balist<dataType>::ThrPut(dataType* pdata, std::mutex* m, const char* name, 
 }
 
 template<typename dataType>
-dataType* balist<dataType>::ThrGet(std::mutex* m)
+dataType* balist<dataType>::ThrGet(std::mutex* m, _LL wait, _LL block)
 {
 	dataType* ret = NULL;
+	_LL sumWait = 0;
 balist_Label_A:
 	m->lock();
 	if (sumque == 0 || (!pfirst))
 	{
 		m->unlock();
-		Sleep(100);
+		Sleep(wait);
+		sumWait += wait;
+		if (block > 0 && block < sumWait)
+			return (dataType*)0;
 		goto balist_Label_A;
 	}
 	else
