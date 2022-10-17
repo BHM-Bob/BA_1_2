@@ -150,6 +150,7 @@
     <ClCompile Include="BA_BioInfo.cpp" />
     <ClCompile Include="BA_CMD.cpp" />
     <ClCompile Include="BA_File.cpp" />
+    <ClCompile Include="BA_glob.cpp" />
     <ClCompile Include="BA_Jieba.cpp" />
     <ClCompile Include="BA_Math.cpp" />
     <ClCompile Include="BA_Mem.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="BA_BioInfo.hpp" />
     <ClInclude Include="BA_CMD.hpp" />
     <ClInclude Include="BA_File.hpp" />
+    <ClInclude Include="BA_glob.hpp" />
     <ClInclude Include="BA_Jieba.hpp" />
     <ClInclude Include="BA_JSON.hpp" />
     <ClInclude Include="BA_Math.hpp" />

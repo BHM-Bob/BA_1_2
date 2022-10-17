@@ -66,6 +66,9 @@
     <ClCompile Include="BA_Jieba.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="BA_glob.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BA_1_2.hpp">
@@ -207,6 +210,9 @@
       <Filter>头文件\limonp</Filter>
     </ClInclude>
     <ClInclude Include="BA_Jieba.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BA_glob.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

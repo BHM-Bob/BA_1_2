@@ -8,6 +8,7 @@
 #include"BA_Test.hpp"
 #include"BA_JSON.hpp"
 #include"BA_Jieba.hpp"
+#include"BA_glob.hpp"
 #include"cppjieba/Jieba.hpp"
 
 using json = nlohmann::json;
@@ -82,4 +83,13 @@ void ba::test::_comprehensive::jiebaThreads(void)
 	//import bson
 	// with open(path, 'rb') as f:
 	//   data = bson.decode_all(f.read())
+}
+
+void ba::test::_comprehensive::glob(void)
+{
+	// Match on a single pattern
+	for (auto& p : ba::glob(R"(D:\AI\DataSet\_102Flowers\torch\*\*.jpg)"))
+	{
+		PPX(p.filename());
+	}
 }

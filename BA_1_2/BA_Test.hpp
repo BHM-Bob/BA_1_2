@@ -67,6 +67,8 @@ namespace ba
             void jiebaThreads_SubThr(_LL id, balist<char>& getQ,
                 balist<std::pair<char*, std::vector<int>*>>& putQ, balist<float>& proc, balist<bool>& sig, void* data);
             void jiebaThreads(void);
+
+            void glob(void);
         }
     }
 }
