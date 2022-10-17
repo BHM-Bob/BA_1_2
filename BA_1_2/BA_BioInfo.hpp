@@ -17,18 +17,18 @@ void CacuSimiMatFromFile(const char* seqPath, _ULL loadSize, const char* resultP
 class SequencesSimiCacuer
 {
 public:
-	_ULL seqALen = 0;
-	_ULL seqBLen = 0;
-	_ULL rows = seqALen + 1;
-	_ULL cols = seqALen + 1;
+	_LL seqALen = 0;
+	_LL seqBLen = 0;
+	_LL rows = seqALen + 1;
+	_LL cols = seqALen + 1;
 	_LL var1 = 0;
 	_LL var2 = 0;
 	_LL var3 = 0;
 	int bestAction = 0;
 	char tracebackSymbol[4] = {"QA<"};
-	BA_Array H = BA_Array(BA_Shape(2, rows, cols), "l");
-	BA_Array gapH = BA_Array(BA_Shape(2, rows, cols), "l");
-	BA_Array traceback = BA_Array(BA_Shape(2, rows, cols), "l");
+	ba::tensor<int> H = ba::tensor({ rows, cols }, 0);
+	ba::tensor<int> gapH = ba::tensor({ rows, cols }, 0);
+	ba::tensor<int> traceback = ba::tensor({ rows, cols }, 0);
 
 
 	_LL CacuSequencesSimilarity(ba::str seqA, ba::str seqB);

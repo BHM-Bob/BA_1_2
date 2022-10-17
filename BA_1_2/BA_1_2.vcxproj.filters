@@ -30,9 +30,6 @@
     <ClCompile Include="BA_1_2.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="BA_Math.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="BA_String.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

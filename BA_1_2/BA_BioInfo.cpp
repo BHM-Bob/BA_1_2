@@ -75,42 +75,42 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarity(ba::str seqA, ba::str seqB)
 	seqBLen = seqB.len;
 	rows = seqALen + 1;
 	cols = seqBLen + 1;
-	H.ReCreate(BA_Shape(2, rows, cols), "l");
-	gapH.ReCreate(BA_Shape(2, rows, cols), "l");
+	memset(H.data, 0, H.len * sizeof(int));
+	memset(gapH.data, 0, gapH.len * sizeof(int));
 	for (int i = 1; i < cols; i++)
-		H.dataL[i] = i;//H[0, :] = np.arange(start=0, stop=cols)
+		H.data[i] = i;//H[0, :] = np.arange(start=0, stop=cols)
 	for (int i = 1; i < rows; i++)
-		H.dataL[i * cols] = i;//H[:, 0] = np.arange(start=0, stop=rows)
+		H.data[i * cols] = i;//H[:, 0] = np.arange(start=0, stop=rows)
 	var1 = var2 = var3 = bestAction = 0;
 	for (int row = 1; row < rows; row++)
 	{
 		for (int col = 1; col < cols; col++)
 		{
 			// leave_or_replace_letter = H[row - 1, col - 1] + score_func(a, b)
-			var1 = H.dataL[(row - 1) * cols + col - 1] +
+			var1 = H.data[(row - 1) * cols + col - 1] +
 				(seqA.pc[row - 1] == seqB.pc[col - 1] ? 2 : -1);
 			// delete_indel = H[row - 1, col] + score
-			var2 = H.dataL[(row - 1) * cols + col] +
-				(gapH.dataL[(row - 1) * cols + col] == 0 ? -2 : 0);
+			var2 = H.data[(row - 1) * cols + col] +
+				(gapH.data[(row - 1) * cols + col] == 0 ? -2 : 0);
 			// insert_indel = H[row, col - 1] + score
-			var3 = H.dataL[row * cols + (col - 1)] +
-				(gapH.dataL[row * cols + (col - 1)] == 0 ? -2 : 0);
+			var3 = H.data[row * cols + (col - 1)] +
+				(gapH.data[row * cols + (col - 1)] == 0 ? -2 : 0);
 			// bestAction = argmax([var1, var2, var3])
 			bestAction = (var1 >= var2 && var1 >= var3) ? 0 : (var2 >= var3 ? 1 : 2);
 			// if best_action in [1, 2]: gapH[row, col] = True
 			if (bestAction != 0)
-				gapH.dataL[row * cols + col] = 1;
+				gapH.data[row * cols + col] = 1;
 			// H[row, col] = max([var1, var2, var3])
-			H.dataL[row * cols + col] = bestAction == 0 ? var1 : (bestAction == 1 ? var2 : var3);
+			H.data[row * cols + col] = bestAction == 0 ? var1 : (bestAction == 1 ? var2 : var3);
 		}
 	}
 	//for (int i = 0; i < H.dataShape[0]; i++)
 	//{
 	//	for (int j = 0; j < H.dataShape[1]; j++)
-	//		printf("%3d ", H.dataL[i * H.dataShape[1] + j]);
+	//		printf("%3d ", H.data[i * H.dataShape[1] + j]);
 	//	printf("\n");
 	//}
-	return H.dataL[H.dataLen - 1];
+	return H.data[H.len - 1];
 }
 
 _LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace(ba::str seqA, ba::str seqB)
@@ -119,64 +119,64 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace(ba::str seqA, ba::str 
 	seqBLen = seqB.len;
 	rows = seqALen + 1;
 	cols = seqBLen + 1;
-	H.ReCreate(BA_Shape(2, rows, cols), "l");
-	gapH.ReCreate(BA_Shape(2, rows, cols), "l");
-	traceback.ReCreate(BA_Shape(2, rows, cols), "l");
+	memset(H.data, 0, H.len * sizeof(int));
+	memset(gapH.data, 0, gapH.len * sizeof(int));
+	memset(traceback.data, 0, traceback.len * sizeof(int));
 	for (int i = 1; i < cols; i++)
-		H.dataL[i] = i;//H[0, :] = np.arange(start=0, stop=cols)
+		H.data[i] = i;//H[0, :] = np.arange(start=0, stop=cols)
 	for (int i = 1; i < rows; i++)
-		H.dataL[i * cols] = i;//H[:, 0] = np.arange(start=0, stop=rows)
+		H.data[i * cols] = i;//H[:, 0] = np.arange(start=0, stop=rows)
 	var1 = var2 = var3 = bestAction = 0;
 	for (int row = 1; row < rows; row++)
 	{
 		for (int col = 1; col < cols; col++)
 		{
 			// up&left | leave_or_replace_letter = H[row - 1, col - 1] + score_func(a, b)
-			var1 = H.dataL[(row - 1) * cols + col - 1] +
+			var1 = H.data[(row - 1) * cols + col - 1] +
 				(seqA.pc[row - 1] == seqB.pc[col - 1] ? 2 : -1);
 			// up | delete_indel = H[row - 1, col] + score
-			var2 = H.dataL[(row - 1) * cols + col] +
-				(gapH.dataL[(row - 1) * cols + col] == 0 ? -2 : 0);
+			var2 = H.data[(row - 1) * cols + col] +
+				(gapH.data[(row - 1) * cols + col] == 0 ? -2 : 0);
 			// left | insert_indel = H[row, col - 1] + score
-			var3 = H.dataL[row * cols + (col - 1)] +
-				(gapH.dataL[row * cols + (col - 1)] == 0 ? -2 : 0);
+			var3 = H.data[row * cols + (col - 1)] +
+				(gapH.data[row * cols + (col - 1)] == 0 ? -2 : 0);
 			// bestAction = argmax([var1, var2, var3])
 			bestAction = (var1 >= var2 && var1 >= var3) ? 0 : (var2 >= var3 ? 1 : 2);
 			// if best_action in [1, 2]: gapH[row, col] = True
 			if (bestAction != 0)
-				gapH.dataL[row * cols + col] = 1;
+				gapH.data[row * cols + col] = 1;
 			// H[row, col] = max([var1, var2, var3])
-			H.dataL[row * cols + col] = bestAction == 0 ? var1 : (bestAction == 1 ? var2 : var3);
-			traceback.dataL[row * cols + col] = bestAction;
+			H.data[row * cols + col] = bestAction == 0 ? var1 : (bestAction == 1 ? var2 : var3);
+			traceback.data[row * cols + col] = bestAction;
 		}
 	}
 	//for (int i = 0; i < H.dataShape[0]; i++)
 	//{
 	//	for (int j = 0; j < H.dataShape[1]; j++)
-	//		printf("%3d ", H.dataL[i * H.dataShape[1] + j]);
+	//		printf("%3d ", H.data[i * H.dataShape[1] + j]);
 	//	printf("\n");
 	//}
-	return H.dataL[H.dataLen - 1];
+	return H.data[H.len - 1];
 }
 
 
 void SequencesSimiCacuer::VizTraceback(ba::str seqA, ba::str seqB)
 {
-	if (seqA.len + 1 != traceback.dataShape[0] || seqB.len + 1 != traceback.dataShape[1])
+	if (seqA.len + 1 != traceback.shape[0] || seqB.len + 1 != traceback.shape[1])
 	{
 		MyBA_Err("void SequencesSimiCacuer::VizTraceback(ba::str seqA, ba::str seqB) : seqA.len+1 != traceback.dataShape[0] || seqB.len+1 != traceback.dataShape[1], return none", 1);
 		return;
 	}
-	for (int i = 0; i < traceback.dataShape[0]; i++)
+	for (int i = 0; i < traceback.shape[0]; i++)
 	{
-		for (int j = 0; j < traceback.dataShape[1]; j++)
-			printf("%2c", tracebackSymbol[traceback.dataL[i * traceback.dataShape[1] + j]]);
+		for (int j = 0; j < traceback.shape[1]; j++)
+			printf("%2c", tracebackSymbol[traceback.data[i * traceback.shape[1] + j]]);
 		printf("\n");
 	}
 	printf("\nseqA:");
 	for (int i = 0, j = 0; i < seqA.len; i++, j++)
 	{
-		switch (traceback.dataL[(i + 1) * traceback.dataShape[1] + j + 1]) {
+		switch (traceback.data[(i + 1) * traceback.shape[1] + j + 1]) {
 		case 0:case 1:
 			printf("%c", seqA.pc[i]);
 			break;
@@ -190,7 +190,7 @@ void SequencesSimiCacuer::VizTraceback(ba::str seqA, ba::str seqB)
 	printf("\nseqB:");
 	for (int i = 0, j = 0; i < seqA.len && j < seqB.len; i++)
 	{
-		switch (traceback.dataL[(i + 1) * traceback.dataShape[1] + j + 1]) {
+		switch (traceback.data[(i + 1) * traceback.shape[1] + j + 1]) {
 		case 0:case 2:
 			printf("%c", seqB.pc[j]);
 			break;
@@ -212,24 +212,24 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarity2(ba::str seqA, ba::str seqB)
 	seqBLen = seqB.len;
 	rows = seqALen + 1;
 	cols = seqBLen + 1;
-	H.ReCreate(BA_Shape(2, rows, cols), "l");
+	memset(H.data, 0, H.len * sizeof(int));
 	var1 = var2 = var3 = bestAction = 0;
 	for (int row = 1; row < rows; row++)
 	{
 		for (int col = 1; col < cols; col++)
 		{
 			// up&left | leave_or_replace_letter = H[row - 1, col - 1] + score_func(a, b)
-			var1 = H.dataL[(row - 1) * cols + col - 1] +
+			var1 = H.data[(row - 1) * cols + col - 1] +
 				(seqA.pc[row - 1] == seqB.pc[col - 1] ? 1 : 0);
 			// up | delete_indel = H[row - 1, col] + score
-			var2 = H.dataL[(row - 1) * cols + col];
+			var2 = H.data[(row - 1) * cols + col];
 			// left | insert_indel = H[row, col - 1] + score
-			var3 = H.dataL[row * cols + (col - 1)];
+			var3 = H.data[row * cols + (col - 1)];
 			// H[row, col] = max([var1, var2, var3])
-			H.dataL[row * cols + col] = (var1 >= var2 && var1 >= var3) ? var1 : (var2 >= var3 ? var2 : var3);
+			H.data[row * cols + col] = (var1 >= var2 && var1 >= var3) ? var1 : (var2 >= var3 ? var2 : var3);
 		}
 	}
-	return H.dataL[H.dataLen - 1];
+	return H.data[H.len - 1];
 }
 _LL SequencesSimiCacuer::CacuSequencesSimilarity2(ba::str* seqA, ba::str* seqB)
 {
@@ -237,24 +237,24 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarity2(ba::str* seqA, ba::str* seqB)
 	seqBLen = seqB->len;
 	rows = seqALen + 1;
 	cols = seqBLen + 1;
-	H.ReCreate(BA_Shape(2, rows, cols), "l");
+	memset(H.data, 0, H.len * sizeof(int));
 	var1 = var2 = var3 = bestAction = 0;
 	for (int row = 1; row < rows; row++)
 	{
 		for (int col = 1; col < cols; col++)
 		{
 			// up&left | leave_or_replace_letter = H[row - 1, col - 1] + score_func(a, b)
-			var1 = H.dataL[(row - 1) * cols + col - 1] +
+			var1 = H.data[(row - 1) * cols + col - 1] +
 				(seqA->pc[row - 1] == seqB->pc[col - 1] ? 1 : 0);
 			// up | delete_indel = H[row - 1, col] + score
-			var2 = H.dataL[(row - 1) * cols + col];
+			var2 = H.data[(row - 1) * cols + col];
 			// left | insert_indel = H[row, col - 1] + score
-			var3 = H.dataL[row * cols + (col - 1)];
+			var3 = H.data[row * cols + (col - 1)];
 			// H[row, col] = max([var1, var2, var3])
-			H.dataL[row * cols + col] = (var1 >= var2 && var1 >= var3) ? var1 : (var2 >= var3 ? var2 : var3);
+			H.data[row * cols + col] = (var1 >= var2 && var1 >= var3) ? var1 : (var2 >= var3 ? var2 : var3);
 		}
 	}
-	return H.dataL[H.dataLen - 1];
+	return H.data[H.len - 1];
 }
 
 _LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace2(ba::str seqA, ba::str seqB)
@@ -263,54 +263,54 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace2(ba::str seqA, ba::str
 	seqBLen = seqB.len;
 	rows = seqALen + 1;
 	cols = seqBLen + 1;
-	H.ReCreate(BA_Shape(2, rows, cols), "l");
-	traceback.ReCreate(BA_Shape(2, rows, cols), "l");
+	memset(H.data, 0, H.len * sizeof(int));
+	memset(traceback.data, 0, traceback.len * sizeof(int));
 	var1 = var2 = var3 = bestAction = 0;
 	for (int row = 1; row < rows; row++)
 	{
 		for (int col = 1; col < cols; col++)
 		{
 			// up&left | leave_or_replace_letter = H[row - 1, col - 1] + score_func(a, b)
-			var1 = H.dataL[(row - 1) * cols + col - 1] +
+			var1 = H.data[(row - 1) * cols + col - 1] +
 				(seqA.pc[row - 1] == seqB.pc[col - 1] ? 1 : 0);
 			// up | delete_indel = H[row - 1, col] + score
-			var2 = H.dataL[(row - 1) * cols + col];
+			var2 = H.data[(row - 1) * cols + col];
 			// left | insert_indel = H[row, col - 1] + score
-			var3 = H.dataL[row * cols + (col - 1)];
+			var3 = H.data[row * cols + (col - 1)];
 			// bestAction = argmax([var1, var2, var3])
 			bestAction = (var1 >= var2 && var1 >= var3) ? 0 : (var2 >= var3 ? 1 : 2);
 			// H[row, col] = max([var1, var2, var3])
-			H.dataL[row * cols + col] = bestAction == 0 ? var1 : (bestAction == 1 ? var2 : var3);
-			traceback.dataL[row * cols + col] = bestAction;
+			H.data[row * cols + col] = bestAction == 0 ? var1 : (bestAction == 1 ? var2 : var3);
+			traceback.data[row * cols + col] = bestAction;
 		}
 	}
 	//for (int i = 0; i < H.dataShape[0]; i++)
 	//{
 	//	for (int j = 0; j < H.dataShape[1]; j++)
-	//		printf("%3d ", H.dataL[i * H.dataShape[1] + j]);
+	//		printf("%3d ", H.data[i * H.dataShape[1] + j]);
 	//	printf("\n");
 	//}
-	return H.dataL[H.dataLen - 1];
+	return H.data[H.len - 1];
 }
 
 void SequencesSimiCacuer::VizTraceback2(ba::str seqA, ba::str seqB)
 {
-	if (seqA.len + 1 != traceback.dataShape[0] || seqB.len + 1 != traceback.dataShape[1])
+	if (seqA.len + 1 != traceback.shape[0] || seqB.len + 1 != traceback.shape[1])
 	{
 		MyBA_Err("void SequencesSimiCacuer::VizTraceback(ba::str seqA, ba::str seqB) : seqA.len+1 != traceback.dataShape[0] || seqB.len+1 != traceback.dataShape[1], return none", 1);
 		return;
 	}
-	for (int i = 0; i < H.dataShape[0]; i++)
+	for (int i = 0; i < H.shape[0]; i++)
 	{
-		for (int j = 0; j < H.dataShape[1]; j++)
-			printf("%3lld ", H.dataL[i * H.dataShape[1] + j]);
+		for (int j = 0; j < H.shape[1]; j++)
+			printf("%3lld ", H.data[i * H.shape[1] + j]);
 		printf("\n");
 	}
 	printf("\n");
-	for (int i = 0; i < H.dataShape[0]; i++)
+	for (int i = 0; i < H.shape[0]; i++)
 	{
-		for (int j = 0; j < H.dataShape[1]; j++)
-			printf("%3lld ", traceback.dataL[i * H.dataShape[1] + j]);
+		for (int j = 0; j < H.shape[1]; j++)
+			printf("%3lld ", traceback.data[i * H.shape[1] + j]);
 		printf("\n");
 	}
 	_ULL maxLen = seqA.len > seqB.len ? seqA.len : seqB.len;
@@ -318,7 +318,7 @@ void SequencesSimiCacuer::VizTraceback2(ba::str seqA, ba::str seqB)
 	ba::str seqBs = ba::str("_").Repeat(maxLen);
 	for (_LL seqAIdx = seqA.len, seqBIdx = seqB.len, seqIdx = maxLen - 1; seqAIdx >= 0 && seqBIdx >= 0 && seqIdx >= 0; seqIdx--)
 	{
-		switch (traceback.dataL[(seqAIdx) * traceback.dataShape[1] + seqBIdx]) {
+		switch (traceback.data[(seqAIdx) * traceback.shape[1] + seqBIdx]) {
 		case 0:
 			seqAs.pc[seqIdx] = seqA.pc[seqAIdx - 1];
 			seqBs.pc[seqIdx] = seqB.pc[seqBIdx - 1];
