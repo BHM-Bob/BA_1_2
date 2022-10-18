@@ -23,7 +23,8 @@ void ba::test::_comprehensive::tensor(void)
 	ba::tensor t2 = ba::tensor({ 5, 5 }, 2.f);
 	ba::tensor r = t.map(t2, [&](float r, float l) {return r + l; });
 	PPX(r[3](3));
-	PPX((t - t2*t2)[3](3));
+	PPX(((t) - t2*t2)[3](3));
+	t.map([&](float r) {return r + 2.0; });
 
 	ba::tensor t3 = ba::tensor({ 5, 5 }, (char*)1);
 	PPX(t3.toType(0ULL, [&](char* p) {return (_ULL)p; })[3](3));
