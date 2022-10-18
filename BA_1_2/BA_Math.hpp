@@ -53,11 +53,15 @@ namespace ba
 		Ty& operator()(_LL idx);
 		void operator=(std::vector<Ty> data);
 
+		//func will be a Lambda as auto func = [&](Ty i){return (toTy)i;};
+		template<typename toTy>
+		tensor<toTy>& cast(toTy defaultValue);
+
 		//func must be a return of std::bind(callableFunc)
 		//    and toTy callableFunc(Ty i){}
 		//or func must be a Lambda as auto func = [&](Ty i){return (toTy)i;};
 		template<typename toTy, typename funcTy>
-		tensor<toTy>& toType(toTy defaultValue, funcTy func);
+		tensor<toTy>& cast(toTy defaultValue, funcTy func);
 
 		//func must be a return of std::bind(callableFunc, std::_PlaceHolder _1, Ty other)
 		//    and Ty callableFunc(Ty r, Ty l){}
@@ -170,8 +174,19 @@ namespace ba
 		}
 	}
 	template<typename Ty>
+	template<typename toTy>
+	inline tensor<toTy>& tensor<Ty>::cast(toTy defaultValue)
+	{
+		tensor<toTy>* pt = new tensor<toTy>(shape);
+		Ty* pt1 = data;
+		toTy* pt3 = pt->data;
+		for (_LL i = 0; i < len; i++, pt1++, pt3++)
+			*pt3 = (toTy)(*pt1);
+		return *pt;
+	}
+	template<typename Ty>
 	template<typename toTy, typename funcTy>
-	inline tensor<toTy>& ba::tensor<Ty>::toType(toTy defaultValue, funcTy func)
+	inline tensor<toTy>& ba::tensor<Ty>::cast(toTy defaultValue, funcTy func)
 	{
 		tensor<toTy>* pt = new tensor<toTy>(shape);
 		Ty* pt1 = data;
@@ -227,7 +242,7 @@ namespace ba
 	template<typename Ty>
 	inline tensor<Ty>& ba::tensor<Ty>::operator+(Ty& other)
 	{
-		return this->map([&](Ty r) {return r + other; });
+		return t.map([&](Ty r) {return r + other; });
 	}
 	template<typename Ty>
 	inline tensor<Ty>& ba::tensor<Ty>::operator+(tensor<Ty>& other)
