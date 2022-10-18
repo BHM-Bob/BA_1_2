@@ -242,7 +242,7 @@ namespace ba
 	template<typename Ty>
 	inline tensor<Ty>& ba::tensor<Ty>::operator+(Ty& other)
 	{
-		return t.map([&](Ty r) {return r + other; });
+		return this->map(other, [&](Ty r) {return r + other; });
 	}
 	template<typename Ty>
 	inline tensor<Ty>& ba::tensor<Ty>::operator+(tensor<Ty>& other)

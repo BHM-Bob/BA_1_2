@@ -18,7 +18,7 @@ MyBA* pba;
 
 float MyBA_Ver(void)
 {
-	return 1.3920;
+	return 1.3920f;
 	/*
 	* 1.1000 : 1.1.0.0 :2020年08月15日：MyUI, MyDir(in C)
 	* 1.2000 : 1.2.0.0 :2021年03月28日：MyBA, List

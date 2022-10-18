@@ -4,7 +4,6 @@
 //2021年11月24日 21点11分
 
 //#define USE_OPENCV
-//#define USE_WINDOWS
 
 #ifndef BA_TEST_H
 #define BA_TEST_H
