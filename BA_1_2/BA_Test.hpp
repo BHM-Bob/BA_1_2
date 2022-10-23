@@ -58,6 +58,10 @@ namespace ba
             void jiebaDealFile(void);
             void jiebaClass(void);
         }
+        namespace _ui
+        {
+            void initSDL2(void);
+        }
         namespace _comprehensive
         {
             void tensor(void);
