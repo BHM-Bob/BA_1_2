@@ -165,12 +165,9 @@ ba::ui::colorSur* ba::ui::colorSur::cacu(void)
 	long j = 0;
 	float k = 0;
 	float k2 = 0;
-
-	float* pl = len->data;
-	for (colorSurDot* pd = dots->data; pd != dots->lastAddress; pd++, pl++)
-	{
-		dx = re_paint.x - pd->x;
-		dy = re_paint.y - pd->y;
+	dots->selfmap(*len, [&](colorSurDot* r, float* l) {
+		dx = re_paint.x - r->x;
+		dy = re_paint.y - r->y;
 		k = (float)(dx * dx + dy * dy);
 		if (k <= 0.f)
 			k = -k + 1.f;
@@ -178,17 +175,20 @@ ba::ui::colorSur* ba::ui::colorSur::cacu(void)
 		j = 0x5f3759df - (j >> 1);             // what the fuck? 
 		k2 = *(float*)&j;
 		//originaly is k2 * ( 1.5f - ( 0.5*k * k2 * k2 ) ) but to use plen[i] = plen[i]*plen[i];
-		*pl = k2 * k2 * (1.5f - (0.5f * k * k2 * k2));
-		sumlen += *pl;
-	}
-	lv->selfmap(*len, [&](float* r, float* l) {
-		*r = *l / sumlen;
+		*l = k2 * k2 * (1.5f - (0.5f * k * k2 * k2));
+		sumlen += *l;
 		});
+	lv->selfmap(*len, [&](float* r, float* l) { *r = *l / sumlen; });
+	//col[0] = (int)(lv->data[0] * dots->data[0].col[0]) + (int)(lv->data[1] * dots->data[1].col[0]) + (int)(lv->data[2] * dots->data[2].col[0]) + (int)(lv->data[3] * dots->data[3].col[0]);
+	//col[1] = (int)(lv->data[0] * dots->data[0].col[1]) + (int)(lv->data[1] * dots->data[1].col[1]) + (int)(lv->data[2] * dots->data[2].col[1]) + (int)(lv->data[3] * dots->data[3].col[1]);
+	//col[2] = (int)(lv->data[0] * dots->data[0].col[2]) + (int)(lv->data[1] * dots->data[1].col[2]) + (int)(lv->data[2] * dots->data[2].col[2]) + (int)(lv->data[3] * dots->data[3].col[2]);
+	memset(col, 0, 3 * sizeof(int));
 	dots->selfmap(*lv, [&](colorSurDot* r, float* l) {
 		col[0] += (int)((*l) * (float)r->col[0]);
-	col[1] += (int)((*l) * (float)r->col[1]);
-	col[2] += (int)((*l) * (float)r->col[2]);
+		col[1] += (int)((*l) * (float)r->col[1]);
+		col[2] += (int)((*l) * (float)r->col[2]);
 		});
+
 	col[3] = 255;
 	return this;
 }
