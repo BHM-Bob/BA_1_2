@@ -14,6 +14,29 @@ using json = nlohmann::json;
 
 std::mutex m1;
 
+
+void ba::test::_cmd::open(void)
+{
+	int argc = 4;
+	char** argvs = MCALLOC(argc, char*);
+	argvs[1] = mstrdup("=open");
+	argvs[2] = mstrdup("-i");
+	argvs[3] = mstrdup("[D:\\Bio\\BioInfoLessonSTU\\Class4\\data\\dreb2_AtOs.fasta,D:\\Bio\\BioInfoLessonSTU\\Class4\\data\\dreb2_FtAtOs.fasta]");
+	MyBA_CMD(argc, argvs);
+}
+
+void ba::test::_cmd::openlog(void)
+{
+	int argc = 2;
+	char** argvs = MCALLOC(argc, char*);
+	argvs[1] = mstrdup("=openlog");
+	MyBA_CMD(argc, argvs);
+}
+
+void ba::test::_cmd::_missMatch(void)
+{
+}
+
 void ba::test::_comprehensive::tensor(void)
 {
 	ba::tensor t = ba::tensor({ 5, 5 }, 0.f);

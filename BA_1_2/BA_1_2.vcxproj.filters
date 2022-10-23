@@ -48,9 +48,6 @@
     <ClCompile Include="test_json.cpp">
       <Filter>源文件\tests</Filter>
     </ClCompile>
-    <ClCompile Include="test_cmd.cpp">
-      <Filter>源文件\tests</Filter>
-    </ClCompile>
     <ClCompile Include="test_thread.cpp">
       <Filter>源文件\tests</Filter>
     </ClCompile>

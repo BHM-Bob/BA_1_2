@@ -153,7 +153,6 @@
     <ClCompile Include="BA_Jieba.cpp" />
     <ClCompile Include="BA_Mem.cpp" />
     <ClCompile Include="BA_String.cpp" />
-    <ClCompile Include="test_cmd.cpp" />
     <ClCompile Include="test_comprehensive.cpp" />
     <ClCompile Include="test_jieba.cpp" />
     <ClCompile Include="test_json.cpp" />
