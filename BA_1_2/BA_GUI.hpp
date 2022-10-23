@@ -48,23 +48,6 @@ namespace ba
 			float fy = 0.f;
 			float b = 0.f;
 		};
-		class colorSur
-		{
-		public:
-			SDL_Rect re = { 0 };
-			int sumdot = 0;
-			tensor<colorSurDot>* dots = NULL;
-			tensor<float>* len = NULL;
-			tensor<float>* lv = NULL;
-			int col[4] = { 0 };
-			SDL_Surface* distSur = NULL;//外部非NULL Surface，需绘制
-			SDL_Rect re_paint = { 0, 0, 1, 1 };
-
-			colorSur(SDL_Surface* _distSur, int _sumdot = 4);
-			colorSur* cacu(void);
-			colorSur* update(void);
-			void destroy(void);
-		};
 		class colorText : BA_Base
 		{
 		public:
@@ -124,12 +107,28 @@ namespace ba
 			void rendRect(void);
 			bool checkPressOn(SDL_Event* peve);
 		};
+		class colorSur : public rect
+		{
+		public:
+			int sumdot = 0;
+			tensor<colorSurDot>* dots = NULL;
+			tensor<float>* len = NULL;
+			tensor<float>* lv = NULL;
+			int col[4] = { 0 };
+			SDL_Rect re_paint = { 0, 0, 1, 1 };
+
+			colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos = { 0,0,0,0 }, int _sumdot = 4);
+			colorSur* cacu(void);
+			colorSur* update(void);
+			SDL_Texture* getTex(void);
+			void destroy(void);
+		};
 		class label : public rect
 		{
 		public:
 			std::string text;
 
-			label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,0 },
+			label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
 				SDL_Rect pos = { 0,0,0,0 }, SDL_Color bgc = { 255,255,255,0 });
 		};
 		class button : public label

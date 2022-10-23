@@ -137,110 +137,6 @@ SDL_Texture* ba::ui::getImageTex(SDL_Renderer* renderer, const char* path)
 			path, ", return NULL", NULL);
 	return SDL_CreateTextureFromSurface(renderer, pte);
 }
-
-ba::ui::colorSur::colorSur(SDL_Surface* _distSur, int _sumdot)
-{
-	distSur = _distSur;
-	sumdot = _sumdot;
-	re.x = re.y = 0;
-	re.w = distSur ? distSur->w : 0;
-	re.h = distSur ? distSur->h : 0;
-	dots = new tensor<colorSurDot>({ _sumdot });
-	lv = new tensor<float>({ _sumdot });
-	len = new tensor<float>({ _sumdot });
-	dots->selfmap([&](colorSurDot* r) {
-		r->b = 500.f / (float)(1.f + rand() % 200);
-	r->x = 1 + rand() % (re.w - 1);
-	r->y = 1 + rand() % (re.h - 1);
-	r->fx = r->fy = 1.0;
-	ProduceRainbowCol(r->col, &(r->b));
-		});
-}
-ba::ui::colorSur* ba::ui::colorSur::cacu(void)
-{
-	float sumlen = 0.f;
-	float sumlength = 0.f;
-	long dx = 0;
-	long dy = 0;
-	long j = 0;
-	float k = 0;
-	float k2 = 0;
-	dots->selfmap(*len, [&](colorSurDot* r, float* l) {
-		dx = re_paint.x - r->x;
-		dy = re_paint.y - r->y;
-		k = (float)(dx * dx + dy * dy);
-		if (k <= 0.f)
-			k = -k + 1.f;
-		j = *(long*)&k;                        // evil floating point bit level hacking
-		j = 0x5f3759df - (j >> 1);             // what the fuck? 
-		k2 = *(float*)&j;
-		//originaly is k2 * ( 1.5f - ( 0.5*k * k2 * k2 ) ) but to use plen[i] = plen[i]*plen[i];
-		*l = k2 * k2 * (1.5f - (0.5f * k * k2 * k2));
-		sumlen += *l;
-		});
-	lv->selfmap(*len, [&](float* r, float* l) { *r = *l / sumlen; });
-	//col[0] = (int)(lv->data[0] * dots->data[0].col[0]) + (int)(lv->data[1] * dots->data[1].col[0]) + (int)(lv->data[2] * dots->data[2].col[0]) + (int)(lv->data[3] * dots->data[3].col[0]);
-	//col[1] = (int)(lv->data[0] * dots->data[0].col[1]) + (int)(lv->data[1] * dots->data[1].col[1]) + (int)(lv->data[2] * dots->data[2].col[1]) + (int)(lv->data[3] * dots->data[3].col[1]);
-	//col[2] = (int)(lv->data[0] * dots->data[0].col[2]) + (int)(lv->data[1] * dots->data[1].col[2]) + (int)(lv->data[2] * dots->data[2].col[2]) + (int)(lv->data[3] * dots->data[3].col[2]);
-	memset(col, 0, 3 * sizeof(int));
-	dots->selfmap(*lv, [&](colorSurDot* r, float* l) {
-		col[0] += (int)((*l) * (float)r->col[0]);
-		col[1] += (int)((*l) * (float)r->col[1]);
-		col[2] += (int)((*l) * (float)r->col[2]);
-		});
-
-	col[3] = 255;
-	return this;
-}
-ba::ui::colorSur* ba::ui::colorSur::update(void)
-{
-	if (distSur == NULL)
-		return (colorSur*)MyBA_Err("ba::ui::colorSur::update: distSur == NULL, return NULL", 1);
-	for (colorSurDot* pd = dots->data; pd != dots->lastAddress; pd++)
-	{
-		pd->b += 0.05f;
-		ProduceRainbowCol(pd->col, &(pd->b));
-		pd->x += (int)(2.0f * (pd->fx));//PPD((pd->fx)*cos(0.01*(pd->b)));
-		if (pd->x < 1)
-		{
-			pd->fx = -pd->fx;
-			pd->x = 1;
-		}
-		if (pd->x > re.w)
-		{
-			pd->fx = -pd->fx;
-			pd->x = re.w - 1;
-		}
-		pd->y += (int)(2.0f * (pd->fy));//PPD((pd->fy)*sin(0.01*(pd->b)));
-		if (pd->y < 1)
-		{
-			pd->fy = -pd->fy;
-			pd->y = 1;
-		}
-		if (pd->y > re.h)
-		{
-			pd->fy = -pd->fy;
-			pd->y = re.h - 1;
-		}
-	}
-
-	for (re_paint.y = 0; (re_paint.y) < (re.h); (re_paint.y)++)
-	{
-		for (re_paint.x = 0; (re_paint.x) < (re.w); (re_paint.x)++)
-		{
-			cacu();
-			SDL_FillRect(distSur, &(re_paint),
-				SDL_MapRGBA(distSur->format, col[0], col[1], col[2], col[3]));
-		}
-	}
-	return this;
-}
-void ba::ui::colorSur::destroy(void)
-{
-	delete dots;
-	delete len;
-	delete lv;
-}
 //bool ba::ui::MyUI_ColorText_Destroy(MyUI_ColorText* pct)
 //{
 //	MyBA_Free_R(mem);
@@ -393,7 +289,6 @@ void ba::ui::rect::rendRect(void)
 		MyBA_Err("ba::ui::rect::rendRect: ui is not assigned", 1);
 	}
 }
-
 bool ba::ui::rect::checkPressOn(SDL_Event* peve)
 {
 	SDL_PollEvent(peve);
@@ -407,6 +302,122 @@ bool ba::ui::rect::checkPressOn(SDL_Event* peve)
 	return 0;
 }
 
+
+ba::ui::colorSur::colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos, int _sumdot)
+	: rect(pos, {0,0,0,0})
+{
+	if(_distSur)
+	{
+		sur = _distSur;
+		re.w = _distSur->w;
+		re.h = _distSur->h;
+	}
+	else
+	{
+		sur = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
+	}
+	ui = _ui;
+	sumdot = _sumdot;
+	dots = new tensor<colorSurDot>({ _sumdot });
+	lv = new tensor<float>({ _sumdot });
+	len = new tensor<float>({ _sumdot });
+	dots->selfmap([&](colorSurDot* r) {
+		r->b = 500.f / (float)(1.f + rand() % 200);
+	r->x = 1 + rand() % (re.w - 1);
+	r->y = 1 + rand() % (re.h - 1);
+	r->fx = r->fy = 1.0;
+	ProduceRainbowCol(r->col, &(r->b));
+	//r->col[3] = (int)(127.f * sin(0.8f * r->b)) + 0;
+		});
+}
+ba::ui::colorSur* ba::ui::colorSur::cacu(void)
+{
+	float sumlen = 0.f;
+	float sumlength = 0.f;
+	long dx = 0;
+	long dy = 0;
+	long j = 0;
+	float k = 0;
+	float k2 = 0;
+	dots->selfmap(*len, [&](colorSurDot* r, float* l) {
+		dx = re_paint.x - r->x;
+	dy = re_paint.y - r->y;
+	k = (float)(dx * dx + dy * dy);
+	if (k <= 0.f)
+		k = -k + 1.f;
+	j = *(long*)&k;                        // evil floating point bit level hacking
+	j = 0x5f3759df - (j >> 1);             // what the fuck? 
+	k2 = *(float*)&j;
+	//originaly is k2 * ( 1.5f - ( 0.5*k * k2 * k2 ) ) but to use plen[i] = plen[i]*plen[i];
+	*l = k2 * k2 * (1.5f - (0.5f * k * k2 * k2));
+	sumlen += *l;
+		});
+	lv->selfmap(*len, [&](float* r, float* l) { *r = *l / sumlen; });
+	memset(col, 0, 3 * sizeof(int));
+	dots->selfmap(*lv, [&](colorSurDot* r, float* l) {
+		col[0] += (int)((*l) * (float)r->col[0]);
+	col[1] += (int)((*l) * (float)r->col[1]);
+	col[2] += (int)((*l) * (float)r->col[2]);
+	//col[3] += (int)((*l) * (float)r->col[3]);
+		});
+	col[3] = 255;
+	return this;
+}
+ba::ui::colorSur* ba::ui::colorSur::update(void)
+{
+	for (colorSurDot* pd = dots->data; pd != dots->lastAddress; pd++)
+	{
+		pd->b += 0.05f;
+		ProduceRainbowCol(pd->col, &(pd->b));
+		pd->x += (int)(2.0f * (pd->fx));//PPD((pd->fx)*cos(0.01*(pd->b)));
+		if (pd->x < 1)
+		{
+			pd->fx = -pd->fx;
+			pd->x = 1;
+		}
+		if (pd->x > re.w)
+		{
+			pd->fx = -pd->fx;
+			pd->x = re.w - 1;
+		}
+		pd->y += (int)(2.0f * (pd->fy));//PPD((pd->fy)*sin(0.01*(pd->b)));
+		if (pd->y < 1)
+		{
+			pd->fy = -pd->fy;
+			pd->y = 1;
+		}
+		if (pd->y > re.h)
+		{
+			pd->fy = -pd->fy;
+			pd->y = re.h - 1;
+		}
+	}
+
+	for (re_paint.y = 0; (re_paint.y) < (re.h); (re_paint.y)++)
+	{
+		for (re_paint.x = 0; (re_paint.x) < (re.w); (re_paint.x)++)
+		{
+			cacu();
+			SDL_FillRect(sur, &(re_paint),
+				SDL_MapRGBA(sur->format, col[0], col[1], col[2], col[3]));
+		}
+	}
+	return this;
+}
+SDL_Texture* ba::ui::colorSur::getTex(void)
+{
+	update();
+	if (tex)
+		SDL_DestroyTexture(tex);
+	tex = SDL_CreateTextureFromSurface(ui->rend, sur);
+	return tex;
+}
+void ba::ui::colorSur::destroy(void)
+{
+	delete dots;
+	delete len;
+	delete lv;
+}
 ba::ui::label::label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol,
 	SDL_Rect pos, SDL_Color bgc)
 	: rect(pos, bgc)
