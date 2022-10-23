@@ -39,6 +39,7 @@ namespace ba
 		std::vector<_LL> shape;
 		_LL len = 1;
 		Ty* data = NULL;
+		Ty* lastAddress = NULL;
 
 		tensor(std::vector<_LL> _shape, Ty defaultValue = Ty());
 		//recreate -> memset
@@ -63,11 +64,23 @@ namespace ba
 		template<typename toTy, typename funcTy>
 		tensor<toTy>& cast(toTy defaultValue, funcTy func);
 
-		//func must be a return of std::bind(callableFunc, std::_PlaceHolder _1, Ty other)
+		//func must be a return of std::bind(callableFunc, std::_PlaceHolder _1)
+		//    and Ty callableFunc(Ty* r){}
+		//or func must be a Lambda as auto func = [&](Ty* r){}
+		template<typename funcTy>
+		void selfmap(funcTy func);
+
+		//func must be a return of std::bind(callableFunc, std::_PlaceHolder _1)
 		//    and Ty callableFunc(Ty r, Ty l){}
 		//or func must be a Lambda as auto func = [&](Ty r){other}
 		template<typename funcTy>
 		tensor<Ty>& map(funcTy func);
+
+		//func must be a return of std::bind(callableFunc)
+		//    and Ty callableFunc(Ty* r, otherTy* l){}
+		//or func must be a Lambda as auto func = [&](Ty* r, otherTy* l){}
+		template<typename otherTy, typename funcTy>
+		void selfmap(tensor<otherTy>& other, funcTy func);
 
 		//func must be a return of std::bind(callableFunc)
 		//    and Ty callableFunc(Ty r, Ty l){}
@@ -111,6 +124,7 @@ namespace ba
 			else
 			{
 				data = new Ty[len];
+				lastAddress = data + len;
 				Ty* tmp = data;
 				for (_LL i = 0; i < len; i++, tmp++)
 					*tmp = defaultValue;
@@ -197,6 +211,14 @@ namespace ba
 	}
 	template<typename Ty>
 	template<typename funcTy>
+	inline void ba::tensor<Ty>::selfmap(funcTy func)
+	{
+		Ty* pt1 = data;
+		for (_LL i = 0; i < len; i++, pt1++)
+			func(pt1);
+	}
+	template<typename Ty>
+	template<typename funcTy>
 	inline tensor<Ty>& ba::tensor<Ty>::map(funcTy func)
 	{
 		tensor<Ty>* pt = new tensor<Ty>(shape);
@@ -205,6 +227,22 @@ namespace ba
 		for (_LL i = 0; i < len; i++, pt1++, pt3++)
 			*pt3 = func(*pt1);
 		return *pt;
+	}
+	template<typename Ty>
+	template<typename otherTy, typename funcTy>
+	inline void tensor<Ty>::selfmap(tensor<otherTy>& other, funcTy func)
+	{
+		if (shape == other.shape)
+		{
+			Ty* pt1 = data;
+			otherTy* pt2 = other.data;
+			for (_LL i = 0; i < len; i++, pt1++, pt2++)
+				func(pt1, pt2);
+		}
+		else
+		{
+			MyBA_Err("inline void tensor<Ty>::selfmap(tensor<otherTy>& other, funcTy func)::shape != other.shape, skip", 1);
+		}
 	}
 	template<typename Ty>
 	template<typename funcTy>
