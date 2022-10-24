@@ -47,6 +47,7 @@ namespace ba
 		Ty sum(void);
 
 		char* str(bool toStr = false, bool printOut = true);
+		tensor<Ty>& sub(_LL from, _LL to);
 
 		void setErrValue(Ty _errV);
 
@@ -130,6 +131,20 @@ namespace ba
 					*tmp = defaultValue;
 			}
 		}
+	}
+	template<typename Ty>
+	inline tensor<Ty>& tensor<Ty>::sub(_LL from, _LL to)
+	{
+		if (shape.size() != 1 || from >= to || from < 0 || to > len)
+		{
+			MyBA_Err("tensor<Ty>& tensor<Ty>::sub:shapeLen != 1 || from >= to || from < 0 || to > dataLen, return *this", 1);
+			return *this;
+		}
+		tensor<Ty>* ret = new tensor<Ty>({ to - from });
+		Ty* p1 = data + from, * p2 = ret.data;
+		for (_LL idxR = 0; idxR < ret.len; p1++, p2++, idxR++)
+			*p2 = *p1;
+		return ret;
 	}
 	template<typename Ty>
 	inline void tensor<Ty>::setErrValue(Ty _errV)
