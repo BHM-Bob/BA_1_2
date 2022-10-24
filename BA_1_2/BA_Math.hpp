@@ -41,15 +41,18 @@ namespace ba
 		Ty* data = NULL;
 		Ty* lastAddress = NULL;
 
-		tensor(std::vector<_LL> _shape, Ty defaultValue = Ty());
+		tensor(std::vector<_LL> _shape = {0}, Ty defaultValue = Ty());
 		//recreate -> memset
 
-		Ty sum(void);
+		template<typename toTy>
+		toTy sum(toTy ori);
 
 		char* str(bool toStr = false, bool printOut = true);
 		tensor<Ty>& sub(_LL from, _LL to);
 		//share same data in mem
 		tensor<Ty>& refsub(_LL from, _LL to);
+		template<typename maskTy>
+		tensor<Ty>& masksub(tensor<maskTy> mask);
 
 		void setErrValue(Ty _errV);
 
@@ -161,6 +164,30 @@ namespace ba
 		ret->len = len;
 		ret->data = data + from;
 		ret->lastAddress = data + to;
+		return *ret;
+	}
+	template<typename Ty>
+	template<typename toTy>
+	inline toTy tensor<Ty>::sum(toTy ori)
+	{
+		for (Ty* pt = data; pt != lastAddress; pt++)
+			ori += (toTy)*pt;
+		return ori;
+	}
+	template<typename Ty>
+	template<typename maskTy>
+	inline tensor<Ty>& tensor<Ty>::masksub(tensor<maskTy> mask)
+	{
+		if (shape != mask.shape)
+		{
+			MyBA_Err("tensor<Ty>& tensor<Ty>::masksub(tensor<maskTy> mask)::shape != mask.shape, skip", 1);
+			return *this;
+		}
+		_LL newLen = mask.sum(0);
+		tensor<Ty>* ret = new tensor<Ty>({ newLen });
+		for (_LL i = 0, j = 0; i < len; i++)
+			if ((bool)mask[i])
+				ret[j++] = data[i];
 		return *ret;
 	}
 	template<typename Ty>

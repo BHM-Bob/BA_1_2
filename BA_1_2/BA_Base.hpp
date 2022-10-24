@@ -24,6 +24,7 @@
 #include <random>
 // STL
 #include <algorithm>
+#include <numeric>
 #include <functional>
 #include <array>
 #include <vector>
