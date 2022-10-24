@@ -68,7 +68,7 @@ namespace ba
 		//    and Ty callableFunc(Ty* r){}
 		//or func must be a Lambda as auto func = [&](Ty* r){}
 		template<typename funcTy>
-		void selfmap(funcTy func);
+		tensor<Ty>& selfmap(funcTy func);
 
 		//func must be a return of std::bind(callableFunc, std::_PlaceHolder _1)
 		//    and Ty callableFunc(Ty r, Ty l){}
@@ -80,7 +80,7 @@ namespace ba
 		//    and Ty callableFunc(Ty* r, otherTy* l){}
 		//or func must be a Lambda as auto func = [&](Ty* r, otherTy* l){}
 		template<typename otherTy, typename funcTy>
-		void selfmap(tensor<otherTy>& other, funcTy func);
+		tensor<Ty>& selfmap(tensor<otherTy>& other, funcTy func);
 
 		//func must be a return of std::bind(callableFunc)
 		//    and Ty callableFunc(Ty r, Ty l){}
@@ -211,11 +211,12 @@ namespace ba
 	}
 	template<typename Ty>
 	template<typename funcTy>
-	inline void ba::tensor<Ty>::selfmap(funcTy func)
+	inline tensor<Ty>& ba::tensor<Ty>::selfmap(funcTy func)
 	{
 		Ty* pt1 = data;
 		for (_LL i = 0; i < len; i++, pt1++)
 			func(pt1);
+		return *this;
 	}
 	template<typename Ty>
 	template<typename funcTy>
@@ -230,7 +231,7 @@ namespace ba
 	}
 	template<typename Ty>
 	template<typename otherTy, typename funcTy>
-	inline void tensor<Ty>::selfmap(tensor<otherTy>& other, funcTy func)
+	inline tensor<Ty>& tensor<Ty>::selfmap(tensor<otherTy>& other, funcTy func)
 	{
 		if (shape == other.shape)
 		{
@@ -243,6 +244,7 @@ namespace ba
 		{
 			MyBA_Err("inline void tensor<Ty>::selfmap(tensor<otherTy>& other, funcTy func)::shape != other.shape, skip", 1);
 		}
+		return *this;
 	}
 	template<typename Ty>
 	template<typename funcTy>
