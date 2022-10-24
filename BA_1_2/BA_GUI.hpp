@@ -161,7 +161,7 @@ namespace ba
 			window* win = nullptr;
 			buttons* butts = new buttons();
 
-			std::map<const char*, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
+			std::unordered_map<const char*, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
 
 
 			QUI(const char* titlepc = "QUI", int winw = 800, int winh = 500,
