@@ -113,16 +113,16 @@ namespace ba
 		{
 		public:
 			std::string text;
-
+			// TODO : can not rend a white font ???
 			label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
-				SDL_Rect pos = { 0,0,0,0 }, SDL_Color bgc = { 255,255,255,0 });
+				SDL_Rect pos = {  }, SDL_Color bgc = { });
 		};
 		class button : public label
 		{
 		public:
 			colorSur* cs = NULL;
-			button(QUI* _ui, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,0 },
-				SDL_Rect pos = { 0,0,0,0 }, SDL_Color bgc = { 255,255,255,0 });
+			button(QUI* _ui, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
+				SDL_Rect pos = {  }, SDL_Color bgc = {  });
 		};
 
 		class buttons : public BA_Base
@@ -171,7 +171,7 @@ namespace ba
 			window* win = nullptr;
 			buttons* butts = new buttons(this);
 
-			std::unordered_map<const char*, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
+			std::unordered_map<std::string, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
 
 
 			QUI(const char* titlepc = "QUI", int winw = 800, int winh = 500,

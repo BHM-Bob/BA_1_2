@@ -18,7 +18,7 @@ MyBA* pba;
 
 float MyBA_Ver(void)
 {
-	return 1.3920f;
+	return 1.4000f;
 	/*
 	* 1.1000 : 1.1.0.0 :2020年08月15日：MyUI, MyDir(in C)
 	* 1.2000 : 1.2.0.0 :2021年03月28日：MyBA, List
@@ -42,6 +42,7 @@ float MyBA_Ver(void)
 	* 1.3750 : 2.8.5.0 :2022年10月07日: Console分支：删除GUI，删除部分无用组件代码(包括LOFE)，部分添加namespace，添加开源项目nlohmann/json
 	* 1.3820 : 2.9.2.0 :2022年10月09日: Console分支：添加开源项目cppjieba, 添加字符编码处理能力
 	* 1.3920 : 2.10.2.0:2022年10月18日: Console分支：添加开源项目glob, 添加ba::tensor, 删除BA_Array
+	* 1.4000 : 2.11.0.0:2022年10月24日: GUI分支: 添加GUI模块
 	*/
 }
 
