@@ -120,18 +120,28 @@ namespace ba
 		class button : public label
 		{
 		public:
+			colorSur* cs = NULL;
 			button(QUI* _ui, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,0 },
 				SDL_Rect pos = { 0,0,0,0 }, SDL_Color bgc = { 255,255,255,0 });
 		};
 
-		class buttons
+		class buttons : public BA_Base
 		{
 		public:
-			std::map<const char*, int> events;//1 left ; 2 right
-			std::map<const char*, int> statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
-			std::map<const char*, button*> butts;//按钮列表
-			badict eveFunc = badict(true);// int (*)(void* pData);
-			badict eveFuncData = badict(true);// void*
+			QUI* ui = NULL;
+			std::map<std::string, int> events;//1 left ; 2 right
+			std::map<std::string, int> statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
+			std::map<std::string, button*> butts;//按钮列表
+			std::map<std::string, int (*)(void* pData, ...)> eveFunc;// int (*)(void* pData);
+			std::map<std::string, void*> eveFuncData;// void*
+
+			buttons(QUI* _ui);
+			// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
+			// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
+			bool add(const char* _name, const char* _showWords, int charSize,
+				SDL_Color charCol = {}, SDL_Color bgc = {.r = 255, .g = 255, .b = 255, .a = 255},
+				SDL_Rect pos = {}, const char* align = "tl", SDL_Surface * bg = NULL,
+				int (*eveFunc)(void* pData, ...) = NULL, void* eveFuncData = NULL);
 		};
 
 		class window : public rect
@@ -159,7 +169,7 @@ namespace ba
 			SDL_Renderer* rend = nullptr;
 			TTF_Font* defaultFont = nullptr;
 			window* win = nullptr;
-			buttons* butts = new buttons();
+			buttons* butts = new buttons(this);
 
 			std::unordered_map<const char*, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
 
@@ -167,11 +177,6 @@ namespace ba
 			QUI(const char* titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color* bgc = NULL);
 
-			// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
-			//bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
-			bool addButt(const char* _name, const char* _showWords, int charSize,
-				SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg,
-				int (*eveFunc)(void* pData, ...) = NULL, void* eveFuncData = NULL);
 			// _showWords 会mstrdup
 			bool changeButtShowWords(const char* _name, const char* _showWords,
 				int charSize, SDL_Color* cc = NULL, SDL_Color* bgc = NULL,

@@ -370,6 +370,57 @@ ba::ui::button::button(QUI* _ui, const char* pc, int charSize, SDL_Color charCol
 {
 }
 
+ba::ui::buttons::buttons(QUI* _ui)
+{
+	ui = _ui;
+}
+
+bool ba::ui::buttons::add(const char* _name, const char* _showWords, int charSize,
+	SDL_Color charCol, SDL_Color bgc, SDL_Rect pos, const char* align, SDL_Surface* bg,
+	int(*_eveFunc)(void* pData, ...), void* _eveFuncData)
+{
+	char* name = mstrdup(_name, mem);
+	if (!_showWords)
+		_showWords = _name;
+	char* showWords = _strdup(_showWords);
+	if (pos.w <= 0 || pos.h <= 0)//自行根据字符串大小计算按钮大小
+	{
+		if (charSize == 0 || strlen(showWords) == 0)
+			return 0;
+		if (pos.w < 0)
+			pos.w = (int)strlen(showWords) * charSize;
+		if (pos.h < 0)
+			pos.h = charSize;
+		if (!strcmp(align, "tr"))//top && right
+		{
+			pos.x = ui->win->re.w - pos.x;
+		}
+		else if (!strcmp(align, "bl"))//bottom && left
+		{
+			pos.h = ui->win->re.h - pos.h;
+		}
+		else if (!strcmp(align, "br"))//bottom && right
+		{
+			pos.h = ui->win->re.h - pos.h;
+			pos.x = ui->win->re.w - pos.x;
+		}
+	}
+	button* pb = new button(ui, showWords, charSize, charCol, pos, bgc);
+	if (bg == (SDL_Surface*)(0x1))//Use colorSur
+		pb->cs = new colorSur(ui, NULL, pb->re);
+
+	// just use char ptr
+	butts[name] = pb;
+	statue[name] = 1;
+	events[name] = false;
+	if (_eveFunc)
+	{
+		eveFunc[name] = _eveFunc;
+		eveFuncData[name] = _eveFuncData;
+	}
+	return true;
+}
+
 ba::ui::window::window(QUI* _ui, const char* title, SDL_Rect _re, SDL_Color _col)
 	: rect(_re, _col)
 {
@@ -444,10 +495,6 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 		MyBA_AtQuit(QUI_Quit, (void*)this);
 	}
 }
-bool ba::ui::QUI::addButt(const char* _name, const char* _showWords, int charSize, SDL_Color* charCol, SDL_Color* bgc, SDL_Rect* pos, SDL_Surface* bg, int(*eveFunc)(void* pData, ...), void* eveFuncData)
-{
-	return false;
-}
 bool ba::ui::QUI::changeButtShowWords(const char* _name, const char* _showWords, int charSize, SDL_Color* cc, SDL_Color* bgc, const char* fontName)
 {
 	return false;
@@ -458,7 +505,50 @@ bool ba::ui::QUI::delButt(const char* _name)
 }
 bool ba::ui::QUI::checkButt()
 {
-	return false;
+	SDL_PollEvent(win->peve);
+	clock_t st = clock();
+	int (*eveFunc)(void* pData, ...) = NULL;
+	void* eveFuncData = NULL;
+	if (win->peve->type == SDL_MOUSEBUTTONDOWN)
+	{
+		for (SDL_PollEvent(win->peve); win->peve->type != SDL_MOUSEBUTTONUP;
+			SDL_PollEvent(win->peve), SDL_Delay(1))
+		{
+			if ((float)(clock() - st) / CLOCKS_PER_SEC > 0.2)
+				return this->checkTitle();
+		}
+		Sint32 mx = win->peve->motion.x;
+		Sint32 my = win->peve->motion.y;
+		int x, y, w, h;
+		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
+		{
+			if (butts->statue[p->first])
+			{
+				butts->events[p->first] = 0;
+				x = p->second->re.x;
+				y = p->second->re.y;
+				w = p->second->re.w;
+				h = p->second->re.h;
+				if (mx > x && mx<x + w && my>y && my < y + h)
+				{
+					if (win->peve->button.button == SDL_BUTTON_LEFT)
+					{
+						butts->events[p->first] = 1;
+						if (butts->eveFunc.find(p->first) != butts->eveFunc.end())
+						{
+							eveFunc = butts->eveFunc[p->first];
+							eveFunc(butts->eveFuncData[p->first]);
+						}
+					}
+					else if (win->peve->button.button == SDL_BUTTON_RIGHT)
+					{
+						butts->events[p->first] = 2;
+					}
+				}
+			}
+		}
+	}
+	return true;
 }
 bool ba::ui::QUI::checkTitle(bool rendclear, bool copyTex)
 {
@@ -492,31 +582,26 @@ bool ba::ui::QUI::update(bool rendclear, bool copyTex)
 	if (rendclear)
 		SDL_RenderClear(win->rend);
 	if (copyTex)
-	{
 		SDL_RenderCopy(win->rend, win->tex, NULL, NULL);
-		SDL_RenderCopy(win->rend, win->title->tex, NULL, &(win->title->re));
-	}
-	button* pb = NULL;
-	//for (balistDot<SDL_MyButton>* dp = butts->butts.pfirst; dp; dp = dp->pnext)
-	//{
-	//	if (*(butts->statue.Copy(dp->name)) == 1)
-	//	{
-	//		pButt = butts->butts.Copy(dp->name, true);
-	//		if (pButt->pct != NULL)
-	//		{
-	//			MyUI_ColorSur_Update(pButt->pct);
-	//			SDL_DestroyTexture(*(pButt->ppTex));
-	//			*(pButt->ppTex) = SDL_Get_Font_Texture(win->rend,
-	//				pButt->back1, pButt->pfont,
-	//				pButt->charcolor, pButt->charsize, pButt->pc, 0, 0);
-	//		}
-	//		SDL_RenderCopy(win->rend, *(pButt->ppTex),
-	//			NULL, &(pButt->re_butt));
-	//	}
-	//}
 	for (auto p = otherTex.begin(); p != otherTex.end(); p++)
 		SDL_RenderCopy(win->rend, p->second->first,
 			NULL, p->second->second);
+	button* pb = NULL;
+	for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
+	{
+		if (butts->statue[p->first])
+		{
+			pb = butts->butts[p->first];
+			if (pb->cs)
+			{
+				pb->cs->getTex();
+				SDL_RenderCopy(win->rend, pb->cs->tex, NULL, &(pb->re));
+			}
+			SDL_RenderCopy(win->rend, pb->tex, NULL, &(pb->re));
+		}
+	}
+	if (win->title && win->title->tex)
+		SDL_RenderCopy(win->rend, win->title->tex, NULL, &(win->title->re));
 	SDL_RenderPresent(win->rend);
 	return true;
 }
