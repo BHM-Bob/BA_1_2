@@ -15,7 +15,7 @@ void ba::test::_ui::initSDL2(void)
 	ui.otherTex["ctt"] = new std::pair((SDL_Texture*)NULL, &(ui.win->re));
 	ui.win->title = new ba::ui::label(&ui, "test", 15);
 	ui.butts->add("exit", "><", 15, { 255,255, 255, 255 }, {},
-		{300, 10,0,0}, "tr", (SDL_Surface*)1);
+		{30, 0,0,0}, "tr", (SDL_Surface*)1);
 	ui.win->exitButtName = "exit";
 	for (; ! ui.pollQuit(); )
 	{

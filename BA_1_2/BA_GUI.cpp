@@ -356,11 +356,11 @@ ba::ui::label::label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol,
 	}
 	else
 	{
-		SDL_Surface* tmp = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
-		SDL_FillRect(tmp, NULL, SDL_MapRGBA(tmp->format, bgc.r, bgc.g, bgc.b, bgc.a));
-		SDL_BlitScaled(sur, NULL, tmp, NULL);
-		tex = SDL_CreateTextureFromSurface(ui->rend, tmp);
-		SDL_FreeSurface(tmp);
+		SDL_Surface* bgs = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
+		SDL_FillRect(bgs, NULL, SDL_MapRGBA(bgs->format, bgc.r, bgc.g, bgc.b, bgc.a));
+		SDL_BlitScaled(sur, NULL, bgs, NULL);
+		SDL_FreeSurface(bgs);
+		tex = SDL_CreateTextureFromSurface(ui->rend, sur);
 	}
 }
 
