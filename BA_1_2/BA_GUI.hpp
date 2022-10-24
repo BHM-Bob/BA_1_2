@@ -48,30 +48,6 @@ namespace ba
 			float fy = 0.f;
 			float b = 0.f;
 		};
-		class colorText : BA_Base
-		{
-		public:
-			char* pc = nullptr;
-			int charsize = 0;
-			bool** ppb = 0;
-			SDL_Rect* pre = { 0 };
-			_ULL sumdot = 0;
-			colorSurDot* pdot = nullptr;
-			float* plv = nullptr;
-			float* plen = nullptr;
-			int col[4] = { 0 };
-			TTF_Font* font = nullptr;
-			SDL_Renderer* rend = nullptr;
-			SDL_Surface* fontSur = nullptr;
-			SDL_Surface* pSur = nullptr;
-			SDL_Rect re_paint = { 0 };
-
-			colorText(SDL_Renderer* _rend, TTF_Font* _font, const char* pc);
-			void cacu(void);
-			SDL_Surface* get(void);
-			SDL_Texture* getTex(void);
-			void destroy();
-		};
 
 		class QUI;
 
@@ -114,6 +90,7 @@ namespace ba
 			tensor<colorSurDot>* dots = NULL;
 			tensor<float>* len = NULL;
 			tensor<float>* lv = NULL;
+			bool** mask = 0;
 			int col[4] = { 0 };
 			SDL_Rect re_paint = { 0, 0, 1, 1 };
 
@@ -122,6 +99,15 @@ namespace ba
 			colorSur* update(void);
 			SDL_Texture* getTex(void);
 			void destroy(void);
+		};
+		class colorText : public colorSur
+		{
+		public:
+			char* pc = nullptr;
+			TTF_Font* font = nullptr;
+			SDL_Renderer* rend = nullptr;
+
+			colorText(QUI* _ui, const char* pc);
 		};
 		class label : public rect
 		{

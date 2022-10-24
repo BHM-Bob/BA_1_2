@@ -137,144 +137,6 @@ SDL_Texture* ba::ui::getImageTex(SDL_Renderer* renderer, const char* path)
 			path, ", return NULL", NULL);
 	return SDL_CreateTextureFromSurface(renderer, pte);
 }
-//bool ba::ui::MyUI_ColorText_Destroy(MyUI_ColorText* pct)
-//{
-//	MyBA_Free_R(mem);
-//	SDL_FreeSurface(fontSur);
-//	SDL_FreeSurface(pSur);
-//	free(pct);
-//	return true;
-//}
-//为什么直接从fontSur中读取像素是失败的？？？？(get 255 0 0 0)
-ba::ui::colorText::colorText(SDL_Renderer* _rend, TTF_Font* _font, const char* pc)
-{
-	font = _font;
-	rend = _rend;
-	pre = BALLOC_R(1, SDL_Rect, mem);
-	pc = _strdup(pc);
-	SDL_Color color = { .r = 255 , .g = 0 , .b = 0, .a = 255 };
-	fontSur = TTF_RenderUTF8_Blended(font, pc, color);
-	if (fontSur == NULL)
-	{
-		MyBA_Errs(0, "MyUI_ColorText_Init: Can't blended Surface with text:", pc, ", skip", NULL);
-	}
-	else
-	{
-		pre->w = fontSur->w;
-		pre->h = fontSur->h;
-		pSur = SDL_CreateRGBSurface(0, pre->w, pre->h, 32, 0, 0, 0, 255);
-		SDL_SetColorKey(pSur, 1, SDL_MapRGB(pSur->format, 0, 0, 0));
-		SDL_BlitSurface(fontSur, NULL, pSur, NULL);
-
-		sumdot = 4;
-		pdot = BALLOC_R(sumdot, colorSurDot, mem);
-		plv = BALLOC_R(sumdot, float, mem);
-		plen = BALLOC_R(sumdot, float, mem);
-		for (size_t i = 0; i < sumdot; i++)
-		{
-			pdot[i].b = 500.f / (float)(1.0 + rand() % 200);
-			pdot[i].x = 1 + rand() % (pre->w - 1);
-			pdot[i].y = 1 + rand() % (pre->h - 1);
-			pdot[i].fx = pdot[i].fy = 1.0;
-			ProduceRainbowCol(pdot[i].col, &(pdot[i].b));
-		}
-		re_paint.w = re_paint.h = 1;
-		Uint8 r, g, b;
-		ppb = BALLOC_R(pre->h, bool*, mem);
-		SDL_LockSurface(pSur);
-		for (re_paint.y = 0; (re_paint.y) < (pre->h); (re_paint.y)++)
-		{
-			ppb[re_paint.y] = BALLOC_R(pre->w, bool, mem);
-			for (re_paint.x = 0; (re_paint.x) < (pre->w); (re_paint.x)++)
-			{
-				SDL_GetRGB(getPixle(pSur, re_paint.x, re_paint.y), pSur->format, &r, &g, &b);
-				if (r == 255)
-					ppb[re_paint.y][re_paint.x] = 1;
-			}
-		}
-		SDL_UnlockSurface(pSur);
-	}
-}
-void ba::ui::colorText::cacu(void)
-{
-	float sumlen = 0.f;
-	float sumlength = 0.f;
-	long dx = 0;
-	long dy = 0;
-	long j = 0;
-	float k = 0;
-	float k2 = 0;
-	for (long i = 0; i < sumdot; i++)
-	{
-		dx = re_paint.x - pdot[i].x;
-		dy = re_paint.y - pdot[i].y;
-		k = (float)(dx * dx + dy * dy);
-		if (k <= 0)
-			k = -k + 1;
-		j = *(long*)&k;                        // evil floating point bit level hacking
-		j = 0x5f3759df - (j >> 1);             // what the fuck? 
-		k2 = *(float*)&j;
-		plen[i] = k2 * k2 * (1.5f - (0.5f * k * k2 * k2));//originaly is k2 * ( 1.5f - ( 0.5*k * k2 * k2 ) ) but to use plen[i] = plen[i]*plen[i];
-		sumlen += plen[i];
-	}
-	for (long i = 0; i < sumdot; i++)
-		plv[i] = plen[i] / sumlen;
-	col[0] = (int)(plv[0] * pdot[0].col[0]) + (int)(plv[1] * pdot[1].col[0]) + (int)(plv[2] * pdot[2].col[0]) + (int)(plv[3] * pdot[3].col[0]);
-	col[1] = (int)(plv[0] * pdot[0].col[1]) + (int)(plv[1] * pdot[1].col[1]) + (int)(plv[2] * pdot[2].col[1]) + (int)(plv[3] * pdot[3].col[1]);
-	col[2] = (int)(plv[0] * pdot[0].col[2]) + (int)(plv[1] * pdot[1].col[2]) + (int)(plv[2] * pdot[2].col[2]) + (int)(plv[3] * pdot[3].col[2]);
-	col[3] = 255;
-}
-SDL_Surface* ba::ui::colorText::get(void)
-{
-	for (long a = 0; a < sumdot; a++)
-	{
-		pdot[a].b += 0.05f;
-		ProduceRainbowCol(pdot[a].col, &(pdot[a].b));
-		pdot[a].x += (int)(2.0f * (pdot[a].fx));
-		if (pdot[a].x < 1)
-		{
-			pdot[a].fx = -pdot[a].fx;
-			pdot[a].x = 1;
-		}
-		if (pdot[a].x > pre->w)
-		{
-			pdot[a].fx = -pdot[a].fx;
-			pdot[a].x = pre->w - 1;
-		}
-		pdot[a].y += (int)(2.0f * (pdot[a].fy));
-		if (pdot[a].y < 1)
-		{
-			pdot[a].fy = -pdot[a].fy;
-			pdot[a].y = 1;
-		}
-		if (pdot[a].y > pre->h)
-		{
-			pdot[a].fy = -pdot[a].fy;
-			pdot[a].y = pre->h - 1;
-		}
-	}
-	for (re_paint.y = 0; (re_paint.y) < (pre->h); (re_paint.y)++)
-	{
-		for (re_paint.x = 0; (re_paint.x) < (pre->w); (re_paint.x)++)
-		{
-			if (ppb[re_paint.y][re_paint.x])
-			{
-				cacu();
-				SDL_FillRect(pSur, &(re_paint), SDL_MapRGB(fontSur->format, col[0], col[1], col[2]));
-			}
-		}
-	}
-	return pSur;
-}
-SDL_Texture* ba::ui::colorText::getTex(void)
-{
-	get();
-	SDL_Texture* tex = SDL_CreateTextureFromSurface(rend, pSur);
-	return tex;
-}
-void ba::ui::colorText::destroy()
-{
-}
 
 void ba::ui::rect::rendRect(void)
 {
@@ -339,27 +201,24 @@ ba::ui::colorSur* ba::ui::colorSur::cacu(void)
 	long j = 0;
 	float k = 0;
 	float k2 = 0;
-	dots->selfmap(*len, [&](colorSurDot* r, float* l) {
-		dx = re_paint.x - r->x;
-	dy = re_paint.y - r->y;
-	k = (float)(dx * dx + dy * dy);
-	if (k <= 0.f)
-		k = -k + 1.f;
-	j = *(long*)&k;                        // evil floating point bit level hacking
-	j = 0x5f3759df - (j >> 1);             // what the fuck? 
-	k2 = *(float*)&j;
-	//originaly is k2 * ( 1.5f - ( 0.5*k * k2 * k2 ) ) but to use plen[i] = plen[i]*plen[i];
-	*l = k2 * k2 * (1.5f - (0.5f * k * k2 * k2));
-	sumlen += *l;
-		});
-	lv->selfmap(*len, [&](float* r, float* l) { *r = *l / sumlen; });
-	memset(col, 0, 3 * sizeof(int));
-	dots->selfmap(*lv, [&](colorSurDot* r, float* l) {
-		col[0] += (int)((*l) * (float)r->col[0]);
-	col[1] += (int)((*l) * (float)r->col[1]);
-	col[2] += (int)((*l) * (float)r->col[2]);
-	//col[3] += (int)((*l) * (float)r->col[3]);
-		});
+	for (long i = 0; i < sumdot; i++)
+	{
+		dx = re_paint.x - dots->data[i].x;
+		dy = re_paint.y - dots->data[i].y;
+		k = (float)(dx * dx + dy * dy);
+		if (k <= 0)
+			k = -k + 1;
+		j = *(long*)&k;                        // evil floating point bit level hacking
+		j = 0x5f3759df - (j >> 1);             // what the fuck? 
+		k2 = *(float*)&j;
+		len->data[i] = k2 * k2 * (1.5f - (0.5f * k * k2 * k2));//originaly is k2 * ( 1.5f - ( 0.5*k * k2 * k2 ) ) but to use plen[i] = plen[i]*plen[i];
+		sumlen += len->data[i];
+	}
+	for (long i = 0; i < sumdot; i++)
+		lv->data[i] = len->data[i] / sumlen;
+	col[0] = (int)(lv->data[0] * dots->data[0].col[0]) + (int)(lv->data[1] * dots->data[1].col[0]) + (int)(lv->data[2] * dots->data[2].col[0]) + (int)(lv->data[3] * dots->data[3].col[0]);
+	col[1] = (int)(lv->data[0] * dots->data[0].col[1]) + (int)(lv->data[1] * dots->data[1].col[1]) + (int)(lv->data[2] * dots->data[2].col[1]) + (int)(lv->data[3] * dots->data[3].col[1]);
+	col[2] = (int)(lv->data[0] * dots->data[0].col[2]) + (int)(lv->data[1] * dots->data[1].col[2]) + (int)(lv->data[2] * dots->data[2].col[2]) + (int)(lv->data[3] * dots->data[3].col[2]);
 	col[3] = 255;
 	return this;
 }
@@ -369,7 +228,7 @@ ba::ui::colorSur* ba::ui::colorSur::update(void)
 	{
 		pd->b += 0.05f;
 		ProduceRainbowCol(pd->col, &(pd->b));
-		pd->x += (int)(2.0f * (pd->fx));//PPD((pd->fx)*cos(0.01*(pd->b)));
+		pd->x += (int)(2.0f * (pd->fx));
 		if (pd->x < 1)
 		{
 			pd->fx = -pd->fx;
@@ -380,7 +239,7 @@ ba::ui::colorSur* ba::ui::colorSur::update(void)
 			pd->fx = -pd->fx;
 			pd->x = re.w - 1;
 		}
-		pd->y += (int)(2.0f * (pd->fy));//PPD((pd->fy)*sin(0.01*(pd->b)));
+		pd->y += (int)(2.0f * (pd->fy));
 		if (pd->y < 1)
 		{
 			pd->fy = -pd->fy;
@@ -397,9 +256,12 @@ ba::ui::colorSur* ba::ui::colorSur::update(void)
 	{
 		for (re_paint.x = 0; (re_paint.x) < (re.w); (re_paint.x)++)
 		{
-			cacu();
-			SDL_FillRect(sur, &(re_paint),
-				SDL_MapRGBA(sur->format, col[0], col[1], col[2], col[3]));
+			if(!mask || mask[re_paint.y][re_paint.x])
+			{
+				cacu();
+				SDL_FillRect(sur, &(re_paint),
+					SDL_MapRGBA(sur->format, col[0], col[1], col[2], col[3]));
+			}
 		}
 	}
 	return this;
@@ -417,14 +279,64 @@ void ba::ui::colorSur::destroy(void)
 	delete dots;
 	delete len;
 	delete lv;
+	MyBA_Free_R(mem);
+	SDL_FreeSurface(sur);
+	SDL_DestroyTexture(tex);
 }
+
+//bool ba::ui::MyUI_ColorText_Destroy(MyUI_ColorText* pct)
+//{
+//	MyBA_Free_R(mem);
+//	SDL_FreeSurface(fontSur);
+//	SDL_FreeSurface(pSur);
+//	free(pct);
+//	return true;
+//}
+
+
+ba::ui::colorText::colorText(QUI* _ui, const char* pc)
+	: colorSur(_ui, TTF_RenderUTF8_Blended(_ui->defaultFont, pc, { .r = 0 , .g = 255 , .b = 0, .a = 255 }))
+{
+	font = ui->defaultFont;
+	rend = ui->rend;
+	pc = mstrdup(pc, mem);
+	if (re.w == 0)
+	{
+		MyBA_Errs(1, "MyUI_ColorText_Init: Can't blended Surface with text:", pc, ", skip", NULL);
+	}
+	else
+	{
+		// TODO : why tmp is necessary???
+		// 为什么直接从fontSur中读取像素是失败的？？？？(get 255 0 0 0)
+		SDL_Surface* tmp = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 255);
+		SDL_SetColorKey(tmp, 1, SDL_MapRGB(sur->format, 0, 0, 0));
+		SDL_BlitSurface(sur, NULL, tmp, NULL);
+
+		Uint8 r, g, b;
+		mask = BALLOC_R(re.h, bool*, mem);
+		SDL_LockSurface(tmp);
+		for (re_paint.y = 0; (re_paint.y) < (re.h); (re_paint.y)++)
+		{
+			mask[re_paint.y] = BALLOC_R(re.w, bool, mem);
+			for (re_paint.x = 0; (re_paint.x) < (re.w); (re_paint.x)++)
+			{
+				SDL_GetRGB(getPixle(tmp, re_paint.x, re_paint.y), tmp->format, &r, &g, &b);
+				if (g == 255)
+					mask[re_paint.y][re_paint.x] = 1;
+			}
+		}
+		SDL_UnlockSurface(tmp);
+		SDL_FreeSurface(tmp);
+	}
+}
+
 ba::ui::label::label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol,
 	SDL_Rect pos, SDL_Color bgc)
 	: rect(pos, bgc)
 {
 	ui = _ui;
 	text = pc;
-	if (pos.w <= 0 || pos.h <= 0)//用户此行为,则要求自行根据字符串大小计算按钮大小
+	if (pos.w <= 0 || pos.h <= 0)//自行根据字符串大小计算label大小
 	{
 		if (pos.w <= 0)
 			re.w = pos.w = (int)text.size() * charSize;
