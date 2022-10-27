@@ -289,7 +289,7 @@ namespace ba
 	{
 		Ty* pt1 = data;
 		for (_LL i = 0; i < len; i++, pt1++)
-			func(pt1);
+			func(pt1, i);
 		return *this;
 	}
 	template<typename Ty>
@@ -312,7 +312,7 @@ namespace ba
 			Ty* pt1 = data;
 			otherTy* pt2 = other.data;
 			for (_LL i = 0; i < len; i++, pt1++, pt2++)
-				func(pt1, pt2);
+				func(pt1, pt2, i);
 		}
 		else
 		{

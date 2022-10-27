@@ -183,7 +183,7 @@ ba::ui::colorSur::colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos, int _s
 	dots = new tensor<colorSurDot>({ _sumdot });
 	lv = new tensor<float>({ _sumdot });
 	len = new tensor<float>({ _sumdot });
-	dots->selfmap([&](colorSurDot* r) {
+	dots->selfmap([&](colorSurDot* r, _LL i) {
 		r->b = 500.f / (float)(1.f + rand() % 200);
 	r->x = 1 + rand() % (re.w - 1);
 	r->y = 1 + rand() % (re.h - 1);
