@@ -42,6 +42,7 @@ namespace ba
 		Ty* lastAddress = NULL;
 
 		tensor(std::vector<_LL> _shape = {0}, Ty defaultValue = Ty());
+		~tensor();
 		//recreate -> memset
 
 		template<typename toTy>
@@ -53,6 +54,7 @@ namespace ba
 		tensor<Ty>& refsub(_LL from, _LL to);
 		template<typename maskTy>
 		tensor<Ty>& masksub(tensor<maskTy> mask);
+		tensor<Ty>& concat(std::vector<Ty> other);
 
 		void setErrValue(Ty _errV);
 
@@ -138,6 +140,10 @@ namespace ba
 		}
 	}
 	template<typename Ty>
+	inline tensor<Ty>::~tensor()
+	{
+	}
+	template<typename Ty>
 	inline tensor<Ty>& tensor<Ty>::sub(_LL from, _LL to)
 	{
 		if (shape.size() != 1 || from >= to || from < 0 || to > len)
@@ -146,9 +152,8 @@ namespace ba
 			return *this;
 		}
 		tensor<Ty>* ret = new tensor<Ty>({ to - from });
-		Ty* p1 = data + from, * p2 = ret.data;
-		for (_LL idxR = 0; idxR < ret.len; p1++, p2++, idxR++)
-			*p2 = *p1;
+		memcpy_s(ret->data, ret->len * sizeof(Ty),
+			data + from, (to - from) * sizeof(Ty));
 		return *ret;
 	}
 	template<typename Ty>
@@ -186,9 +191,19 @@ namespace ba
 		_LL newLen = mask.sum(0);
 		tensor<Ty>* ret = new tensor<Ty>({ newLen });
 		for (_LL i = 0, j = 0; i < len; i++)
-			if ((bool)mask[i])
-				ret[j++] = data[i];
+			if ((bool)mask.data[i])
+				ret->data[j++] = data[i];
 		return *ret;
+	}
+	template<typename Ty>
+	inline tensor<Ty>& tensor<Ty>::concat(std::vector<Ty> other)
+	{
+		if (shape != other.shape)
+		{
+			MyBA_Err("tensor<Ty>& tensor<Ty>::concat:shape != other.shape", 1);
+			return *this;
+		}
+		//TODO : imp
 	}
 	template<typename Ty>
 	inline void tensor<Ty>::setErrValue(Ty _errV)
