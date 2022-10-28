@@ -93,18 +93,18 @@ namespace ba
 		if (typeid(dataType) == typeid(double))
 		{
 			preturn = BALLOC_R(18, char, mem);
-			sprintf_s(preturn, w + 1, "%e", num);
+			sprintf_s(preturn, w + 1, "%e", (double)num);
 		}
 		else
 		{
 			for (int a = 10; num / a != 0; w++, a *= 10);
 			preturn = BALLOC_R(w + 1, char, mem);
 			if (typeid(dataType) == typeid(int))
-				sprintf_s(preturn, w + 1, "%d", num);
+				sprintf_s(preturn, w + 1, "%d", (int)num);
 			else if (typeid(dataType) == typeid(_LL))
-				sprintf_s(preturn, w + 1, "%lld", num);
+				sprintf_s(preturn, w + 1, "%lld", (_LL)num);
 			else if (typeid(dataType) == typeid(_ULL))
-				sprintf_s(preturn, w + 1, "%llu", num);
+				sprintf_s(preturn, w + 1, "%llu", (_ULL)num);
 			else
 				return (char*)MyBA_Errs(1, "Num_To_Char: type default with ",
 					typeid(dataType).name(), ", return NULL", NULL);

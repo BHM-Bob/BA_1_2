@@ -596,14 +596,14 @@ char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 			len = MultiByteToWideChar(CP_ACP, 0, pc, -1, NULL, 0);
 			wstr = new wchar_t[len + 1];
 			memset(wstr, 0, len + 1);
-			MultiByteToWideChar(CP_ACP, 0, pc, -1, wstr, len);
+			MultiByteToWideChar(CP_ACP, 0, pc, -1, wstr, (int)len);
 		}
 		else if (strcmp(ori, "utf-8") == 0)
 		{// UTF-8(char) -> Unicode(wchar)
 			len = MultiByteToWideChar(CP_UTF8, 0, pc, -1, NULL, 0);
 			wstr = new wchar_t[len + 1];
 			memset(wstr, 0, len + 1);
-			MultiByteToWideChar(CP_UTF8, 0, pc, -1, wstr, len);
+			MultiByteToWideChar(CP_UTF8, 0, pc, -1, wstr, (int)len);
 		}
 		else if (strcmp(ori, "unicode") == 0)
 		{// Unicode(char) -> Unicode(wchar)
@@ -621,7 +621,7 @@ char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 			len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
 			str = new char[len + 1];
 			memset(str, 0, len + 1);
-			WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, len, NULL, NULL);
+			WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, (int)len, NULL, NULL);
 			if (wstr) delete[] wstr;
 			return str;
 		}
@@ -630,7 +630,7 @@ char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 			len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
 			str = new char[len + 1];
 			memset(str, 0, len + 1);
-			WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+			WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, (int)len, NULL, NULL);
 			if (wstr) delete[] wstr;
 			return str;
 		}

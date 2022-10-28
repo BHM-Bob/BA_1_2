@@ -9,10 +9,10 @@
 int* ba::ui::ProduceRainbowCol(int* col, float* i, float* di)// r g b
 {
 	*i += *di;
-	if (*i > 10000.f || *i < -10000.f)
+	float sh = 5000.f;
+	if (*i > sh || *i < -sh)
 	{
 		*di = -*di;
-		*i += 100.f * (*di);
 	}
 	col[0] = (int)(127.f * sin(*i)) + 127;
 	col[1] = (int)(127.f * cos(*i)) + 127;
@@ -22,9 +22,9 @@ int* ba::ui::ProduceRainbowCol(int* col, float* i, float* di)// r g b
 int* ba::ui::ProduceRainbowCol(int* col, float* i, float di)// r g b
 {
 	*i += di;
-	float sh = 5000.f * (0.5f * sin(*i) + 0.7f);
+	float sh = 5000.f;
 	if (*i > sh || *i < -sh)
-		*i -= 400.f * di;
+		*i = 0;
 	col[0] = (int)(127.f * sin(*i)) + 127;
 	col[1] = (int)(127.f * cos(*i)) + 127;
 	col[2] = (int)(127.f * sin(0.8f * (*i))) + 127;
