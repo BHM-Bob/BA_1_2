@@ -58,7 +58,7 @@ MyThreadsPool<dataTypePut, dataTypeGet>::MyThreadsPool(_LL _sumThreads,
 	{
 		ppThs[i] = new std::thread(_pF, i, std::ref(putDataQues[i]),
 			std::ref(getDataQues[i]), std::ref(procQues[i]), std::ref(sig), otherData);
-		Sleep(intervalLanchTime);
+		Sleep((DWORD)intervalLanchTime);
 	}
 }
 

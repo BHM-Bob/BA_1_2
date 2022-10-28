@@ -266,9 +266,9 @@ _LL SequencesSimiCacuer::CacuSequencesSimilarityWithTrace2(ba::str seqA, ba::str
 	memset(H.data, 0, H.len * sizeof(int));
 	memset(traceback.data, 0, traceback.len * sizeof(int));
 	var1 = var2 = var3 = bestAction = 0;
-	for (int row = 1; row < rows; row++)
+	for (_LL row = 1; row < rows; row++)
 	{
-		for (int col = 1; col < cols; col++)
+		for (_LL col = 1; col < cols; col++)
 		{
 			// up&left | leave_or_replace_letter = H[row - 1, col - 1] + score_func(a, b)
 			var1 = H.data[(row - 1) * cols + col - 1] +
@@ -303,7 +303,7 @@ void SequencesSimiCacuer::VizTraceback2(ba::str seqA, ba::str seqB)
 	for (int i = 0; i < H.shape[0]; i++)
 	{
 		for (int j = 0; j < H.shape[1]; j++)
-			printf("%3lld ", H.data[i * H.shape[1] + j]);
+			printf("%3d ", H.data[i * H.shape[1] + j]);
 		printf("\n");
 	}
 	printf("\n");

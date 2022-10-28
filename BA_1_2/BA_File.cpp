@@ -299,7 +299,7 @@ _LL ba::getFileSize(std::ifstream& ifs)
 int ba::detectTextCode(std::ifstream& ifs)
 {
     std::streampos now = ifs.tellg();
-    unsigned char c;
+    unsigned char c = 0;
     ifs.read((char*)&c, sizeof(c));//读取第一个字节
     int p = c << 8;
     ifs.read((char*)&c, sizeof(c));//l读取第二个字节

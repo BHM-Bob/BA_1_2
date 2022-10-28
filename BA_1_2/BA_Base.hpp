@@ -816,7 +816,7 @@ balist_Label_A:
 	if (sumque == 0 || (!pfirst))
 	{
 		m->unlock();
-		Sleep(wait);
+		Sleep((DWORD)wait);
 		sumWait += wait;
 		if (block > 0 && block < sumWait)
 			return (dataType*)0;

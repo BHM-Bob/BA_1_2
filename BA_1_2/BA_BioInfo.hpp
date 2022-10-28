@@ -21,9 +21,9 @@ public:
 	_LL seqBLen = 0;
 	_LL rows = seqALen + 1;
 	_LL cols = seqALen + 1;
-	_LL var1 = 0;
-	_LL var2 = 0;
-	_LL var3 = 0;
+	int var1 = 0;
+	int var2 = 0;
+	int var3 = 0;
 	int bestAction = 0;
 	char tracebackSymbol[4] = {"QA<"};
 	ba::tensor<int> H = ba::tensor({ rows, cols }, 0);

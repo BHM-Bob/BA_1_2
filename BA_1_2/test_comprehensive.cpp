@@ -45,7 +45,7 @@ void ba::test::_comprehensive::tensor(void)
 	ba::tensor t2 = ba::tensor({ 5, 5 }, 2.f);
 	ba::tensor t3 = t.map(t2, [&](float r, float l) {return r + l; });
 	//(t-2.f) - t2*t2;//E0349
-	t.map([&](float r) {return r + 2.0; });
+	t.map([&](float r) {return r + 2.f; });
 
 	ba::tensor t4 = ba::tensor({ 5, 5 }, (char*)1);
 	PPX(t4.cast(0ULL)[3](3));
@@ -63,7 +63,8 @@ void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
 	json w2i;
 	ifs >> w2i;
 	ifs.close();
-	int idx = 0, sum = getQ.ThrSize(&m1), fileCode = -1;
+	int idx = 0, fileCode = -1;
+	_LL sum = getQ.ThrSize(&m1);
 	std::vector<int>* result = NULL;
 	std::pair<char*, std::vector<int>*>* pack = NULL;
 	char* word = NULL;
