@@ -9,14 +9,7 @@
 #define BA_TEST_H
 
 #include "BA_Base.hpp"
-#include "BA_CMD.hpp"
-#include "BA_Mem.hpp"
-#include "BA_Thread.hpp"
-#include "BA_Math.hpp"
-#include "BA_File.hpp"
 #include "BA_String.hpp"
-#include "BA_BioInfo.hpp"
-#include "BA_JSON.hpp"
 
 namespace ba
 {

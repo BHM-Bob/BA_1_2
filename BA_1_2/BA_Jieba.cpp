@@ -5,8 +5,6 @@
 #include"BA_Jieba.hpp"
 #include"BA_String.hpp"
 
-
-
 void ba::jieba::cut2vector(char* pc, int inCode)
 {
 	s.clear();
