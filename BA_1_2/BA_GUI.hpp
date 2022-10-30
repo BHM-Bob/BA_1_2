@@ -94,7 +94,8 @@ namespace ba
 			int col[4] = { 0 };
 			SDL_Rect re_paint = { 0, 0, 1, 1 };
 
-			colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos = { 0,0,0,0 }, int _sumdot = 4);
+			colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos = { 0,0,0,0 },
+				bool alloc0Mask = false, int _sumdot = 4);
 			colorSur* cacu(void);
 			colorSur* update(void);
 			SDL_Texture* getTex(void);
@@ -176,16 +177,18 @@ namespace ba
 
 			QUI(const char* titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color* bgc = NULL);
+			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
+			QUI& updateOtherTex(std::string name, SDL_Texture* tex);
+			bool checkButt();
+			bool checkTitle(bool rendclear = true, bool copyTex = true);
+			bool update(bool rendclear = true, bool copyTex = true);
+			bool pollQuit();
 
 			// _showWords 会mstrdup
 			bool changeButtShowWords(const char* _name, const char* _showWords,
 				int charSize, SDL_Color* cc = NULL, SDL_Color* bgc = NULL,
 				const char* fontName = NULL);
 			bool delButt(const char* _name);
-			bool checkButt();
-			bool checkTitle(bool rendclear = true, bool copyTex = true);
-			bool update(bool rendclear = true, bool copyTex = true);
-			bool pollQuit();
 			int Quit(int code, ...);
 			friend int QUI_Quit(void* pui_, int code, ...);
 		};

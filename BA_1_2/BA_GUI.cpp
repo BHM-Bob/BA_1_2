@@ -165,7 +165,8 @@ bool ba::ui::rect::checkPressOn(SDL_Event* peve)
 }
 
 
-ba::ui::colorSur::colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos, int _sumdot)
+ba::ui::colorSur::colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos,
+	bool alloc0Mask, int _sumdot)
 	: rect(pos, {0,0,0,0})
 {
 	if(_distSur)
@@ -191,6 +192,12 @@ ba::ui::colorSur::colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos, int _s
 	ProduceRainbowCol(r->col, &(r->b));
 	//r->col[3] = (int)(127.f * sin(0.8f * r->b)) + 0;
 		});
+	if (alloc0Mask)
+	{
+		mask = BALLOC_R(re.h, bool*, mem);
+		for (re_paint.y = 0; (re_paint.y) < (re.h); (re_paint.y)++)
+			mask[re_paint.y] = BALLOC_R(re.w, bool, mem);
+	}
 }
 ba::ui::colorSur* ba::ui::colorSur::cacu(void)
 {
@@ -295,7 +302,8 @@ void ba::ui::colorSur::destroy(void)
 
 
 ba::ui::colorText::colorText(QUI* _ui, const char* pc)
-	: colorSur(_ui, TTF_RenderUTF8_Blended(_ui->defaultFont, pc, { .r = 0 , .g = 255 , .b = 0, .a = 255 }))
+	: colorSur(_ui, TTF_RenderUTF8_Blended(_ui->defaultFont, pc, { .r = 0 , .g = 255 , .b = 0, .a = 255 }),
+		{ 0 }, true)
 {
 	font = ui->defaultFont;
 	rend = ui->rend;
@@ -313,11 +321,9 @@ ba::ui::colorText::colorText(QUI* _ui, const char* pc)
 		SDL_BlitSurface(sur, NULL, tmp, NULL);
 
 		Uint8 r, g, b;
-		mask = BALLOC_R(re.h, bool*, mem);
 		SDL_LockSurface(tmp);
 		for (re_paint.y = 0; (re_paint.y) < (re.h); (re_paint.y)++)
 		{
-			mask[re_paint.y] = BALLOC_R(re.w, bool, mem);
 			for (re_paint.x = 0; (re_paint.x) < (re.w); (re_paint.x)++)
 			{
 				SDL_GetRGB(getPixle(tmp, re_paint.x, re_paint.y), tmp->format, &r, &g, &b);
@@ -494,6 +500,17 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 
 		MyBA_AtQuit(QUI_Quit, (void*)this);
 	}
+}
+ba::ui::QUI& ba::ui::QUI::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
+{
+	std::pair<SDL_Texture*, SDL_Rect*>* p = new std::pair<SDL_Texture*, SDL_Rect*>(tex, re);
+	otherTex[name] = p;
+	return *this;
+}
+ba::ui::QUI& ba::ui::QUI::updateOtherTex(std::string name, SDL_Texture* tex)
+{
+	otherTex[name]->first = tex;
+	return *this;
 }
 bool ba::ui::QUI::changeButtShowWords(const char* _name, const char* _showWords, int charSize, SDL_Color* cc, SDL_Color* bgc, const char* fontName)
 {
