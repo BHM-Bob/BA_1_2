@@ -269,6 +269,11 @@ ba::ui::colorSur* ba::ui::colorSur::update(void)
 				SDL_FillRect(sur, &(re_paint),
 					SDL_MapRGBA(sur->format, col[0], col[1], col[2], col[3]));
 			}
+			//else
+			//{
+			//	SDL_FillRect(sur, &(re_paint),
+			//		SDL_MapRGBA(sur->format, 0, 0, 0, 0));
+			//}
 		}
 	}
 	return this;
@@ -434,8 +439,17 @@ ba::ui::window::window(QUI* _ui, const char* title, SDL_Rect _re, SDL_Color _col
 	titlepc = mstrdup(title, mem);
 }
 
+// TODO : why should put this func before ba::ui::QUI::QUI
+	// C2065 if this put after ba::ui::QUI::QUI
 int ba::ui::QUI_Quit(void* pui_, int code, ...)
 {
+	// TODO : if ba::ui::QUI was inited as a local var(not a ptr in heap memory),
+		// this will cause mem err
+	ba::ui::QUI* pui = (ba::ui::QUI*)pui_;
+	//SDL_FreeSurface(pui->win->sur);
+	//SDL_DestroyTexture(pui->win->tex);
+	//SDL_DestroyRenderer(pui->win->rend);
+	//SDL_DestroyWindow(pui->win->pwin);
 	return 0;
 }
 ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
@@ -633,8 +647,8 @@ bool ba::ui::QUI::pollQuit()
 }
 int ba::ui::QUI::Quit(int code, ...)
 {
-	//SDL_FreeSurface(win->pwinSur);
-	//SDL_DestroyTexture(win->pwinTex);
+	SDL_FreeSurface(win->sur);
+	SDL_DestroyTexture(win->tex);
 	SDL_DestroyRenderer(win->rend);
 	SDL_DestroyWindow(win->pwin);
 	//MyBA_Free_R(mem);

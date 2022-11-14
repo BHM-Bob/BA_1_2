@@ -301,6 +301,7 @@
     <ClInclude Include="SDL2\SDL_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\README.md" />
     <None Include="SDL2\SDL_config.h.cmake" />
     <None Include="SDL2\SDL_config.h.in" />
     <None Include="SDL2\SDL_config_macosx.h.orig" />
