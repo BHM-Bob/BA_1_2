@@ -137,12 +137,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2.lib;E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2_image.lib;E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2_mixer.lib;E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2main.lib;E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
