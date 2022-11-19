@@ -458,17 +458,24 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 		col = { 0,0,0,0 };
 		SDL_VERSION(&(info.version));
 		if (SDL_GetWindowWMInfo(pwin, &(info)))
+		{
 			hwnd = info.info.win.window;
-		/*设置窗口colorkey*/
-		SetWindowLongW(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-		SetLayeredWindowAttributes(hwnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
-		/*设置窗口为悬浮窗 */
-		SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-		sur = SDL_GetWindowSurface(pwin);
-		UINT32 keyColor = SDL_MapRGB(sur->format, 255, 255, 255);
-		SDL_SetSurfaceBlendMode(sur, SDL_BLENDMODE_NONE);
-		SDL_FillRect(sur, NULL, keyColor);
-		tex = SDL_CreateTextureFromSurface(rend, sur);
+			/*设置窗口colorkey*/
+			SetWindowLongW(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+			SetLayeredWindowAttributes(hwnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
+			/*设置窗口为悬浮窗 */
+			SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+			sur = SDL_GetWindowSurface(pwin);
+			UINT32 keyColor = SDL_MapRGB(sur->format, 255, 255, 255);
+			SDL_SetSurfaceBlendMode(sur, SDL_BLENDMODE_NONE);
+			SDL_FillRect(sur, NULL, keyColor);
+			tex = SDL_CreateTextureFromSurface(rend, sur);
+		}
+		else
+		{
+			MyBA_Err("ba::ui::window::window: unable to get window info via SDL_GetWindowWMInfo, set bgc to 0", 1);
+			rendRect();
+		}
 	}
 	else
 	{
@@ -478,6 +485,139 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	SDL_RenderCopy(rend, tex, NULL, NULL);
 	SDL_RenderPresent(rend);
 	time = clock();
+}
+
+ba::ui::QUI& ba::ui::window::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
+{
+	std::pair<SDL_Texture*, SDL_Rect*>* p = new std::pair<SDL_Texture*, SDL_Rect*>(tex, re);
+	otherTex[name] = p;
+	return *ui;
+}
+
+ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex)
+{
+	otherTex[name]->first = tex;
+	return *ui;
+}
+
+bool ba::ui::window::checkButt()
+{
+	SDL_PollEvent(peve);
+	clock_t st = clock();
+	int (*eveFunc)(void* pData, ...) = NULL;
+	void* eveFuncData = NULL;
+	if (peve->type == SDL_MOUSEBUTTONDOWN)
+	{
+		for (SDL_PollEvent(peve); peve->type != SDL_MOUSEBUTTONUP;
+			SDL_PollEvent(peve), SDL_Delay(1))
+		{
+			if ((float)(clock() - st) / CLOCKS_PER_SEC > 0.2)
+				return this->checkTitle();
+		}
+		Sint32 mx = peve->motion.x;
+		Sint32 my = peve->motion.y;
+		int x, y, w, h;
+		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
+		{
+			if (butts->statue[p->first])
+			{
+				butts->events[p->first] = 0;
+				x = p->second->re.x;
+				y = p->second->re.y;
+				w = p->second->re.w;
+				h = p->second->re.h;
+				if (mx > x && mx<x + w && my>y && my < y + h)
+				{
+					if (peve->button.button == SDL_BUTTON_LEFT)
+					{
+						butts->events[p->first] = 1;
+						if (butts->eveFunc.find(p->first) != butts->eveFunc.end())
+						{
+							eveFunc = butts->eveFunc[p->first];
+							eveFunc(butts->eveFuncData[p->first]);
+						}
+					}
+					else if (peve->button.button == SDL_BUTTON_RIGHT)
+					{
+						butts->events[p->first] = 2;
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
+{
+	Sint32 wx = 0, wy = 0, bx = 0, by = 0;
+	if (title && title->checkPressOn(peve))
+	{
+		SDL_GetWindowPosition(pwin, &wx, &wy);
+		bx = peve->button.x;
+		by = peve->button.y;
+		for (Sint32 x, y = SDL_PollEvent(peve); peve->type != SDL_MOUSEBUTTONUP; )
+		{
+			SDL_PollEvent(peve);
+			x = peve->button.x;
+			y = peve->button.y;
+			if (peve->type == SDL_MOUSEMOTION && x != 0 && y != 0)
+			{
+				SDL_SetWindowPosition(pwin, wx + x - bx, wy + y - by);
+				wx = wx + x - bx;
+				wy = wy + y - by;
+			}
+			//update(rendclear, copyTex);
+		}
+	}
+	return true;
+}
+
+bool ba::ui::window::update(bool rendclear, bool copyTex)
+{
+	for (float waitt = 1.f / FPS;
+		(float)((float)clock() - time) / CLOCKS_PER_SEC < waitt; SDL_Delay(1));
+	time = clock();
+	if (rendclear)
+		SDL_RenderClear(rend);
+	if (copyTex)
+		SDL_RenderCopy(rend, tex, NULL, NULL);
+	for (auto p = otherTex.begin(); p != otherTex.end(); p++)
+		SDL_RenderCopy(rend, p->second->first,
+			NULL, p->second->second);
+	button* pb = NULL;
+	for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
+	{
+		if (butts->statue[p->first])
+		{
+			pb = butts->butts[p->first];
+			if (pb->cs)
+			{
+				pb->cs->getTex();
+				SDL_RenderCopy(rend, pb->cs->tex, NULL, &(pb->re));
+			}
+			SDL_RenderCopy(rend, pb->tex, NULL, &(pb->re));
+		}
+	}
+	if (title && title->tex)
+		SDL_RenderCopy(rend, title->tex, NULL, &(title->re));
+	SDL_RenderPresent(rend);
+	return true;
+}
+
+bool ba::ui::window::pollQuit()
+{
+	this->checkButt();
+	if ((exitButtName) && butts->events[exitButtName] == 1)
+		return 1;
+	if ((peve->type == SDL_QUIT) || ((peve->type == SDL_KEYUP) && (peve->key.keysym.sym == SDLK_ESCAPE)))//KEYUP 防止上一次多按
+		return 1;
+	return 0;
+}
+
+bool ba::ui::window::delButt(const char* _name)
+{
+	return false;
 }
 
 // TODO : why should put this func before ba::ui::QUI::QUI
@@ -512,14 +652,11 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 }
 ba::ui::QUI& ba::ui::QUI::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
 {
-	std::pair<SDL_Texture*, SDL_Rect*>* p = new std::pair<SDL_Texture*, SDL_Rect*>(tex, re);
-	windows[activeWindow]->otherTex[name] = p;
-	return *this;
+	return windows[activeWindow]->addOtherTex(name, tex, re);
 }
 ba::ui::QUI& ba::ui::QUI::updateOtherTex(std::string name, SDL_Texture* tex)
 {
-	windows[activeWindow]->otherTex[name]->first = tex;
-	return *this;
+	return windows[activeWindow]->updateOtherTex(name, tex);
 }
 bool ba::ui::QUI::delButt(const char* _name)
 {
@@ -528,120 +665,22 @@ bool ba::ui::QUI::delButt(const char* _name)
 bool ba::ui::QUI::checkButt()
 {
 	window* win = windows[activeWindow];
-
-	SDL_PollEvent(win->peve);
-	clock_t st = clock();
-	int (*eveFunc)(void* pData, ...) = NULL;
-	void* eveFuncData = NULL;
-	if (win->peve->type == SDL_MOUSEBUTTONDOWN)
-	{
-		for (SDL_PollEvent(win->peve); win->peve->type != SDL_MOUSEBUTTONUP;
-			SDL_PollEvent(win->peve), SDL_Delay(1))
-		{
-			if ((float)(clock() - st) / CLOCKS_PER_SEC > 0.2)
-				return this->checkTitle();
-		}
-		Sint32 mx = win->peve->motion.x;
-		Sint32 my = win->peve->motion.y;
-		int x, y, w, h;
-		for (auto p = win->butts->butts.begin(); p != win->butts->butts.end(); p++)
-		{
-			if (win->butts->statue[p->first])
-			{
-				win->butts->events[p->first] = 0;
-				x = p->second->re.x;
-				y = p->second->re.y;
-				w = p->second->re.w;
-				h = p->second->re.h;
-				if (mx > x && mx<x + w && my>y && my < y + h)
-				{
-					if (win->peve->button.button == SDL_BUTTON_LEFT)
-					{
-						win->butts->events[p->first] = 1;
-						if (win->butts->eveFunc.find(p->first) != win->butts->eveFunc.end())
-						{
-							eveFunc = win->butts->eveFunc[p->first];
-							eveFunc(win->butts->eveFuncData[p->first]);
-						}
-					}
-					else if (win->peve->button.button == SDL_BUTTON_RIGHT)
-					{
-						win->butts->events[p->first] = 2;
-					}
-				}
-			}
-		}
-	}
-	return true;
+	return win->checkButt();
 }
 bool ba::ui::QUI::checkTitle(bool rendclear, bool copyTex)
 {
 	window* win = windows[activeWindow];
-
-	Sint32 wx = 0, wy = 0, bx = 0, by = 0;
-	if (win->title && win->title->checkPressOn(win->peve))
-	{
-		SDL_GetWindowPosition(win->pwin, &wx, &wy);
-		bx = win->peve->button.x;
-		by = win->peve->button.y;
-		for (Sint32 x, y = SDL_PollEvent(win->peve); win->peve->type != SDL_MOUSEBUTTONUP; )
-		{
-			SDL_PollEvent(win->peve);
-			x = win->peve->button.x;
-			y = win->peve->button.y;
-			if (win->peve->type == SDL_MOUSEMOTION && x != 0 && y != 0)
-			{
-				SDL_SetWindowPosition(win->pwin, wx + x - bx, wy + y - by);
-				wx = wx + x - bx;
-				wy = wy + y - by;
-			}
-			//update(rendclear, copyTex);
-		}
-	}
-	return true;
+	return win->checkTitle(rendclear, copyTex);
 }
 bool ba::ui::QUI::update(bool rendclear, bool copyTex)
 {
 	window* win = windows[activeWindow];
-
-	for (float waitt = 1.f / win->FPS;
-		(float)((float)clock() - win->time) / CLOCKS_PER_SEC < waitt; SDL_Delay(1));
-	win->time = clock();
-	if (rendclear)
-		SDL_RenderClear(win->rend);
-	if (copyTex)
-		SDL_RenderCopy(win->rend, win->tex, NULL, NULL);
-	for (auto p = win->otherTex.begin(); p != win->otherTex.end(); p++)
-		SDL_RenderCopy(win->rend, p->second->first,
-			NULL, p->second->second);
-	button* pb = NULL;
-	for (auto p = win->butts->butts.begin(); p != win->butts->butts.end(); p++)
-	{
-		if (win->butts->statue[p->first])
-		{
-			pb = win->butts->butts[p->first];
-			if (pb->cs)
-			{
-				pb->cs->getTex();
-				SDL_RenderCopy(win->rend, pb->cs->tex, NULL, &(pb->re));
-			}
-			SDL_RenderCopy(win->rend, pb->tex, NULL, &(pb->re));
-		}
-	}
-	if (win->title && win->title->tex)
-		SDL_RenderCopy(win->rend, win->title->tex, NULL, &(win->title->re));
-	SDL_RenderPresent(win->rend);
-	return true;
+	return win->update(rendclear, copyTex);
 }
 bool ba::ui::QUI::pollQuit()
 {
 	window* win = windows[activeWindow];
-	this->checkButt();
-	if ((win->exitButtName) && win->butts->events[win->exitButtName] == 1)
-		return 1;
-	if ((win->peve->type == SDL_QUIT) || ((win->peve->type == SDL_KEYUP) && (win->peve->key.keysym.sym == SDLK_ESCAPE)))//KEYUP 防止上一次多按
-		return 1;
-	return 0;
+	return win->pollQuit();
 }
 int ba::ui::QUI::Quit(int code, ...)
 {
