@@ -643,48 +643,102 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 	else
 	{
 		window* win = new window(this, titlepc, winw, winh, winflags, bgc);
-		windows.push_back(win);
+		windows[titlepc] = win;
 		activeWindow = 0;
-		activeWin = windows[activeWindow];
+		activeWin = win;
 
 		MyBA_AtQuit(QUI_Quit, (void*)this);
 	}
 }
-ba::ui::QUI& ba::ui::QUI::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
+ba::ui::QUI& ba::ui::QUI::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re, const char* win)
 {
-	return windows[activeWindow]->addOtherTex(name, tex, re);
+	if (win && windows.find(win) != windows.end())
+		return windows[win]->addOtherTex(name, tex, re);
+	return activeWin->addOtherTex(name, tex, re);
 }
-ba::ui::QUI& ba::ui::QUI::updateOtherTex(std::string name, SDL_Texture* tex)
+ba::ui::QUI& ba::ui::QUI::updateOtherTex(std::string name, SDL_Texture* tex, const char* win)
 {
-	return windows[activeWindow]->updateOtherTex(name, tex);
+	if (win && windows.find(win) != windows.end())
+		return windows[win]->updateOtherTex(name, tex);
+	return activeWin->updateOtherTex(name, tex);
 }
-bool ba::ui::QUI::delButt(const char* _name)
+ba::ui::QUI& ba::ui::QUI::addWindow(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
+{
+	window* win = new window(this, titlepc, winw, winh, winflags, bgc);
+	windows[titlepc] = win;
+	return *this;
+}
+bool ba::ui::QUI::delButt(const char* _name, const char* win)
 {
 	return false;
 }
-bool ba::ui::QUI::checkButt()
+bool ba::ui::QUI::checkButt(const char* win)
 {
-	window* win = windows[activeWindow];
-	return win->checkButt();
+	if(win && windows.find(win) != windows.end())
+		return windows[win]->checkButt();
+	return activeWin->checkButt();
 }
-bool ba::ui::QUI::checkTitle(bool rendclear, bool copyTex)
+bool ba::ui::QUI::checkTitle(bool rendclear, bool copyTex, const char* win)
 {
-	window* win = windows[activeWindow];
-	return win->checkTitle(rendclear, copyTex);
+	if (win && windows.find(win) != windows.end())
+		return windows[win]->checkTitle(rendclear, copyTex);
+	return activeWin->checkTitle(rendclear, copyTex);
 }
-bool ba::ui::QUI::update(bool rendclear, bool copyTex)
+ba::ui::QUI& ba::ui::QUI::setActiveWindow(const char* title, _LL idx)
 {
-	window* win = windows[activeWindow];
-	return win->update(rendclear, copyTex);
+	if (!title && idx == -1)
+	{
+		//do nothing
+	}
+	else if (title)
+	{
+		_LL i = 0;
+		for (auto winp : windows)
+		{
+			if (strcmp(title, winp.second->titlepc) == 0)
+			{
+				activeWindow = i;
+				activeWin = windows[title];
+				break;
+			}
+			i++;
+		}
+	}
+	else if (idx >= 0 && (_ULL)idx < windows.size())
+	{
+		_LL i = 0;
+		for (auto winp : windows)
+		{
+			if (i == idx)
+			{
+				activeWindow = i;
+				activeWin = windows[title];
+				break;
+			}
+			i++;
+		}
+	}
+	else//Illegal idx
+	{
+		MyBA_Err("ba::ui::QUI::setActiveWindow : Illegal idx", 1);
+	}
+	return *this;
 }
-bool ba::ui::QUI::pollQuit()
+bool ba::ui::QUI::update(const char* win, bool rendclear, bool copyTex)
 {
-	window* win = windows[activeWindow];
-	return win->pollQuit();
+	if (win && windows.find(win) != windows.end())
+		return windows[win]->update(rendclear, copyTex);
+	return activeWin->update(rendclear, copyTex);
+}
+bool ba::ui::QUI::pollQuit(const char* win)
+{
+	if (win && windows.find(win) != windows.end())
+		return windows[win]->pollQuit();
+	return activeWin->pollQuit();
 }
 int ba::ui::QUI::Quit(int code, ...)
 {
-	window* win = windows[activeWindow];
+	window* win = activeWin;
 	SDL_FreeSurface(win->sur);
 	SDL_DestroyTexture(win->tex);
 	SDL_DestroyRenderer(win->rend);

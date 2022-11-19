@@ -203,17 +203,26 @@ namespace ba
 		public:
 			_LL activeWindow = -1;
 			window* activeWin = NULL;
-			std::deque<window*> windows;
+			std::unordered_map<std::string, window*> windows;
+
 
 			QUI(const char* titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color* bgc = NULL);
-			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
-			QUI& updateOtherTex(std::string name, SDL_Texture* tex);
-			bool checkButt();
-			bool checkTitle(bool rendclear = true, bool copyTex = true);
-			bool update(bool rendclear = true, bool copyTex = true);
-			bool pollQuit();
-			bool delButt(const char* _name);
+
+			QUI& addWindow(const char* titlepc = "QUI", int winw = 800, int winh = 500,
+				int winflags = 0, SDL_Color* bgc = NULL);
+			QUI& setActiveWindow(const char* title = NULL, _LL idx = -1);
+
+			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re,
+				const char* win = NULL);
+			QUI& updateOtherTex(std::string name, SDL_Texture* tex,
+				const char* win = NULL);
+			bool checkButt(const char* win = NULL);
+			bool checkTitle(bool rendclear = true, bool copyTex = true,
+				const char* win = NULL);
+			bool update(const char* win = NULL, bool rendclear = true, bool copyTex = true);
+			bool pollQuit(const char* win = NULL);
+			bool delButt(const char* _name, const char* win = NULL);
 
 			int Quit(int code, ...);
 			friend int QUI_Quit(void* pui_, int code, ...);
