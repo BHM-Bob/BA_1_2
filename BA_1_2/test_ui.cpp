@@ -20,7 +20,7 @@ void ba::test::_ui::initSDL2(void)
 	ui.activeWin->exitButtName = "exit";
 
 	ui.addWindow("win2");
-	ba::ui::colorSur* cs2 = new ba::ui::colorSur(ui.activeWin, NULL, ui.activeWin->re);
+	ba::ui::colorSur* cs2 = new ba::ui::colorSur(ui.windows["win2"], NULL, ui.activeWin->re);
 	ui.addOtherTex("cst", NULL, &cs2->re, "win2");
 
 	for (; ! ui.pollQuit(); )
