@@ -140,15 +140,15 @@ SDL_Texture* ba::ui::getImageTex(SDL_Renderer* renderer, const char* path)
 
 void ba::ui::rect::rendRect(void)
 {
-	if (ui)
+	if (win)
 	{
 		sur = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
 		SDL_FillRect(sur, NULL, SDL_MapRGBA(sur->format, col.r, col.g, col.b, col.a));
-		tex = SDL_CreateTextureFromSurface(ui->rend, sur);
+		tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	}
 	else
 	{
-		MyBA_Err("ba::ui::rect::rendRect: ui is not assigned", 1);
+		MyBA_Err("ba::ui::rect::rendRect: win is not assigned", 1);
 	}
 }
 bool ba::ui::rect::checkPressOn(SDL_Event* peve)
@@ -165,7 +165,7 @@ bool ba::ui::rect::checkPressOn(SDL_Event* peve)
 }
 
 
-ba::ui::colorSur::colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos,
+ba::ui::colorSur::colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos,
 	bool alloc0Mask, int _sumdot)
 	: rect(pos, {0,0,0,0})
 {
@@ -179,7 +179,7 @@ ba::ui::colorSur::colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos,
 	{
 		sur = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
 	}
-	ui = _ui;
+	win = _win;
 	sumdot = _sumdot;
 	dots = new tensor<colorSurDot>({ _sumdot });
 	lv = new tensor<float>({ _sumdot });
@@ -283,7 +283,7 @@ SDL_Texture* ba::ui::colorSur::getTex(void)
 	update();
 	if (tex)
 		SDL_DestroyTexture(tex);
-	tex = SDL_CreateTextureFromSurface(ui->rend, sur);
+	tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	return tex;
 }
 void ba::ui::colorSur::destroy(void)
@@ -306,12 +306,12 @@ void ba::ui::colorSur::destroy(void)
 //}
 
 
-ba::ui::colorText::colorText(QUI* _ui, const char* pc)
-	: colorSur(_ui, TTF_RenderUTF8_Blended(_ui->defaultFont, pc, { .r = 0 , .g = 255 , .b = 0, .a = 255 }),
+ba::ui::colorText::colorText(window* _win, const char* pc)
+	: colorSur(_win, TTF_RenderUTF8_Blended(_win->defaultFont, pc, { .r = 0 , .g = 255 , .b = 0, .a = 255 }),
 		{ 0 }, true)
 {
-	font = ui->defaultFont;
-	rend = ui->rend;
+	font = win->defaultFont;
+	rend = win->rend;
 	pc = mstrdup(pc, mem);
 	if (re.w == 0)
 	{
@@ -341,11 +341,11 @@ ba::ui::colorText::colorText(QUI* _ui, const char* pc)
 	}
 }
 
-ba::ui::label::label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol,
+ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charCol,
 	SDL_Rect pos, SDL_Color bgc)
 	: rect(pos, bgc)
 {
-	ui = _ui;
+	win = _win;
 	text = pc;
 	if (pos.w <= 0 || pos.h <= 0)//自行根据字符串大小计算label大小
 	{
@@ -359,7 +359,7 @@ ba::ui::label::label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol,
 		}
 	}
 
-	sur = TTF_RenderUTF8_Blended(ui->defaultFont, text.c_str(), charCol);
+	sur = TTF_RenderUTF8_Blended(win->defaultFont, text.c_str(), charCol);
 	if (sur == NULL)
 	{
 		MyBA_Errs(1, "ba::ui::label::label: Can't blended Surface with text:",
@@ -371,19 +371,19 @@ ba::ui::label::label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol,
 		SDL_FillRect(bgs, NULL, SDL_MapRGBA(bgs->format, bgc.r, bgc.g, bgc.b, bgc.a));
 		SDL_BlitScaled(sur, NULL, bgs, NULL);
 		SDL_FreeSurface(bgs);
-		tex = SDL_CreateTextureFromSurface(ui->rend, sur);
+		tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	}
 }
 
-ba::ui::button::button(QUI* _ui, const char* pc, int charSize, SDL_Color charCol,
+ba::ui::button::button(window* _win, const char* pc, int charSize, SDL_Color charCol,
 	SDL_Rect pos, SDL_Color bgc)
-	: label(_ui, pc, charSize, charCol, pos, bgc)
+	: label(_win, pc, charSize, charCol, pos, bgc)
 {
 }
 
-ba::ui::buttons::buttons(QUI* _ui)
+ba::ui::buttons::buttons(window* _win)
 {
-	ui = _ui;
+	win = _win;
 }
 
 bool ba::ui::buttons::add(const char* _name, const char* _showWords, int charSize,
@@ -404,21 +404,21 @@ bool ba::ui::buttons::add(const char* _name, const char* _showWords, int charSiz
 			pos.h = charSize;
 		if (!strcmp(align, "tr"))//top && right
 		{
-			pos.x = ui->win->re.w - pos.x;
+			pos.x = win->re.w - pos.x;
 		}
 		else if (!strcmp(align, "bl"))//bottom && left
 		{
-			pos.h = ui->win->re.h - pos.h;
+			pos.h = win->re.h - pos.h;
 		}
 		else if (!strcmp(align, "br"))//bottom && right
 		{
-			pos.h = ui->win->re.h - pos.h;
-			pos.x = ui->win->re.w - pos.x;
+			pos.h = win->re.h - pos.h;
+			pos.x = win->re.w - pos.x;
 		}
 	}
-	button* pb = new button(ui, showWords, charSize, charCol, pos, bgc);
+	button* pb = new button(win, showWords, charSize, charCol, pos, bgc);
 	if (bg == (SDL_Surface*)(0x1))//Use colorSur
-		pb->cs = new colorSur(ui, NULL, pb->re);
+		pb->cs = new colorSur(win, NULL, pb->re);
 
 	// just use char ptr
 	butts[name] = pb;
@@ -432,11 +432,52 @@ bool ba::ui::buttons::add(const char* _name, const char* _showWords, int charSiz
 	return true;
 }
 
-ba::ui::window::window(QUI* _ui, const char* title, SDL_Rect _re, SDL_Color _col)
-	: rect(_re, _col)
+ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
+	int winflags, SDL_Color* bgc)
+	: rect(SDL_Rect(0, 0, winw, winh), bgc ? *bgc : SDL_Color(0, 0, 0, 0))
 {
 	ui = _ui;
-	titlepc = mstrdup(title, mem);
+	titlepc = mstrdup(_titlepc, mem);
+	peve = BALLOC_R(1, SDL_Event, mem);
+	FPS = 25.f;
+
+	if (winflags == 0)
+		winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE;
+	else if (winflags == 1)
+		winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+	pwin = SDL_CreateWindow(titlepc, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		re.w, re.h, winflags);
+	rend = SDL_CreateRenderer(pwin, -1, SDL_RENDERER_ACCELERATED);
+	SDL_RenderClear(rend);
+	SDL_SetRenderDrawColor(rend, 200, 200, 200, 200);
+
+	defaultFont = TTF_OpenFont("C:\\Windows\\Fonts\\simkai.ttf", 128);
+
+	if (!bgc)
+	{
+		col = { 0,0,0,0 };
+		SDL_VERSION(&(info.version));
+		if (SDL_GetWindowWMInfo(pwin, &(info)))
+			hwnd = info.info.win.window;
+		/*设置窗口colorkey*/
+		SetWindowLongW(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+		SetLayeredWindowAttributes(hwnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
+		/*设置窗口为悬浮窗 */
+		SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		sur = SDL_GetWindowSurface(pwin);
+		UINT32 keyColor = SDL_MapRGB(sur->format, 255, 255, 255);
+		SDL_SetSurfaceBlendMode(sur, SDL_BLENDMODE_NONE);
+		SDL_FillRect(sur, NULL, keyColor);
+		tex = SDL_CreateTextureFromSurface(rend, sur);
+	}
+	else
+	{
+		rendRect();
+	}
+
+	SDL_RenderCopy(rend, tex, NULL, NULL);
+	SDL_RenderPresent(rend);
+	time = clock();
 }
 
 // TODO : why should put this func before ba::ui::QUI::QUI
@@ -461,56 +502,10 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 	}
 	else
 	{
-		if (bgc)
-		{
-			win = new window(this, titlepc, { 0, 0, winw, winh }, *bgc);
-		}
-		else
-		{
-			SDL_Color* _bgc = BALLOC_R(1, SDL_Color, mem);
-			win = new window(this, titlepc, { 0, 0, winw, winh }, *_bgc);
-		}
-		win->peve = BALLOC_R(1, SDL_Event, mem);
-		win->FPS = 25.f;
-
-		if (winflags == 0)
-			winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE;
-		else if (winflags == 1)
-			winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-		win->pwin = SDL_CreateWindow(win->titlepc, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			win->re.w, win->re.h, winflags);
-		win->rend = SDL_CreateRenderer(win->pwin, -1, SDL_RENDERER_ACCELERATED);
-		SDL_RenderClear(win->rend);
-		SDL_SetRenderDrawColor(win->rend, 200, 200, 200, 200);
-
-		rend = win->rend;
-		defaultFont = TTF_OpenFont("C:\\Windows\\Fonts\\simkai.ttf", 128);
-
-		if (!bgc)
-		{
-			win->col = { 0,0,0,0 };
-			SDL_VERSION(&(win->info.version));
-			if (SDL_GetWindowWMInfo(win->pwin, &(win->info)))
-				win->hwnd = win->info.info.win.window;
-			/*设置窗口colorkey*/
-			SetWindowLongW(win->hwnd, GWL_EXSTYLE, GetWindowLong(win->hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-			SetLayeredWindowAttributes(win->hwnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
-			/*设置窗口为悬浮窗 */
-			SetWindowPos(win->hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-			win->sur = SDL_GetWindowSurface(win->pwin);
-			UINT32 keyColor = SDL_MapRGB(win->sur->format, 255, 255, 255);
-			SDL_SetSurfaceBlendMode(win->sur, SDL_BLENDMODE_NONE);
-			SDL_FillRect(win->sur, NULL, keyColor);
-			win->tex = SDL_CreateTextureFromSurface(win->rend, win->sur);
-		}
-		else
-		{
-			win->rendRect();
-		}
-
-		SDL_RenderCopy(win->rend, win->tex, NULL, NULL);
-		SDL_RenderPresent(win->rend);
-		win->time = clock();
+		window* win = new window(this, titlepc, winw, winh, winflags, bgc);
+		windows.push_back(win);
+		activeWindow = 0;
+		activeWin = windows[activeWindow];
 
 		MyBA_AtQuit(QUI_Quit, (void*)this);
 	}
@@ -518,17 +513,13 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 ba::ui::QUI& ba::ui::QUI::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
 {
 	std::pair<SDL_Texture*, SDL_Rect*>* p = new std::pair<SDL_Texture*, SDL_Rect*>(tex, re);
-	otherTex[name] = p;
+	windows[activeWindow]->otherTex[name] = p;
 	return *this;
 }
 ba::ui::QUI& ba::ui::QUI::updateOtherTex(std::string name, SDL_Texture* tex)
 {
-	otherTex[name]->first = tex;
+	windows[activeWindow]->otherTex[name]->first = tex;
 	return *this;
-}
-bool ba::ui::QUI::changeButtShowWords(const char* _name, const char* _showWords, int charSize, SDL_Color* cc, SDL_Color* bgc, const char* fontName)
-{
-	return false;
 }
 bool ba::ui::QUI::delButt(const char* _name)
 {
@@ -536,6 +527,8 @@ bool ba::ui::QUI::delButt(const char* _name)
 }
 bool ba::ui::QUI::checkButt()
 {
+	window* win = windows[activeWindow];
+
 	SDL_PollEvent(win->peve);
 	clock_t st = clock();
 	int (*eveFunc)(void* pData, ...) = NULL;
@@ -551,11 +544,11 @@ bool ba::ui::QUI::checkButt()
 		Sint32 mx = win->peve->motion.x;
 		Sint32 my = win->peve->motion.y;
 		int x, y, w, h;
-		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
+		for (auto p = win->butts->butts.begin(); p != win->butts->butts.end(); p++)
 		{
-			if (butts->statue[p->first])
+			if (win->butts->statue[p->first])
 			{
-				butts->events[p->first] = 0;
+				win->butts->events[p->first] = 0;
 				x = p->second->re.x;
 				y = p->second->re.y;
 				w = p->second->re.w;
@@ -564,16 +557,16 @@ bool ba::ui::QUI::checkButt()
 				{
 					if (win->peve->button.button == SDL_BUTTON_LEFT)
 					{
-						butts->events[p->first] = 1;
-						if (butts->eveFunc.find(p->first) != butts->eveFunc.end())
+						win->butts->events[p->first] = 1;
+						if (win->butts->eveFunc.find(p->first) != win->butts->eveFunc.end())
 						{
-							eveFunc = butts->eveFunc[p->first];
-							eveFunc(butts->eveFuncData[p->first]);
+							eveFunc = win->butts->eveFunc[p->first];
+							eveFunc(win->butts->eveFuncData[p->first]);
 						}
 					}
 					else if (win->peve->button.button == SDL_BUTTON_RIGHT)
 					{
-						butts->events[p->first] = 2;
+						win->butts->events[p->first] = 2;
 					}
 				}
 			}
@@ -583,6 +576,8 @@ bool ba::ui::QUI::checkButt()
 }
 bool ba::ui::QUI::checkTitle(bool rendclear, bool copyTex)
 {
+	window* win = windows[activeWindow];
+
 	Sint32 wx = 0, wy = 0, bx = 0, by = 0;
 	if (win->title && win->title->checkPressOn(win->peve))
 	{
@@ -607,6 +602,8 @@ bool ba::ui::QUI::checkTitle(bool rendclear, bool copyTex)
 }
 bool ba::ui::QUI::update(bool rendclear, bool copyTex)
 {
+	window* win = windows[activeWindow];
+
 	for (float waitt = 1.f / win->FPS;
 		(float)((float)clock() - win->time) / CLOCKS_PER_SEC < waitt; SDL_Delay(1));
 	win->time = clock();
@@ -614,15 +611,15 @@ bool ba::ui::QUI::update(bool rendclear, bool copyTex)
 		SDL_RenderClear(win->rend);
 	if (copyTex)
 		SDL_RenderCopy(win->rend, win->tex, NULL, NULL);
-	for (auto p = otherTex.begin(); p != otherTex.end(); p++)
+	for (auto p = win->otherTex.begin(); p != win->otherTex.end(); p++)
 		SDL_RenderCopy(win->rend, p->second->first,
 			NULL, p->second->second);
 	button* pb = NULL;
-	for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
+	for (auto p = win->butts->butts.begin(); p != win->butts->butts.end(); p++)
 	{
-		if (butts->statue[p->first])
+		if (win->butts->statue[p->first])
 		{
-			pb = butts->butts[p->first];
+			pb = win->butts->butts[p->first];
 			if (pb->cs)
 			{
 				pb->cs->getTex();
@@ -638,8 +635,9 @@ bool ba::ui::QUI::update(bool rendclear, bool copyTex)
 }
 bool ba::ui::QUI::pollQuit()
 {
+	window* win = windows[activeWindow];
 	this->checkButt();
-	if ((win->exitButtName) && butts->events[win->exitButtName] == 1)
+	if ((win->exitButtName) && win->butts->events[win->exitButtName] == 1)
 		return 1;
 	if ((win->peve->type == SDL_QUIT) || ((win->peve->type == SDL_KEYUP) && (win->peve->key.keysym.sym == SDLK_ESCAPE)))//KEYUP 防止上一次多按
 		return 1;
@@ -647,6 +645,7 @@ bool ba::ui::QUI::pollQuit()
 }
 int ba::ui::QUI::Quit(int code, ...)
 {
+	window* win = windows[activeWindow];
 	SDL_FreeSurface(win->sur);
 	SDL_DestroyTexture(win->tex);
 	SDL_DestroyRenderer(win->rend);

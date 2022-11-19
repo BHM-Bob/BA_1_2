@@ -19,6 +19,9 @@ E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2_ttf.lib
 #include "BA_Base.hpp"
 #include "BA_Math.hpp"
 
+// TODO : use threads
+// TODO : multi windows
+
 namespace ba
 {
 	namespace ui
@@ -50,6 +53,7 @@ namespace ba
 		};
 
 		class QUI;
+		class window;
 
 		class rect : public BA_Base
 		{
@@ -58,7 +62,7 @@ namespace ba
 			SDL_Color col = { 0 };
 			SDL_Surface* sur = nullptr;
 			SDL_Texture* tex = nullptr;
-			QUI* ui = nullptr;
+			window* win = nullptr;
 
 			rect() {}
 			rect(SDL_Rect _re, SDL_Color _col)
@@ -94,7 +98,7 @@ namespace ba
 			int col[4] = { 0 };
 			SDL_Rect re_paint = { 0, 0, 1, 1 };
 
-			colorSur(QUI* _ui, SDL_Surface* _distSur, SDL_Rect pos = { 0,0,0,0 },
+			colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos = { 0,0,0,0 },
 				bool alloc0Mask = false, int _sumdot = 4);
 			colorSur* cacu(void);
 			colorSur* update(void);
@@ -108,35 +112,39 @@ namespace ba
 			TTF_Font* font = nullptr;
 			SDL_Renderer* rend = nullptr;
 
-			colorText(QUI* _ui, const char* pc);
+			colorText(window* _win, const char* pc);
 		};
 		class label : public rect
 		{
 		public:
 			std::string text;
 			// TODO : can not rend a white font ???
-			label(QUI* _ui, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
+			label(window* _win, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
 				SDL_Rect pos = {  }, SDL_Color bgc = { });
 		};
 		class button : public label
 		{
 		public:
 			colorSur* cs = NULL;
-			button(QUI* _ui, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
+			button(window* _win, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
 				SDL_Rect pos = {  }, SDL_Color bgc = {  });
+			// _showWords 会mstrdup
+			bool changeButtShowWords(const char* _showWords,
+				int charSize, SDL_Color* cc = NULL, SDL_Color* bgc = NULL,
+				const char* fontName = NULL);
 		};
 
 		class buttons : public BA_Base
 		{
 		public:
-			QUI* ui = NULL;
+			window* win = NULL;
 			std::map<std::string, int> events;//1 left ; 2 right
 			std::map<std::string, int> statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
 			std::map<std::string, button*> butts;//按钮列表
 			std::map<std::string, int (*)(void* pData, ...)> eveFunc;// int (*)(void* pData);
 			std::map<std::string, void*> eveFuncData;// void*
 
-			buttons(QUI* _ui);
+			buttons(window* _win);
 			// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
 			// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
 			bool add(const char* _name, const char* _showWords, int charSize,
@@ -145,9 +153,22 @@ namespace ba
 				int (*eveFunc)(void* pData, ...) = NULL, void* eveFuncData = NULL);
 		};
 
-		class window : public rect
+		class event : public BA_Base
 		{
 		public:
+
+
+		};
+
+		class window : public rect
+		{
+		private:
+			void _maintainGUI(balist<ba::ui::event> inEve, balist <ba::ui::event> outEve);
+		public:
+			std::mutex locker;
+			QUI* ui = NULL;
+			TTF_Font* defaultFont = nullptr;
+
 			char* titlepc = nullptr;
 			SDL_Window* pwin = nullptr;
 			SDL_SysWMinfo info = SDL_SysWMinfo();
@@ -159,21 +180,30 @@ namespace ba
 			float FPS = 0.f;
 			const char* exitButtName = nullptr;
 			label* title = nullptr;
+			buttons* butts = new buttons(this);
 
-			window(QUI* _ui, const char* title, SDL_Rect _re, SDL_Color _col);
+			std::unordered_map<std::string, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
+
+			window(QUI* _ui, const char* _titlepc = "QUI", int winw = 800, int winh = 500,
+				int winflags = 0, SDL_Color* bgc = NULL);
+
+			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
+			QUI& updateOtherTex(std::string name, SDL_Texture* tex);
+			bool checkButt();
+			bool checkTitle(bool rendclear = true, bool copyTex = true);
+			bool update(bool rendclear = true, bool copyTex = true);
+			bool pollQuit();
+			bool delButt(const char* _name);
 		};
 
 		// TODO : support multi window
 		class QUI : public BA_Base
 		{
+
 		public:
-			SDL_Renderer* rend = nullptr;
-			TTF_Font* defaultFont = nullptr;
-			window* win = nullptr;
-			buttons* butts = new buttons(this);
-
-			std::unordered_map<std::string, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
-
+			_LL activeWindow = -1;
+			window* activeWin = NULL;
+			std::deque<window*> windows;
 
 			QUI(const char* titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color* bgc = NULL);
@@ -183,12 +213,8 @@ namespace ba
 			bool checkTitle(bool rendclear = true, bool copyTex = true);
 			bool update(bool rendclear = true, bool copyTex = true);
 			bool pollQuit();
-
-			// _showWords 会mstrdup
-			bool changeButtShowWords(const char* _name, const char* _showWords,
-				int charSize, SDL_Color* cc = NULL, SDL_Color* bgc = NULL,
-				const char* fontName = NULL);
 			bool delButt(const char* _name);
+
 			int Quit(int code, ...);
 			friend int QUI_Quit(void* pui_, int code, ...);
 		};
