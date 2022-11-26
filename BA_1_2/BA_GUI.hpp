@@ -20,7 +20,7 @@ E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2_ttf.lib
 #include "BA_Math.hpp"
 
 // TODO : use threads
-// TODO : template or func obj of button func
+// TODO : maybe later : template or func obj of button func
 
 namespace ba
 {

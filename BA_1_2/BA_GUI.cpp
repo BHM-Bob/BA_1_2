@@ -185,14 +185,11 @@ int ba::ui::rect::checkMouse(bool updateEve, SDL_Event* peve)
 		return 0;
 	if(updateEve)
 		SDL_PollEvent(peve);
-
-	clock_t st = clock();
-	Sint32 mx = -1, my = -1, _mx = -1, _my = -1;
-	bool firstRun = true;
-
 	if (_checkMouseIn())
 	{
-		while (peve->type == SDL_MOUSEBUTTONDOWN)
+		clock_t st = clock();
+		Sint32 mx = -1, my = -1, _mx = -1, _my = -1;
+		for (bool firstRun = true; peve->type == SDL_MOUSEBUTTONDOWN; )
 		{
 			SDL_PollEvent(peve);
 			mx = peve->motion.x;		my = peve->motion.y;
