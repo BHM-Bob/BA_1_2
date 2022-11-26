@@ -151,15 +151,66 @@ void ba::ui::rect::rendRect(void)
 		MyBA_Err("ba::ui::rect::rendRect: win is not assigned", 1);
 	}
 }
-bool ba::ui::rect::checkPressOn(SDL_Event* peve)
+SDL_Event* ba::ui::rect::_checkEveAvaliable(SDL_Event* peve)
 {
-	SDL_PollEvent(peve);
-	if (peve->type == SDL_MOUSEBUTTONDOWN)
+	if (!peve && (!win || !win->peve))
 	{
-		Sint32 mx = peve->motion.x;
-		Sint32 my = peve->motion.y;
-		if (mx > re.x && mx<re.x + re.w && my>re.y && my < re.y + re.h)
-			return 1;
+		MyBA_Err("SDL_Event* ba::ui::rect::_checkEveAvaliable: no avaliable SDL_Event, return NULL", 1);
+		return NULL;
+	}
+	return peve ? peve : win->peve;
+}
+int ba::ui::rect::_setMouseHistory(int code)
+{
+	mouseHistory = code;
+	mouseHistoryTime = clock();
+	return code;
+}
+bool ba::ui::rect::_checkMouseIn(bool updateEve, SDL_Event* peve)
+{
+	peve = _checkEveAvaliable(peve);
+	if (!peve)
+		return false;
+	if (updateEve)
+		SDL_PollEvent(peve);
+	if ((peve->motion.x > re.x) && (peve->motion.x < re.x + re.w) && (peve->motion.y > re.y) && (peve->motion.y < re.y + re.h))
+		return true;
+	return false;
+}
+
+int ba::ui::rect::checkMouse(bool updateEve, SDL_Event* peve)
+{
+	peve = _checkEveAvaliable(peve);
+	if (!peve)
+		return 0;
+	if(updateEve)
+		SDL_PollEvent(peve);
+
+	clock_t st = clock();
+	Sint32 mx = -1, my = -1, _mx = -1, _my = -1;
+	bool firstRun = true;
+
+	if (_checkMouseIn())
+	{
+		while (peve->type == SDL_MOUSEBUTTONDOWN)
+		{
+			SDL_PollEvent(peve);
+			mx = peve->motion.x;		my = peve->motion.y;
+			if (firstRun)
+			{
+				_mx = mx;		_my = my;
+				firstRun = false;
+			}
+			// 拖动：1: 鼠标保持按下超0.2秒 或 鼠标按下后移动
+			if ((clock() - st > 0.2 * CLOCKS_PER_SEC) || (mx != _mx || my != _my))
+				return _setMouseHistory(1);
+		}
+		if (_checkMouseIn())
+		{
+			// 单击: 2 for LEFT; 3 for RIGHT
+			return _setMouseHistory(peve->button.button == SDL_BUTTON_LEFT ? 2 :
+				(peve->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
+		}
 	}
 	return 0;
 }
@@ -437,6 +488,7 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	: rect(SDL_Rect(0, 0, winw, winh), bgc ? *bgc : SDL_Color(0, 0, 0, 0))
 {
 	ui = _ui;
+	win = this;
 	titlepc = mstrdup(_titlepc, mem);
 	peve = BALLOC_R(1, SDL_Event, mem);
 	FPS = 25.f;
@@ -508,39 +560,23 @@ bool ba::ui::window::checkButt()
 	void* eveFuncData = NULL;
 	if (peve->type == SDL_MOUSEBUTTONDOWN)
 	{
-		for (SDL_PollEvent(peve); peve->type != SDL_MOUSEBUTTONUP;
-			SDL_PollEvent(peve), SDL_Delay(1))
-		{
-			if ((float)(clock() - st) / CLOCKS_PER_SEC > 0.2)
-				return this->checkTitle();
-		}
-		Sint32 mx = peve->motion.x;
-		Sint32 my = peve->motion.y;
-		int x, y, w, h;
+		if(title && title->checkMouse() == 1)
+			return this->checkTitle();
 		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
 		{
 			if (butts->statue[p->first])
 			{
-				butts->events[p->first] = 0;
-				x = p->second->re.x;
-				y = p->second->re.y;
-				w = p->second->re.w;
-				h = p->second->re.h;
-				if (mx > x && mx<x + w && my>y && my < y + h)
+				butts->events[p->first] = p->second->checkMouse();
+				if (butts->events[p->first] == 2)
 				{
-					if (peve->button.button == SDL_BUTTON_LEFT)
+					if (butts->eveFunc.find(p->first) != butts->eveFunc.end())
 					{
-						butts->events[p->first] = 1;
-						if (butts->eveFunc.find(p->first) != butts->eveFunc.end())
-						{
-							eveFunc = butts->eveFunc[p->first];
-							eveFunc(butts->eveFuncData[p->first]);
-						}
+						eveFunc = butts->eveFunc[p->first];
+						eveFunc(butts->eveFuncData[p->first]);
 					}
-					else if (peve->button.button == SDL_BUTTON_RIGHT)
-					{
-						butts->events[p->first] = 2;
-					}
+				}
+				else if (butts->events[p->first] == 3)
+				{
 				}
 			}
 		}
@@ -551,7 +587,7 @@ bool ba::ui::window::checkButt()
 bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 {
 	Sint32 wx = 0, wy = 0, bx = 0, by = 0;
-	if (title && title->checkPressOn(peve))
+	if (title && (title->mouseHistory == 1 || title->checkMouse() == 1))
 	{
 		SDL_GetWindowPosition(pwin, &wx, &wy);
 		bx = peve->button.x;
@@ -608,7 +644,7 @@ bool ba::ui::window::update(bool rendclear, bool copyTex)
 bool ba::ui::window::pollQuit()
 {
 	this->checkButt();
-	if ((exitButtName) && butts->events[exitButtName] == 1)
+	if ((exitButtName) && butts->events[exitButtName] == 2)
 		return 1;
 	if ((peve->type == SDL_QUIT) || ((peve->type == SDL_KEYUP) && (peve->key.keysym.sym == SDLK_ESCAPE)))//KEYUP 防止上一次多按
 		return 1;

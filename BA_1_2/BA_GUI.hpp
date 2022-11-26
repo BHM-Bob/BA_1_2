@@ -20,7 +20,7 @@ E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2_ttf.lib
 #include "BA_Math.hpp"
 
 // TODO : use threads
-// TODO : multi windows
+// TODO : template or func obj of button func
 
 namespace ba
 {
@@ -64,6 +64,9 @@ namespace ba
 			SDL_Texture* tex = nullptr;
 			window* win = nullptr;
 
+			int mouseHistory = 0;
+			clock_t mouseHistoryTime = 0;
+
 			rect() {}
 			rect(SDL_Rect _re, SDL_Color _col)
 			{
@@ -85,7 +88,10 @@ namespace ba
 			}
 			//must use after ui is assigned
 			void rendRect(void);
-			bool checkPressOn(SDL_Event* peve);
+			SDL_Event* _checkEveAvaliable(SDL_Event* peve);
+			int _setMouseHistory(int code);
+			bool _checkMouseIn(bool updateEve = false, SDL_Event* peve = NULL);
+			int checkMouse(bool updateEve = false, SDL_Event* peve = NULL);
 		};
 		class colorSur : public rect
 		{
