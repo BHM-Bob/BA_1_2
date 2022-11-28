@@ -174,6 +174,7 @@ namespace ba
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, int code);
 
+			// 阻塞事件监听线程，降低CPU占用
 			std::mutex signal;
 			Sint32 mousePos[2] = { 0 };
 			Sint32 mouseEndPos[2] = { 0 };
@@ -181,8 +182,8 @@ namespace ba
 
 			windowState(void)
 			{
-				// 锁死互斥信号量，以暂停事件监听线程
-				signal.lock();
+				// 首先锁死互斥信号量，以使得主线程有优先权
+				//signal.lock();
 			}
 
 			bool checkMouseIn(SDL_Rect* re);

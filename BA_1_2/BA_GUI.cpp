@@ -559,12 +559,12 @@ ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex)
 bool ba::ui::window::checkButt()
 {
 	// 释放互斥信号量，以激活事件监听线程
-	// 该信号的锁死由ba::ui::windowState初始化时完成或由ba::ui::window::checkButt退出时完成
-	winState->signal.unlock();
+	// 该信号的锁死由ba::ui::windowState初始化时完成 或 由ba::ui::window::checkButt退出时完成
+	//winState->signal.unlock();
 	// make ui window look like responsible to sys
+	// TODO : deep effect remains unkown
 	SDL_PollEvent(peve);
-	// init
-	clock_t st = clock();
+
 	int (*eveFunc)(void* pData, ...) = NULL;
 	void* eveFuncData = NULL;
 	if (winState->getMouseEveCode(&(this->re)) != 0)
@@ -572,7 +572,7 @@ bool ba::ui::window::checkButt()
 		if(title && winState->getMouseEveCode(&(title->re)) == 1)
 		{
 			// 锁死互斥信号量，以暂停事件监听线程
-			winState->signal.lock();
+			//winState->signal.lock();
 			return this->checkTitle();
 		}
 		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
@@ -592,7 +592,7 @@ bool ba::ui::window::checkButt()
 		}
 	}
 	// 锁死互斥信号量，以暂停事件监听线程
-	winState->signal.lock();
+	//winState->signal.lock();
 	return true;
 }
 
@@ -600,7 +600,7 @@ bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 {
 	// 释放互斥信号量，以激活事件监听线程
 	// 该信号的锁死由ba::ui::windowState初始化时完成或由ba::ui::window::checkButt/checkTitle退出时完成
-	winState->signal.unlock();
+	//winState->signal.unlock();
 	Sint32 wx = 0, wy = 0, bx = 0, by = 0, x = 0, y = 0;
 	if (title && (winState->getMouseEveCode(&(title->re)) == 1))
 	{
@@ -609,7 +609,7 @@ bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 		SDL_SetWindowPosition(pwin, wx + x - bx, wy + y - by);
 	}
 	// 锁死互斥信号量，以暂停事件监听线程
-	winState->signal.lock();
+	//winState->signal.lock();
 	return true;
 }
 
@@ -797,13 +797,13 @@ void ba::ui::_windowState_checkAll(ba::ui::windowState* s)
 	void* eveFuncData = NULL;
 	for( ; ; )
 	{
-		s->signal.lock();
-		s->signal.unlock();
+		//s->signal.lock();//等待主线程释放
+		//s->signal.unlock();//立刻释放，使得主线程不被阻塞
 		SDL_PollEvent(s->_eve);
 		if(s->_eve->type == SDL_MOUSEBUTTONDOWN)
 		{
 			st = clock();
-			for (firstRun = true; s->_eve->type == SDL_MOUSEBUTTONDOWN; )
+			for (firstRun = true; s->_eve->type == SDL_MOUSEBUTTONDOWN ; )
 			{
 				SDL_PollEvent(s->_eve);
 				mx = s->_eve->motion.x;		my = s->_eve->motion.y;
@@ -816,9 +816,10 @@ void ba::ui::_windowState_checkAll(ba::ui::windowState* s)
 				// 拖动：1: 鼠标保持按下超0.2秒 或 鼠标按下后移动
 				if ((clock() - st > 0.2 * CLOCKS_PER_SEC) || (mx != _mx || my != _my))
 				{
+					PPT();
 					s->_setMouseEve(_mx, _my, mx, my, 1);
 				}
-			}PPT();
+			}
 			// 单击: 2 for LEFT; 3 for RIGHT
 			s->_setMouseEve(_mx, _my, mx, my,
 				s->_eve->button.button == SDL_BUTTON_LEFT ? 2 : (s->_eve->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
