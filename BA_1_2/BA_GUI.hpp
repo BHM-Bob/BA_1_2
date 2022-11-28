@@ -41,6 +41,8 @@ namespace ba
 		// make sure that path is utf-8 coded
 		SDL_Texture* getImageTex(SDL_Renderer* renderer, const char* path);
 
+		bool checkDotInRect(Sint32 x, Sint32 y, SDL_Rect* re);
+
 		typedef struct colorSurDot colorSurDot;
 		struct colorSurDot
 		{
@@ -163,16 +165,51 @@ namespace ba
 		{
 		public:
 
-
 		};
 
+		class windowState : public BA_Base
+		{
+		public:
+			std::mutex _locker;
+			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
+			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, int code);
+
+			std::mutex signal;
+			Sint32 mousePos[2] = { 0 };
+			Sint32 mouseEndPos[2] = { 0 };
+			int mouseEveCode = 0;
+
+			windowState(void)
+			{
+				// 锁死互斥信号量，以暂停事件监听线程
+				signal.lock();
+			}
+
+			bool checkMouseIn(SDL_Rect* re);
+			void getMousePos(Sint32* x, Sint32* y,
+				Sint32* orix = NULL, Sint32* oriy = NULL);
+			int getMouseEveCode(SDL_Rect* re);
+		};
+		void _windowState_checkAll(ba::ui::windowState* s);
+		/*
+		* 以单独的事件监听线程监听并更新
+		* TODO ：每个window有单独的线程以供渲染使用
+		*/
 		class window : public rect
 		{
+
 		private:
-			void _maintainGUI(balist<ba::ui::event> inEve, balist <ba::ui::event> outEve);
+			// GUI渲染线程
+			void _handleEvent(void);
+			// GUI事件处理
+			int _handleEvent(event* eve);
+			balist<event>* events = new balist<event>();
+
+			windowState* winState = new windowState();
+			std::thread* threadHandle;
 		public:
 			std::mutex locker;
-			QUI* ui = NULL;
+			QUI* ui = nullptr;
 			TTF_Font* defaultFont = nullptr;
 
 			char* titlepc = nullptr;
@@ -197,7 +234,7 @@ namespace ba
 			QUI& updateOtherTex(std::string name, SDL_Texture* tex);
 			bool checkButt();
 			bool checkTitle(bool rendclear = true, bool copyTex = true);
-			bool update(bool rendclear = true, bool copyTex = true);
+			bool update(bool rendclear = true, bool copyTex = true, bool limitFPS = true);
 			bool pollQuit();
 			bool delButt(const char* _name);
 		};
