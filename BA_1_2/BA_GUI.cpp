@@ -537,7 +537,7 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	{
 		rendRect();
 	}
-	threadHandle = new std::thread(ba::ui::_windowState_checkAll, std::ref(winState));
+	SDL_CreateThread(ba::ui::_windowState_checkAll, "events server", (void*)winState);
 	SDL_RenderCopy(rend, tex, NULL, NULL);
 	SDL_RenderPresent(rend);
 	time = clock();
@@ -558,12 +558,9 @@ ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex)
 
 bool ba::ui::window::checkButt()
 {
-	// 释放互斥信号量，以激活事件监听线程
-	// 该信号的锁死由ba::ui::windowState初始化时完成 或 由ba::ui::window::checkButt退出时完成
-	//winState->signal.unlock();
 	// make ui window look like responsible to sys
 	// TODO : deep effect remains unkown
-	SDL_PollEvent(peve);
+	winState->pollEvent();
 
 	int (*eveFunc)(void* pData, ...) = NULL;
 	void* eveFuncData = NULL;
@@ -571,8 +568,6 @@ bool ba::ui::window::checkButt()
 	{
 		if(title && winState->getMouseEveCode(&(title->re)) == 1)
 		{
-			// 锁死互斥信号量，以暂停事件监听线程
-			//winState->signal.lock();
 			return this->checkTitle();
 		}
 		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
@@ -591,16 +586,11 @@ bool ba::ui::window::checkButt()
 			}
 		}
 	}
-	// 锁死互斥信号量，以暂停事件监听线程
-	//winState->signal.lock();
 	return true;
 }
 
 bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 {
-	// 释放互斥信号量，以激活事件监听线程
-	// 该信号的锁死由ba::ui::windowState初始化时完成或由ba::ui::window::checkButt/checkTitle退出时完成
-	//winState->signal.unlock();
 	Sint32 wx = 0, wy = 0, bx = 0, by = 0, x = 0, y = 0;
 	if (title && (winState->getMouseEveCode(&(title->re)) == 1))
 	{
@@ -608,15 +598,13 @@ bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 		winState->getMousePos(&x, &y, &bx, &by);
 		SDL_SetWindowPosition(pwin, wx + x - bx, wy + y - by);
 	}
-	// 锁死互斥信号量，以暂停事件监听线程
-	//winState->signal.lock();
 	return true;
 }
 
 bool ba::ui::window::update(bool rendclear, bool copyTex, bool limitFPS)
 {
 	if(limitFPS)
-		for (float waitt = 1.f / FPS; (float)((float)clock() - time) / CLOCKS_PER_SEC < waitt; SDL_Delay(1));
+		for (float waitt = 1.f / FPS; (float)((float)clock() - time) < waitt* CLOCKS_PER_SEC; SDL_Delay(10));
 	time = clock();
 	if (rendclear)
 		SDL_RenderClear(rend);
@@ -788,85 +776,101 @@ int ba::ui::QUI::Quit(int code, ...)
 	return 0;
 }
 
-void ba::ui::_windowState_checkAll(ba::ui::windowState* s)
+int ba::ui::_windowState_checkAll(void* _s)
 {
+	ba::ui::windowState* s = (ba::ui::windowState*)_s;
 	clock_t st = clock();
+	SDL_Event* eveTmp = NULL;
 	Sint32 mx = -1, my = -1, _mx = -1, _my = -1;
-	bool firstRun = true;
-	int (*eveFunc)(void* pData, ...) = NULL;
-	void* eveFuncData = NULL;
-	for( ; ; )
+	for(bool firstRun = true ;  ; SDL_Delay(20))
 	{
-		//s->signal.lock();//等待主线程释放
-		//s->signal.unlock();//立刻释放，使得主线程不被阻塞
-		SDL_PollEvent(s->_eve);
+		eveTmp = s->getUpdatedEveCopy(eveTmp);
 		if(s->_eve->type == SDL_MOUSEBUTTONDOWN)
 		{
 			st = clock();
-			for (firstRun = true; s->_eve->type == SDL_MOUSEBUTTONDOWN ; )
+			for (firstRun = true;
+				eveTmp->type == SDL_MOUSEBUTTONDOWN || (!firstRun && eveTmp->type == SDL_MOUSEMOTION); )
 			{
-				SDL_PollEvent(s->_eve);
-				mx = s->_eve->motion.x;		my = s->_eve->motion.y;
+				eveTmp = s->getUpdatedEveCopy(eveTmp);
+				mx = eveTmp->motion.x;		my = eveTmp->motion.y;
 				if (firstRun)
 				{
 					_mx = mx;		_my = my;
 					firstRun = false;
 				}
-				// TODO : Unkown BUG : 当鼠标按下并移动，会立刻产生单机事件代码
 				// 拖动：1: 鼠标保持按下超0.2秒 或 鼠标按下后移动
 				if ((clock() - st > 0.2 * CLOCKS_PER_SEC) || (mx != _mx || my != _my))
-				{
-					PPT();
 					s->_setMouseEve(_mx, _my, mx, my, 1);
-				}
 			}
 			// 单击: 2 for LEFT; 3 for RIGHT
 			s->_setMouseEve(_mx, _my, mx, my,
-				s->_eve->button.button == SDL_BUTTON_LEFT ? 2 : (s->_eve->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
+				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
 		}
 	}
 }
 
 void ba::ui::windowState::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, int code)
 {
-	_locker.lock();
+	SDL_LockMutex(_locker);
 	mousePos[0] = mx;
 	mousePos[1] = my;
 	mouseEndPos[0] = emx;
 	mouseEndPos[1] = emy;
 	mouseEveCode = code;
-	_locker.unlock();
+	SDL_UnlockMutex(_locker);
+}
+
+void ba::ui::windowState::pollEvent(void)
+{
+	SDL_LockMutex(_locker);
+	SDL_PollEvent(_eve);
+	SDL_UnlockMutex(_locker);
+}
+
+SDL_Event* ba::ui::windowState::getUpdatedEveCopy(SDL_Event* tmp)
+{
+	if (tmp)
+		free(tmp);
+	tmp = MCALLOC(1, SDL_Event);
+	if(tmp)
+	{
+		SDL_LockMutex(_locker);
+		SDL_PollEvent(_eve);
+		*tmp = *_eve;
+		SDL_UnlockMutex(_locker);
+	}
+	return tmp;
 }
 
 bool ba::ui::windowState::checkMouseIn(SDL_Rect* re)
 {
-	_locker.lock();
+	SDL_LockMutex(_locker);
 	Sint32 mx = mouseEndPos[0];
 	Sint32 my = mouseEndPos[1];
-	_locker.unlock();
+	SDL_UnlockMutex(_locker);
 	return checkDotInRect(mx, my, re);
 }
 
 void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32* oriy)
 {
-	_locker.lock();
+	SDL_LockMutex(_locker);
 	*x = mouseEndPos[0];
 	*y = mouseEndPos[1];
 	if(orix)
 		*orix = mousePos[0];
 	if (oriy)
 		*oriy = mousePos[1];
-	_locker.unlock();
+	SDL_UnlockMutex(_locker);
 }
 
 int ba::ui::windowState::getMouseEveCode(SDL_Rect* re)
 {
-	if (checkMouseIn(re))
+	if (this->checkMouseIn(re))
 	{
 		int code = 0;
-		_locker.lock();
+		SDL_LockMutex(_locker);
 		code = mouseEveCode;
-		_locker.unlock();
+		SDL_UnlockMutex(_locker);
 		return code;
 	}
 	return 0;

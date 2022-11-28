@@ -170,35 +170,34 @@ namespace ba
 		class windowState : public BA_Base
 		{
 		public:
-			std::mutex _locker;
+			SDL_mutex* _locker = SDL_CreateMutex();
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, int code);
 
 			// 阻塞事件监听线程，降低CPU占用
-			std::mutex signal;
+			SDL_cond* signal = SDL_CreateCond();
 			Sint32 mousePos[2] = { 0 };
 			Sint32 mouseEndPos[2] = { 0 };
 			int mouseEveCode = 0;
 
-			windowState(void)
-			{
-				// 首先锁死互斥信号量，以使得主线程有优先权
-				//signal.lock();
-			}
+			windowState(void) {};
 
+			void pollEvent(void);
+			// if tmp is not nullptr, free will be called
+			SDL_Event* getUpdatedEveCopy(SDL_Event* tmp = NULL);
 			bool checkMouseIn(SDL_Rect* re);
 			void getMousePos(Sint32* x, Sint32* y,
 				Sint32* orix = NULL, Sint32* oriy = NULL);
 			int getMouseEveCode(SDL_Rect* re);
 		};
-		void _windowState_checkAll(ba::ui::windowState* s);
+		int _windowState_checkAll(void* _s);
+
 		/*
 		* 以单独的事件监听线程监听并更新
 		* TODO ：每个window有单独的线程以供渲染使用
 		*/
 		class window : public rect
 		{
-
 		private:
 			// GUI渲染线程
 			void _handleEvent(void);
@@ -207,7 +206,6 @@ namespace ba
 			balist<event>* events = new balist<event>();
 
 			windowState* winState = new windowState();
-			std::thread* threadHandle;
 		public:
 			std::mutex locker;
 			QUI* ui = nullptr;
