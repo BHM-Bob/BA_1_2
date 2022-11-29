@@ -172,12 +172,14 @@ namespace ba
 		public:
 			SDL_mutex* _locker = SDL_CreateMutex();
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
-			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, int code);
+			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
+				Sint32 dx, Sint32 dy, int code);
 
 			// 阻塞事件监听线程，降低CPU占用
 			SDL_cond* signal = SDL_CreateCond();
 			Sint32 mousePos[2] = { 0 };
 			Sint32 mouseEndPos[2] = { 0 };
+			Sint32 dMouseMove[2] = { 0 };
 			int mouseEveCode = 0;
 
 			windowState(void) {};
@@ -186,10 +188,14 @@ namespace ba
 			// if tmp is not nullptr, free will be called
 			SDL_Event* getUpdatedEveCopy(SDL_Event* tmp = NULL);
 			bool checkMouseIn(SDL_Rect* re);
-			void getMousePos(Sint32* x, Sint32* y,
-				Sint32* orix = NULL, Sint32* oriy = NULL);
+			void getMousePos(Sint32* x = NULL, Sint32* y = NULL,
+				Sint32* orix = NULL, Sint32* oriy = NULL,
+				Sint32* dx = NULL, Sint32* dy = NULL);
 			int getMouseEveCode(SDL_Rect* re);
 		};
+		/*
+		* 1:drag		* 2:LEFT		* 3:RIGHT
+		*/
 		int _windowState_checkAll(void* _s);
 
 		/*

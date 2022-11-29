@@ -591,12 +591,12 @@ bool ba::ui::window::checkButt()
 
 bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 {
-	Sint32 wx = 0, wy = 0, bx = 0, by = 0, x = 0, y = 0;
+	Sint32 wx = 0, wy = 0, dx = 0, dy = 0;
 	if (title && (winState->getMouseEveCode(&(title->re)) == 1))
 	{
 		SDL_GetWindowPosition(pwin, &wx, &wy);
-		winState->getMousePos(&x, &y, &bx, &by);
-		SDL_SetWindowPosition(pwin, wx + x - bx, wy + y - by);
+		winState->getMousePos(NULL, NULL, NULL, NULL, &dx, &dy);
+		SDL_SetWindowPosition(pwin, wx + dx, wy + dy);
 	}
 	return true;
 }
@@ -781,7 +781,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
 	clock_t st = clock();
 	SDL_Event* eveTmp = NULL;
-	Sint32 mx = -1, my = -1, _mx = -1, _my = -1;
+	Sint32 x = -1, y = -1, oriX = -1, oriY = -1;
 	for(bool firstRun = true ;  ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
@@ -789,33 +789,36 @@ int ba::ui::_windowState_checkAll(void* _s)
 		{
 			st = clock();
 			for (firstRun = true;
-				eveTmp->type == SDL_MOUSEBUTTONDOWN || (!firstRun && eveTmp->type == SDL_MOUSEMOTION); )
-			{
+				eveTmp->type == SDL_MOUSEBUTTONDOWN || (!firstRun && eveTmp->type == SDL_MOUSEMOTION) || eveTmp->type == SDL_WINDOWEVENT; )
+			{//will be SDL_MOUSEBUTTONUP(1026) to quit this loop
 				eveTmp = s->getUpdatedEveCopy(eveTmp);
-				mx = eveTmp->motion.x;		my = eveTmp->motion.y;
+				x = eveTmp->motion.x;		y = eveTmp->motion.y;
 				if (firstRun)
 				{
-					_mx = mx;		_my = my;
+					oriX = x;		oriY = y;
 					firstRun = false;
 				}
 				// 拖动：1: 鼠标保持按下超0.2秒 或 鼠标按下后移动
-				if ((clock() - st > 0.2 * CLOCKS_PER_SEC) || (mx != _mx || my != _my))
-					s->_setMouseEve(_mx, _my, mx, my, 1);
+				if ((clock() - st > 0.2 * CLOCKS_PER_SEC) || eveTmp->type == SDL_MOUSEMOTION)
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, 1);
 			}
 			// 单击: 2 for LEFT; 3 for RIGHT
-			s->_setMouseEve(_mx, _my, mx, my,
+			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
 				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
 		}
 	}
 }
 
-void ba::ui::windowState::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, int code)
+void ba::ui::windowState::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
+	Sint32 dx, Sint32 dy, int code)
 {
 	SDL_LockMutex(_locker);
 	mousePos[0] = mx;
 	mousePos[1] = my;
 	mouseEndPos[0] = emx;
 	mouseEndPos[1] = emy;
+	dMouseMove[0] = dx;
+	dMouseMove[1] = dy;
 	mouseEveCode = code;
 	SDL_UnlockMutex(_locker);
 }
@@ -851,15 +854,17 @@ bool ba::ui::windowState::checkMouseIn(SDL_Rect* re)
 	return checkDotInRect(mx, my, re);
 }
 
-void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32* oriy)
+void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32* oriy,
+	Sint32* dx, Sint32* dy)
 {
+#define _ba_ui_windowState_getMousePos_assign_(p, v) if(p){*p=v;}
 	SDL_LockMutex(_locker);
-	*x = mouseEndPos[0];
-	*y = mouseEndPos[1];
-	if(orix)
-		*orix = mousePos[0];
-	if (oriy)
-		*oriy = mousePos[1];
+	_ba_ui_windowState_getMousePos_assign_(x, mouseEndPos[0]);
+	_ba_ui_windowState_getMousePos_assign_(y, mouseEndPos[1]);
+	_ba_ui_windowState_getMousePos_assign_(orix, mousePos[0]);
+	_ba_ui_windowState_getMousePos_assign_(oriy, mousePos[1]);
+	_ba_ui_windowState_getMousePos_assign_(dx, dMouseMove[0]);
+	_ba_ui_windowState_getMousePos_assign_(dy, dMouseMove[1]);
 	SDL_UnlockMutex(_locker);
 }
 
