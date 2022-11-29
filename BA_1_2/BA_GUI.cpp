@@ -638,7 +638,11 @@ bool ba::ui::window::pollQuit()
 	this->checkButt();
 	if ((exitButtName) && butts->events[exitButtName] == 2)
 		return 1;
-	if ((peve->type == SDL_QUIT) || ((peve->type == SDL_KEYUP) && (peve->key.keysym.sym == SDLK_ESCAPE)))//KEYUP 防止上一次多按
+	SDL_Event* eveTmp = this->winState->getUpdatedEveCopy();
+	Uint32 eveType = eveTmp->type;
+	SDL_Keycode eveKey = eveTmp->key.keysym.sym;
+	free(eveTmp);
+	if ((eveType == SDL_QUIT) || ((eveType == SDL_KEYUP) && (eveKey == SDLK_ESCAPE)))//KEYUP 防止上一次多按
 		return 1;
 	return 0;
 }
