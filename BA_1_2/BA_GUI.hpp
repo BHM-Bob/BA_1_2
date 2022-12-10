@@ -170,19 +170,19 @@ namespace ba
 		class windowState : public BA_Base
 		{
 		public:
+			SDL_Rect* winTitleRe = nullptr;//只有win的addTitle和本类下的方法会以线程安全的形式访问
 			SDL_mutex* _locker = SDL_CreateMutex();
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
 				Sint32 dx, Sint32 dy, int code);
 
-			// 阻塞事件监听线程，降低CPU占用
-			SDL_cond* signal = SDL_CreateCond();
-			Sint32 mousePos[2] = { 0 };
-			Sint32 mouseEndPos[2] = { 0 };
-			Sint32 dMouseMove[2] = { 0 };
-			int mouseEveCode = 0;
+			SDL_Window* pwin = nullptr;// 调整pwin位置时使用，构造函数时由参数初始化
+			Sint32 mousePos[2] = { 0 };// 按下鼠标时光标位置			
+			Sint32 mouseEndPos[2] = { 0 };// 事件进行时实时光标位置
+			Sint32 dMouseMove[2] = { 0 };// 鼠标位移
+			int mouseEveCode = 0;// 鼠标事件代码
 
-			windowState(void) {};
+			windowState(SDL_Window* _pwin) { pwin = _pwin; };
 
 			void pollEvent(void);
 			// if tmp is not nullptr, free will be called
@@ -193,8 +193,8 @@ namespace ba
 				Sint32* dx = NULL, Sint32* dy = NULL);
 			int getMouseEveCode(SDL_Rect* re);
 		};
-		/*
-		* 1:drag		* 2:LEFT		* 3:RIGHT
+		/*windowState的线程，单独在windowState所属的windowState初始化时，合适的时候launch
+		* mouse : 1:drag	 2:LEFT		 3:RIGHT
 		*/
 		int _windowState_checkAll(void* _s);
 
@@ -205,20 +205,18 @@ namespace ba
 		class window : public rect
 		{
 		private:
-			// GUI渲染线程
-			void _handleEvent(void);
-			// GUI事件处理
-			int _handleEvent(event* eve);
 			balist<event>* events = new balist<event>();
 
-			windowState* winState = new windowState();
+			// GUI事件处理
+			windowState* winState = nullptr;
 		public:
 			std::mutex locker;
 			QUI* ui = nullptr;
 			TTF_Font* defaultFont = nullptr;
 
 			char* titlepc = nullptr;
-			SDL_Window* pwin = nullptr;
+			Sint32 winPos[2] = { -1 };
+			SDL_Window* pwin = nullptr;//在构造函数以外的地方需要以线程安全的方式访问（winState）（构造函数内已考虑时事件线程发起时间）
 			SDL_SysWMinfo info = SDL_SysWMinfo();
 			HWND hwnd = HWND();
 			SDL_Renderer* rend = nullptr;
@@ -235,6 +233,7 @@ namespace ba
 			window(QUI* _ui, const char* _titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color* bgc = NULL);
 
+			QUI& addTitle(label* _title);
 			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
 			QUI& updateOtherTex(std::string name, SDL_Texture* tex);
 			bool checkButt();

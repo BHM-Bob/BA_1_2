@@ -12,7 +12,7 @@ void ba::test::_ui::initSDL2(void)
 	ui.addOtherTex("cst", NULL, &cs->re);
 	ba::ui::colorText* ct = new ba::ui::colorText(ui.activeWin, "test");
 	ui.addOtherTex("ctt", NULL, &ui.activeWin->re);
-	ui.activeWin->title = new ba::ui::label(ui.activeWin, "test", 15);
+	ui.activeWin->addTitle(new ba::ui::label(ui.activeWin, "test", 15));
 	ui.activeWin->butts->add("exit", "><", 15, {0,0,0, 255 }, {},
 		{30, 0,0,0}, "tr", (SDL_Surface*)1);
 	ui.activeWin->exitButtName = "exit";

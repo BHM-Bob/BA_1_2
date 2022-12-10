@@ -537,10 +537,22 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	{
 		rendRect();
 	}
+
+	this->winState = new windowState(this->pwin);
 	SDL_CreateThread(ba::ui::_windowState_checkAll, "events server", (void*)winState);
+	
 	SDL_RenderCopy(rend, tex, NULL, NULL);
 	SDL_RenderPresent(rend);
 	time = clock();
+}
+
+ba::ui::QUI& ba::ui::window::addTitle(label* _title)
+{
+	this->title = _title;
+	SDL_LockMutex(this->winState->_locker);
+	this->winState->winTitleRe = &(this->title->re);
+	SDL_UnlockMutex(this->winState->_locker);
+	return *(this->ui);
 }
 
 ba::ui::QUI& ba::ui::window::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
@@ -591,13 +603,14 @@ bool ba::ui::window::checkButt()
 
 bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 {
-	Sint32 wx = 0, wy = 0, dx = 0, dy = 0;
-	if (title && (winState->getMouseEveCode(&(title->re)) == 1))
-	{
-		SDL_GetWindowPosition(pwin, &wx, &wy);
-		winState->getMousePos(NULL, NULL, NULL, NULL, &dx, &dy);
-		SDL_SetWindowPosition(pwin, wx + dx, wy + dy);
-	}
+	//Sint32 wx = 0, wy = 0, dx = 0, dy = 0;
+	//if (title && (winState->getMouseEveCode(&(title->re)) == 1))
+	//{
+	//	SDL_GetWindowPosition(pwin, &wx, &wy);
+	//	winState->getMousePos(NULL, NULL, NULL, NULL, &dx, &dy);
+	//	std::cout << dx << " | " << dy << std::endl;
+	//	SDL_SetWindowPosition(pwin, wx + dx, wy + dy);
+	//}
 	return true;
 }
 
@@ -774,7 +787,7 @@ int ba::ui::QUI::Quit(int code, ...)
 	SDL_FreeSurface(win->sur);
 	SDL_DestroyTexture(win->tex);
 	SDL_DestroyRenderer(win->rend);
-	SDL_DestroyWindow(win->pwin);
+	//SDL_DestroyWindow(win->pwin);//TODO : 非线程安全
 	//MyBA_Free_R(mem);
 	List_SetVar(pba->exitFunc, (void*)QUI_Quit, (void*)0x1);
 	return 0;
@@ -783,30 +796,45 @@ int ba::ui::QUI::Quit(int code, ...)
 int ba::ui::_windowState_checkAll(void* _s)
 {
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
-	clock_t st = clock();
 	SDL_Event* eveTmp = NULL;
-	Sint32 x = -1, y = -1, oriX = -1, oriY = -1;
+	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0;
+	SDL_Rect winTitleRe = { 0 };
 	for(bool firstRun = true ;  ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
 		if(s->_eve->type == SDL_MOUSEBUTTONDOWN)
 		{
-			st = clock();
-			for (firstRun = true;
-				eveTmp->type == SDL_MOUSEBUTTONDOWN || (!firstRun && eveTmp->type == SDL_MOUSEMOTION) || eveTmp->type == SDL_WINDOWEVENT; )
-			{//will be SDL_MOUSEBUTTONUP(1026) to quit this loop
+			SDL_LockMutex(s->_locker);// 内嵌的拖动标题-移动窗口方法：提前获得线程安全的标题栏位置
+			if(s->winTitleRe)
+				winTitleRe = *(s->winTitleRe);
+			SDL_UnlockMutex(s->_locker);// 内嵌的拖动标题-移动窗口方法：提前获得线程安全的标题栏位置
+			// 检测拖动事件
+			for (oriX = eveTmp->motion.x, oriY = eveTmp->motion.y; eveTmp->type != SDL_MOUSEBUTTONUP; )
+			{// loop quit: SDL_MOUSEBUTTONUP(1026)
 				eveTmp = s->getUpdatedEveCopy(eveTmp);
 				x = eveTmp->motion.x;		y = eveTmp->motion.y;
-				if (firstRun)
-				{
-					oriX = x;		oriY = y;
-					firstRun = false;
-				}
-				// 拖动：1: 鼠标保持按下超0.2秒 或 鼠标按下后移动
-				if ((clock() - st > 0.2 * CLOCKS_PER_SEC) || eveTmp->type == SDL_MOUSEMOTION)
+				// 发送信号：拖动：1: 鼠标按下后移动
+				if (eveTmp->type == SDL_MOUSEMOTION || eveTmp->type == SDL_WINDOWEVENT)
 					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, 1);
+				//if (winTitleRe.w > 0 && checkDotInRect(oriX, oriY, &winTitleRe))
+				//{// 直接进入 内嵌的拖动标题-移动窗口方法，所以检查初始鼠标位置
+				//	SDL_LockMutex(s->_locker);// 获得线程安全的pwin
+				//	SDL_GetWindowPosition(s->pwin, &wx, &wy);
+				//	SDL_UnlockMutex(s->_locker);// 获得线程安全的pwin
+				//	for (eveTmp = s->getUpdatedEveCopy(eveTmp); eveTmp->type != SDL_MOUSEBUTTONUP; eveTmp = s->getUpdatedEveCopy(eveTmp))
+				//	{
+				//		x = eveTmp->motion.x;		y = eveTmp->motion.y;
+				//		if (eveTmp->type == SDL_MOUSEMOTION && x != 0 && y != 0)
+				//		{
+				//			SDL_LockMutex(s->_locker);// 获得线程安全的pwin
+				//			SDL_SetWindowPosition(s->pwin, wx + x - oriX, wy + y - oriY);
+				//			SDL_UnlockMutex(s->_locker);// 获得线程安全的pwin
+				//			wx = wx + x - oriX;		wy = wy + y - oriY;
+				//		}
+				//	}
+				//}
 			}
-			// 单击: 2 for LEFT; 3 for RIGHT
+			// 检测单击: 2 for LEFT; 3 for RIGHT
 			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
 				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
 		}
@@ -854,8 +882,10 @@ bool ba::ui::windowState::checkMouseIn(SDL_Rect* re)
 	SDL_LockMutex(_locker);
 	Sint32 mx = mouseEndPos[0];
 	Sint32 my = mouseEndPos[1];
+	Sint32 x = mousePos[0];
+	Sint32 y = mousePos[1];
 	SDL_UnlockMutex(_locker);
-	return checkDotInRect(mx, my, re);
+	return checkDotInRect(mx, my, re) && checkDotInRect(x, y, re);
 }
 
 void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32* oriy,
