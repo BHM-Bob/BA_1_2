@@ -90,10 +90,10 @@ namespace ba
 			}
 			//must use after ui is assigned
 			void rendRect(void);
-			SDL_Event* _checkEveAvaliable(SDL_Event* peve);
-			int _setMouseHistory(int code);
-			bool _checkMouseIn(bool updateEve = false, SDL_Event* peve = NULL);
-			int checkMouse(bool updateEve = false, SDL_Event* peve = NULL);
+			SDL_Event* _checkEveAvaliable(SDL_Event* peve);//单线程（无时间线程时使用）
+			int _setMouseHistory(int code);//单线程（无时间线程时使用）
+			bool _checkMouseIn(bool updateEve = false, SDL_Event* peve = NULL);//单线程（无时间线程时使用）
+			int checkMouse(bool updateEve = false, SDL_Event* peve = NULL);//单线程（无时间线程时使用）
 		};
 		class colorSur : public rect
 		{
@@ -170,19 +170,17 @@ namespace ba
 		class windowState : public BA_Base
 		{
 		public:
-			SDL_Rect* winTitleRe = nullptr;//只有win的addTitle和本类下的方法会以线程安全的形式访问
 			SDL_mutex* _locker = SDL_CreateMutex();
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
 				Sint32 dx, Sint32 dy, int code);
 
-			SDL_Window* pwin = nullptr;// 调整pwin位置时使用，构造函数时由参数初始化
 			Sint32 mousePos[2] = { 0 };// 按下鼠标时光标位置			
 			Sint32 mouseEndPos[2] = { 0 };// 事件进行时实时光标位置
 			Sint32 dMouseMove[2] = { 0 };// 鼠标位移
 			int mouseEveCode = 0;// 鼠标事件代码
 
-			windowState(SDL_Window* _pwin) { pwin = _pwin; };
+			windowState() { };
 
 			void pollEvent(void);
 			// if tmp is not nullptr, free will be called
@@ -216,7 +214,7 @@ namespace ba
 
 			char* titlepc = nullptr;
 			Sint32 winPos[2] = { -1 };
-			SDL_Window* pwin = nullptr;//在构造函数以外的地方需要以线程安全的方式访问（winState）（构造函数内已考虑时事件线程发起时间）
+			SDL_Window* pwin = nullptr;
 			SDL_SysWMinfo info = SDL_SysWMinfo();
 			HWND hwnd = HWND();
 			SDL_Renderer* rend = nullptr;
@@ -233,7 +231,6 @@ namespace ba
 			window(QUI* _ui, const char* _titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color* bgc = NULL);
 
-			QUI& addTitle(label* _title);
 			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
 			QUI& updateOtherTex(std::string name, SDL_Texture* tex);
 			bool checkButt();
