@@ -90,10 +90,7 @@ namespace ba
 			}
 			//must use after ui is assigned
 			void rendRect(void);
-			SDL_Event* _checkEveAvaliable(SDL_Event* peve);//单线程（无时间线程时使用）
-			int _setMouseHistory(int code);//单线程（无时间线程时使用）
-			bool _checkMouseIn(bool updateEve = false, SDL_Event* peve = NULL);//单线程（无时间线程时使用）
-			int checkMouse(bool updateEve = false, SDL_Event* peve = NULL);//单线程（无时间线程时使用）
+			bool _checkMouseIn(Sint32 x, Sint32 y);//单线程（无时间线程时使用）
 		};
 		class colorSur : public rect
 		{

@@ -160,64 +160,9 @@ void ba::ui::rect::rendRect(void)
 		MyBA_Err("ba::ui::rect::rendRect: win is not assigned", 1);
 	}
 }
-SDL_Event* ba::ui::rect::_checkEveAvaliable(SDL_Event* peve)
+bool ba::ui::rect::_checkMouseIn(Sint32 x, Sint32 y)
 {
-	if (!peve && (!win || !win->peve))
-	{
-		MyBA_Err("SDL_Event* ba::ui::rect::_checkEveAvaliable: no avaliable SDL_Event, return NULL", 1);
-		return NULL;
-	}
-	return peve ? peve : win->peve;
-}
-int ba::ui::rect::_setMouseHistory(int code)
-{
-	mouseHistory = code;
-	mouseHistoryTime = clock();
-	return code;
-}
-bool ba::ui::rect::_checkMouseIn(bool updateEve, SDL_Event* peve)
-{
-	peve = _checkEveAvaliable(peve);
-	if (!peve)
-		return false;
-	if (updateEve)
-		SDL_PollEvent(peve);
-	return checkDotInRect(peve->motion.x, peve->motion.y, &re);
-}
-
-int ba::ui::rect::checkMouse(bool updateEve, SDL_Event* peve)
-{
-	peve = _checkEveAvaliable(peve);
-	if (!peve)
-		return 0;
-	if(updateEve)
-		SDL_PollEvent(peve);
-	if (_checkMouseIn())
-	{
-		clock_t st = clock();
-		Sint32 mx = -1, my = -1, _mx = -1, _my = -1;
-		for (bool firstRun = true; peve->type == SDL_MOUSEBUTTONDOWN; )
-		{
-			SDL_PollEvent(peve);
-			mx = peve->motion.x;		my = peve->motion.y;
-			if (firstRun)
-			{
-				_mx = mx;		_my = my;
-				firstRun = false;
-			}
-			// 拖动：1: 鼠标保持按下超0.2秒 或 鼠标按下后移动
-			if ((clock() - st > 0.2 * CLOCKS_PER_SEC) || (mx != _mx || my != _my))
-				return _setMouseHistory(1);
-			win->update(true, true, false);
-		}
-		if (_checkMouseIn())
-		{
-			// 单击: 2 for LEFT; 3 for RIGHT
-			return _setMouseHistory(peve->button.button == SDL_BUTTON_LEFT ? 2 :
-				(peve->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
-		}
-	}
-	return 0;
+	return checkDotInRect(x, y, &re);
 }
 
 
