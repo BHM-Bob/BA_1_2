@@ -749,40 +749,6 @@ ba::ui::QUI& ba::ui::QUI::setActiveWindow(const char* title, _LL idx)
 	}
 	return *this;
 }
-ba::ui::window* ba::ui::QUI::getWindow(const char* win)
-{
-	if (win && windows.find(win) != windows.end())
-		return windows[win];
-	return activeWin;
-}
-ba::ui::QUI& ba::ui::QUI::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re, const char* win)
-{
-	return getWindow(win)->addOtherTex(name, tex, re);
-}
-ba::ui::QUI& ba::ui::QUI::updateOtherTex(std::string name, SDL_Texture* tex, const char* win)
-{
-	return getWindow(win)->updateOtherTex(name, tex);
-}
-bool ba::ui::QUI::delButt(const char* _name, const char* win)
-{
-	return getWindow(win)->delButt(_name);
-}
-bool ba::ui::QUI::checkButt(const char* win)
-{
-	return getWindow(win)->checkButt();
-}
-bool ba::ui::QUI::checkTitle(bool rendclear, bool copyTex, const char* win)
-{
-	return getWindow(win)->checkTitle(rendclear, copyTex);
-}
-bool ba::ui::QUI::update(const char* win, bool rendclear, bool copyTex, bool limitFPS)
-{
-	return getWindow(win)->update(rendclear, copyTex, limitFPS);
-}
-bool ba::ui::QUI::pollQuit(const char* win)
-{
-	return getWindow(win)->pollQuit();
-}
 int ba::ui::QUI::Quit(int code, ...)
 {
 	window* win = activeWin;
