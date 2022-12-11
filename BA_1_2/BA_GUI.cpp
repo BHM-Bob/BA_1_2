@@ -5,8 +5,8 @@
 #include"BA_GUI.hpp"
 #include"BA_Test.hpp"
 
-//针对ba::ui::windowState::signal在不同函数中调用lock和unlock会引发C26110
-#pragma warning(disable:26110)
+// TODO : 有什么更优雅的方法简化windowState中各方法函数中的加解锁
+// lambda似乎有点性能损耗，宏似乎不方便
 
 int* ba::ui::ProduceRainbowCol(int* col, float* i, float* di)// r g b
 {
@@ -571,9 +571,7 @@ bool ba::ui::window::checkButt()
 	if (winState->getMouseEveCode(&(this->re)) != 0)
 	{
 		if(title && winState->getMouseEveCode(&(title->re)) == 1 && winState->checkMouseIn(&(title->re)))
-		{
 			return this->checkTitle();
-		}
 		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
 		{
 			if (butts->statue[p->first])
@@ -797,8 +795,8 @@ int ba::ui::_windowState_checkAll(void* _s)
 	for(bool firstRun = true ;  ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
-		if(s->_eve->type == SDL_MOUSEBUTTONDOWN)
-		{
+		if(eveTmp->type == SDL_MOUSEBUTTONDOWN)
+		{//鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
 			// 检测拖动事件，一旦有鼠标按下后移动，进入循环不断检测，松开后退出循环
 			for (oriX = eveTmp->motion.x, oriY = eveTmp->motion.y; eveTmp->type != SDL_MOUSEBUTTONUP; )
 			{// loop quit: SDL_MOUSEBUTTONUP(1026)
@@ -810,9 +808,19 @@ int ba::ui::_windowState_checkAll(void* _s)
 				else
 					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, -1);
 			}
-			// 检测单击: 2 for LEFT; 3 for RIGHT
+			// 检测单击事件: 发送信号：2 for LEFT; 3 for RIGHT
 			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
 				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
+		}
+		else if (eveTmp->type == SDL_KEYDOWN)
+		{//键盘事件 TODO : 无效？？？
+			if((eveTmp->type == SDL_KEYUP) && (eveTmp->key.keysym.sym == SDLK_ESCAPE))
+				s->_mutexSafeWrapper([&]() {s->isQuit = true; });
+			s->_putKeyboardEve(eveTmp->key.keysym.sym);
+		}
+		else if ((eveTmp->type == SDL_QUIT))
+		{//"退出"事件
+			s->_mutexSafeWrapper([&]() {s->isQuit = true; });
 		}
 	}
 }
@@ -820,22 +828,24 @@ int ba::ui::_windowState_checkAll(void* _s)
 void ba::ui::windowState::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
 	Sint32 dx, Sint32 dy, int code)
 {
-	SDL_LockMutex(_locker);
-	mousePos[0] = mx;
-	mousePos[1] = my;
-	mouseEndPos[0] = emx;
-	mouseEndPos[1] = emy;
-	dMouseMove[0] = dx;
-	dMouseMove[1] = dy;
-	mouseEveCode = code;
-	SDL_UnlockMutex(_locker);
+	_mutexSafeWrapper([&]() {
+		mousePos[0] = mx;
+		mousePos[1] = my;
+		mouseEndPos[0] = emx;
+		mouseEndPos[1] = emy;
+		dMouseMove[0] = dx;
+		dMouseMove[1] = dy;
+		mouseEveCode = code; });
+}
+
+void ba::ui::windowState::_putKeyboardEve(SDL_Keycode key)
+{
+	_mutexSafeWrapper([&]() {keys.emplace_back(std::pair<SDL_Keycode, clock_t>(key, clock())); });
 }
 
 void ba::ui::windowState::pollEvent(void)
 {
-	SDL_LockMutex(_locker);
-	SDL_PollEvent(_eve);
-	SDL_UnlockMutex(_locker);
+	_mutexSafeWrapper([&]() {SDL_PollEvent(_eve); });
 }
 
 SDL_Event* ba::ui::windowState::getUpdatedEveCopy(SDL_Event* tmp)
@@ -844,24 +854,14 @@ SDL_Event* ba::ui::windowState::getUpdatedEveCopy(SDL_Event* tmp)
 		free(tmp);
 	tmp = MCALLOC(1, SDL_Event);
 	if(tmp)
-	{
-		SDL_LockMutex(_locker);
-		SDL_PollEvent(_eve);
-		*tmp = *_eve;
-		SDL_UnlockMutex(_locker);
-	}
+		*tmp = getVar(*tmp, [&]() {SDL_PollEvent(_eve); return *_eve; });
 	return tmp;
 }
 
 bool ba::ui::windowState::checkMouseIn(SDL_Rect* re)
 {
-	SDL_LockMutex(_locker);
-	Sint32 mx = mouseEndPos[0];
-	Sint32 my = mouseEndPos[1];
-	Sint32 x = mousePos[0];
-	Sint32 y = mousePos[1];
-	SDL_UnlockMutex(_locker);
-	return checkDotInRect(mx, my, re) && checkDotInRect(x, y, re);
+	return getVar(false, [&]() {
+		return checkDotInRect(mouseEndPos[0], mouseEndPos[1], re) && checkDotInRect(mousePos[0], mousePos[1], re); });
 }
 
 void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32* oriy,
@@ -881,12 +881,18 @@ void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32
 int ba::ui::windowState::getMouseEveCode(SDL_Rect* re)
 {
 	if (this->checkMouseIn(re))
-	{
-		int code = 0;
-		SDL_LockMutex(_locker);
-		code = mouseEveCode;
-		SDL_UnlockMutex(_locker);
-		return code;
-	}
+		return getVar(0, [&]() {return mouseEveCode; });
 	return 0;
+}
+
+std::pair<SDL_Keycode, clock_t> ba::ui::windowState::getKeyboardEve(void)
+{
+	std::pair<SDL_Keycode, clock_t> ret = std::pair<SDL_Keycode, clock_t>(0, 0);
+	return getVar(ret, [&]() {
+		if (keys.size() > 0)
+		{
+			ret = keys.front();
+			keys.pop_front();
+		}
+		return ret;});
 }

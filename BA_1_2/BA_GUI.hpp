@@ -174,25 +174,46 @@ namespace ba
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
 				Sint32 dx, Sint32 dy, int code);
+			void _putKeyboardEve(SDL_Keycode key);
 
+			bool isQuit = false;
 			Sint32 mousePos[2] = { 0 };// 按下鼠标时光标位置			
 			Sint32 mouseEndPos[2] = { 0 };// 事件进行时实时光标位置
 			Sint32 dMouseMove[2] = { 0 };// 鼠标位移
 			int mouseEveCode = 0;// 鼠标事件代码
+			std::deque<std::pair<SDL_Keycode, clock_t>> keys;// 键盘事件缓存队列，每个事件附带时间戳
 
 			windowState() { };
 
 			void pollEvent(void);
-			// if tmp is not nullptr, free will be called
+			// if tmp is not nullptr, free will be called in-func
 			SDL_Event* getUpdatedEveCopy(SDL_Event* tmp = NULL);
 			bool checkMouseIn(SDL_Rect* re);
 			void getMousePos(Sint32* x = NULL, Sint32* y = NULL,
 				Sint32* orix = NULL, Sint32* oriy = NULL,
 				Sint32* dx = NULL, Sint32* dy = NULL);
 			int getMouseEveCode(SDL_Rect* re);
+			std::pair<SDL_Keycode, clock_t> getKeyboardEve(void);
+
+			template<typename funcTy>
+			void _mutexSafeWrapper(funcTy func)
+			{
+				SDL_LockMutex(_locker);
+				func();
+				SDL_UnlockMutex(_locker);
+			}
+			template<typename funcTy, typename retTy>
+			retTy getVar(retTy typeExampleValue, funcTy func)
+			{
+				SDL_LockMutex(_locker);
+				retTy ret = func();
+				SDL_UnlockMutex(_locker);
+				return ret;
+			}
 		};
 		/*windowState的线程，单独在windowState所属的windowState初始化时，合适的时候launch
 		* mouse : 1:drag	 2:LEFT		 3:RIGHT
+		* keyboard : 直接返回std::pair<SDL_Keycode, clock_t>
 		*/
 		int _windowState_checkAll(void* _s);
 
@@ -205,9 +226,10 @@ namespace ba
 		private:
 			balist<event>* events = new balist<event>();
 
-			// GUI事件处理
-			windowState* winState = nullptr;
 		public:
+			// GUI事件处理。除_windowState_checkAll，外部只可调用非_开头的方法
+			windowState* winState = nullptr;
+
 			std::mutex locker;
 			QUI* ui = nullptr;
 			TTF_Font* defaultFont = nullptr;
