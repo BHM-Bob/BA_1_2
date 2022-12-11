@@ -644,13 +644,7 @@ bool ba::ui::window::pollQuit()
 	this->checkButt();
 	if ((exitButtName) && butts->events[exitButtName] == 2)
 		return 1;
-	SDL_Event* eveTmp = this->winState->getUpdatedEveCopy();
-	Uint32 eveType = eveTmp->type;
-	SDL_Keycode eveKey = eveTmp->key.keysym.sym;
-	free(eveTmp);
-	if ((eveType == SDL_QUIT) || ((eveType == SDL_KEYUP) && (eveKey == SDLK_ESCAPE)))//KEYUP 防止上一次多按
-		return 1;
-	return 0;
+	return winState->getVar(false, [&]() {return winState->isQuit; });
 }
 
 bool ba::ui::window::delButt(const char* _name)
@@ -791,7 +785,6 @@ int ba::ui::_windowState_checkAll(void* _s)
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
 	SDL_Event* eveTmp = NULL;
 	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0;
-	SDL_Rect winTitleRe = { 0 };
 	for(bool firstRun = true ;  ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
@@ -814,7 +807,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 		}
 		else if (eveTmp->type == SDL_KEYDOWN)
 		{//键盘事件 TODO : 无效？？？
-			if((eveTmp->type == SDL_KEYUP) && (eveTmp->key.keysym.sym == SDLK_ESCAPE))
+			if(eveTmp->key.keysym.sym == SDLK_ESCAPE)
 				s->_mutexSafeWrapper([&]() {s->isQuit = true; });
 			s->_putKeyboardEve(eveTmp->key.keysym.sym);
 		}
