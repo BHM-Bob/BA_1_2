@@ -262,7 +262,6 @@ namespace ba
 		// TODO : support multi window
 		class QUI : public BA_Base
 		{
-
 		public:
 			_LL activeWindow = -1;
 			window* activeWin = NULL;
@@ -275,6 +274,7 @@ namespace ba
 			QUI& addWindow(const char* titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color* bgc = NULL);
 			QUI& setActiveWindow(const char* title = NULL, _LL idx = -1);
+			window* getWindow(const char* win);
 
 			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re,
 				const char* win = NULL);
