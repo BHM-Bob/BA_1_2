@@ -160,7 +160,7 @@ void ba::ui::rect::rendRect(void)
 		MyBA_Err("ba::ui::rect::rendRect: win is not assigned", 1);
 	}
 }
-bool ba::ui::rect::_checkMouseIn(Sint32 x, Sint32 y)
+bool ba::ui::rect::checkMouseIn(Sint32 x, Sint32 y)
 {
 	return checkDotInRect(x, y, &re);
 }
@@ -187,11 +187,11 @@ ba::ui::colorSur::colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos,
 	len = new tensor<float>({ _sumdot });
 	dots->selfmap([&](colorSurDot* r, _LL i) {
 		r->b = 500.f / (float)(1.f + rand() % 200);
-	r->x = 1 + rand() % (re.w - 1);
-	r->y = 1 + rand() % (re.h - 1);
-	r->fx = r->fy = 1.0;
-	ProduceRainbowCol(r->col, &(r->b));
-	//r->col[3] = (int)(127.f * sin(0.8f * r->b)) + 0;
+		r->x = 1 + rand() % (re.w - 1);
+		r->y = 1 + rand() % (re.h - 1);
+		r->fx = r->fy = 1.0;
+		ProduceRainbowCol(r->col, &(r->b));
+		//r->col[3] = (int)(127.f * sin(0.8f * r->b)) + 0;
 		});
 	if (alloc0Mask)
 	{
@@ -203,23 +203,13 @@ ba::ui::colorSur::colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos,
 ba::ui::colorSur* ba::ui::colorSur::cacu(void)
 {
 	float sumlen = 0.f;
-	float sumlength = 0.f;
-	long dx = 0;
-	long dy = 0;
-	long j = 0;
-	float k = 0;
-	float k2 = 0;
-	for (long i = 0; i < sumdot; i++)
+	for (long i = 0, dx = 0, dy = 0; i < sumdot; i++)
 	{
 		dx = re_paint.x - dots->data[i].x;
 		dy = re_paint.y - dots->data[i].y;
-		k = (float)(dx * dx + dy * dy);
-		if (k <= 0)
-			k = -k + 1;
-		j = *(long*)&k;                        // evil floating point bit level hacking
-		j = 0x5f3759df - (j >> 1);             // what the fuck? 
-		k2 = *(float*)&j;
-		len->data[i] = k2 * k2 * (1.5f - (0.5f * k * k2 * k2));//originaly is k2 * ( 1.5f - ( 0.5*k * k2 * k2 ) ) but to use plen[i] = plen[i]*plen[i];
+		len->data[i] = (float)(dx * dx + dy * dy);
+		if (len->data[i] == 0)
+			len->data[i] = 1;
 		sumlen += len->data[i];
 	}
 	for (long i = 0; i < sumdot; i++)
@@ -227,37 +217,25 @@ ba::ui::colorSur* ba::ui::colorSur::cacu(void)
 	col[0] = (int)(lv->data[0] * dots->data[0].col[0]) + (int)(lv->data[1] * dots->data[1].col[0]) + (int)(lv->data[2] * dots->data[2].col[0]) + (int)(lv->data[3] * dots->data[3].col[0]);
 	col[1] = (int)(lv->data[0] * dots->data[0].col[1]) + (int)(lv->data[1] * dots->data[1].col[1]) + (int)(lv->data[2] * dots->data[2].col[1]) + (int)(lv->data[3] * dots->data[3].col[1]);
 	col[2] = (int)(lv->data[0] * dots->data[0].col[2]) + (int)(lv->data[1] * dots->data[1].col[2]) + (int)(lv->data[2] * dots->data[2].col[2]) + (int)(lv->data[3] * dots->data[3].col[2]);
-	col[3] = 255;
+	//col[3] = (int)(lv->data[0] * dots->data[0].col[3]) + (int)(lv->data[1] * dots->data[1].col[3]) + (int)(lv->data[2] * dots->data[2].col[3]) + (int)(lv->data[3] * dots->data[3].col[3]);
 	return this;
 }
 ba::ui::colorSur* ba::ui::colorSur::update(void)
 {
 	for (colorSurDot* pd = dots->data; pd != dots->lastAddress; pd++)
 	{
-		pd->b += 0.05f;
+		pd->b += 0.01f;
 		ProduceRainbowCol(pd->col, &(pd->b));
 		pd->x += (int)(2.0f * (pd->fx));
 		if (pd->x < 1)
-		{
 			pd->fx = -pd->fx;
-			pd->x = 1;
-		}
-		if (pd->x > re.w)
-		{
+		else if (pd->x > re.w)
 			pd->fx = -pd->fx;
-			pd->x = re.w - 1;
-		}
 		pd->y += (int)(2.0f * (pd->fy));
 		if (pd->y < 1)
-		{
 			pd->fy = -pd->fy;
-			pd->y = 1;
-		}
-		if (pd->y > re.h)
-		{
+		else if (pd->y > re.h)
 			pd->fy = -pd->fy;
-			pd->y = re.h - 1;
-		}
 	}
 
 	for (re_paint.y = 0; (re_paint.y) < (re.h); (re_paint.y)++)
@@ -268,13 +246,8 @@ ba::ui::colorSur* ba::ui::colorSur::update(void)
 			{
 				cacu();
 				SDL_FillRect(sur, &(re_paint),
-					SDL_MapRGBA(sur->format, col[0], col[1], col[2], col[3]));
+					SDL_MapRGB(sur->format, col[0], col[1], col[2]));
 			}
-			//else
-			//{
-			//	SDL_FillRect(sur, &(re_paint),
-			//		SDL_MapRGBA(sur->format, 0, 0, 0, 0));
-			//}
 		}
 	}
 	return this;
@@ -701,11 +674,11 @@ ba::ui::QUI& ba::ui::QUI::setActiveWindow(const char* title, _LL idx)
 	}
 	return *this;
 }
-bool ba::ui::QUI::update(const char* win, bool rendclear, bool copyTex)
+bool ba::ui::QUI::update(const char* win, bool rendclear, bool copyTex, bool limitFPS)
 {
 	if (win && windows.find(win) != windows.end())
-		return windows[win]->update(rendclear, copyTex);
-	return activeWin->update(rendclear, copyTex);
+		return windows[win]->update(rendclear, copyTex, limitFPS);
+	return activeWin->update(rendclear, copyTex, limitFPS);
 }
 bool ba::ui::QUI::pollQuit(const char* win)
 {

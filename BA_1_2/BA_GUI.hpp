@@ -90,7 +90,7 @@ namespace ba
 			}
 			//must use after ui is assigned
 			void rendRect(void);
-			bool _checkMouseIn(Sint32 x, Sint32 y);//单线程（无时间线程时使用）
+			bool checkMouseIn(Sint32 x, Sint32 y);
 		};
 		class colorSur : public rect
 		{
@@ -283,7 +283,7 @@ namespace ba
 			bool checkButt(const char* win = NULL);
 			bool checkTitle(bool rendclear = true, bool copyTex = true,
 				const char* win = NULL);
-			bool update(const char* win = NULL, bool rendclear = true, bool copyTex = true);
+			bool update(const char* win = NULL, bool rendclear = true, bool copyTex = true, bool limitFPS = true);
 			bool pollQuit(const char* win = NULL);
 			bool delButt(const char* _name, const char* win = NULL);
 
