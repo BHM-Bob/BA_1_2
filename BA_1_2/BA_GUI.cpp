@@ -409,12 +409,13 @@ int ba::ui::_windowState_checkAll(void* _s)
 {
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
 	SDL_Event* eveTmp = NULL;
+	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0;
 	Uint32 keyTimestamp = SDL_GetTicks();//This value wraps if the program runs for more than ~49 days.
-	for (Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0; ; SDL_Delay(20))
+	for (bool firstRun = true; ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
 		if (eveTmp->type == SDL_MOUSEBUTTONDOWN)
-		{//检测鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
+		{//鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
 			// 检测拖动事件，一旦有鼠标按下后移动，进入循环不断检测，松开后退出循环
 			for (oriX = eveTmp->motion.x, oriY = eveTmp->motion.y; eveTmp->type != SDL_MOUSEBUTTONUP; )
 			{// loop quit: SDL_MOUSEBUTTONUP(1026)
@@ -439,12 +440,12 @@ int ba::ui::_windowState_checkAll(void* _s)
 			s->_mutexSafeWrapper([&]() {s->dropText = mstrdup(eveTmp->drop.file, s->mem); });
 		}
 		else if (eveTmp->key.state > 11 && eveTmp->key.timestamp - keyTimestamp > 30)//最快30ms捕捉一次
-		{//检测普通键盘事件,ASCII字母。11是因为鼠标在窗口外时state为11。TODO : SDL_KEYDOWN无效，是SDL_TEXTINPUT，但是也有问题
+		{//普通键盘事件,ASCII字母。11是因为鼠标在窗口外时state为11。TODO : SDL_KEYDOWN无效，是SDL_TEXTINPUT，但是也有问题
 			keyTimestamp = eveTmp->key.timestamp;
 			s->_mutexSafeWrapper([&]() {s->keys.emplace_back(std::pair<SDL_Keycode, Uint32>(eveTmp->key.state, keyTimestamp)); });
 		}
 		else if (eveTmp->key.keysym.sym == SDLK_ESCAPE || eveTmp->type == SDL_QUIT)
-		{//检测"退出"事件
+		{//"退出"事件
 			s->_mutexSafeWrapper([&]() {s->isQuit = true; });
 		}
 	}

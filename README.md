@@ -15,6 +15,3 @@ memory control, log service and some basic tiny usefull funcs and classes.
 - Tiny dict (based on any class)
 - Tiny Threads Pool and Queue for Threads
 - Tiny 1D Array (because do not support matmatul)
-- Tiny GUI APIs (based on SDL2)
-- some great open-source C/C++ head-only libs written by others  
-such as glob, jieba, json
