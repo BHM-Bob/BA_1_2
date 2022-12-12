@@ -21,6 +21,10 @@ E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2_ttf.lib
 
 // TODO : use threads
 // TODO : maybe later : template or func obj of button func
+// TODO : some intersting things in SDL2
+	//SDL_DropEvent : https://wiki.libsdl.org/SDL2/SDL_DropEvent
+	//SDL_GetSystemRAM : https://wiki.libsdl.org/SDL2/SDL_GetSystemRAM
+	//SDL_GetCPUCount : https://wiki.libsdl.org/SDL2/SDL_GetCPUCount
 
 namespace ba
 {
@@ -173,6 +177,8 @@ namespace ba
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, Sint32 dx, Sint32 dy, int code);
 
 			bool isQuit = false;
+			char* dropFilePath = nullptr;
+			char* dropText = nullptr;
 			Sint32 mousePos[2] = { 0 };// 按下鼠标时光标位置			
 			Sint32 mouseEndPos[2] = { 0 };// 事件进行时实时光标位置
 			Sint32 dMouseMove[2] = { 0 };// 鼠标位移

@@ -430,6 +430,14 @@ int ba::ui::_windowState_checkAll(void* _s)
 			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
 				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
 		}
+		else if (eveTmp->type == SDL_DROPFILE)
+		{//检测拖拽文件
+			s->_mutexSafeWrapper([&]() {s->dropFilePath = mstrdup(eveTmp->drop.file, s->mem); });
+		}
+		else if (eveTmp->type == SDL_DROPTEXT)
+		{//检测拖拽文本
+			s->_mutexSafeWrapper([&]() {s->dropText = mstrdup(eveTmp->drop.file, s->mem); });
+		}
 		else if (eveTmp->key.state > 11 && eveTmp->key.timestamp - keyTimestamp > 30)//最快30ms捕捉一次
 		{//检测普通键盘事件,ASCII字母。11是因为鼠标在窗口外时state为11。TODO : SDL_KEYDOWN无效，是SDL_TEXTINPUT，但是也有问题
 			keyTimestamp = eveTmp->key.timestamp;
