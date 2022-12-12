@@ -167,11 +167,10 @@ namespace ba
 		class windowState : public BA_Base
 		{
 		public:
+			//private
 			SDL_mutex* _locker = SDL_CreateMutex();
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
-			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
-				Sint32 dx, Sint32 dy, int code);
-			void _putKeyboardEve(SDL_Keycode key);
+			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, Sint32 dx, Sint32 dy, int code);
 
 			bool isQuit = false;
 			Sint32 mousePos[2] = { 0 };// 按下鼠标时光标位置			
@@ -180,27 +179,46 @@ namespace ba
 			int mouseEveCode = 0;// 鼠标事件代码
 			std::deque<std::pair<SDL_Keycode, clock_t>> keys;// 键盘事件缓存队列，每个事件附带时间戳
 
+			//public
 			windowState() { };
 
-			void pollEvent(void);
+			inline void pollEvent(void)
+			{
+				_mutexSafeWrapper([&]() {SDL_PollEvent(_eve); });
+			}
 			// if tmp is not nullptr, free will be called in-func
-			SDL_Event* getUpdatedEveCopy(SDL_Event* tmp = NULL);
-			bool checkMouseIn(SDL_Rect* re);
-			void getMousePos(Sint32* x = NULL, Sint32* y = NULL,
-				Sint32* orix = NULL, Sint32* oriy = NULL,
-				Sint32* dx = NULL, Sint32* dy = NULL);
-			int getMouseEveCode(SDL_Rect* re);
-			std::pair<SDL_Keycode, clock_t> getKeyboardEve(void);
+			inline SDL_Event* getUpdatedEveCopy(SDL_Event* tmp = NULL)
+			{
+				if (tmp)
+					free(tmp);
+				tmp = MCALLOC(1, SDL_Event);
+				if (tmp)
+					*tmp = getVar(*tmp, [&]() {SDL_PollEvent(_eve); return *_eve; });
+				return tmp;
+			}
+			inline bool checkMouseIn(SDL_Rect* re)
+			{
+				return getVar(false, [&]() {
+					return checkDotInRect(mouseEndPos[0], mouseEndPos[1], re) && checkDotInRect(mousePos[0], mousePos[1], re); });
+			}
+			inline int getMouseEveCode(SDL_Rect* re)
+			{
+				if (this->checkMouseIn(re))
+					return getVar(0, [&]() {return mouseEveCode; });
+				return 0;
+			}
+			void getMousePos(Sint32* x = NULL, Sint32* y = NULL, Sint32* orix = NULL, Sint32* oriy = NULL, Sint32* dx = NULL, Sint32* dy = NULL);
+			std::pair<SDL_Keycode, Uint32> getKeyboardEve(void);
 
 			template<typename funcTy>
-			void _mutexSafeWrapper(funcTy func)
+			inline void _mutexSafeWrapper(funcTy func)
 			{
 				SDL_LockMutex(_locker);
 				func();
 				SDL_UnlockMutex(_locker);
 			}
 			template<typename funcTy, typename retTy>
-			retTy getVar(retTy typeExampleValue, funcTy func)
+			inline retTy getVar(retTy typeExampleValue, funcTy func)
 			{
 				SDL_LockMutex(_locker);
 				retTy ret = func();
@@ -251,7 +269,7 @@ namespace ba
 				int winflags = 0, SDL_Color* bgc = NULL);
 
 			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
-			QUI& updateOtherTex(std::string name, SDL_Texture* tex);
+			QUI& updateOtherTex(std::string name, SDL_Texture* tex, bool destroyOld = false);
 			bool checkButt();
 			bool checkTitle(bool rendclear = true, bool copyTex = true);
 			bool update(bool rendclear = true, bool copyTex = true, bool limitFPS = true);
@@ -281,17 +299,34 @@ namespace ba
 				return activeWin;
 			}
 
-			inline QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re,
-				const char* win = NULL){return getWindow(win)->addOtherTex(name, tex, re); }
-			inline QUI& updateOtherTex(std::string name, SDL_Texture* tex,
-				const char* win = NULL){return getWindow(win)->updateOtherTex(name, tex); }
-			inline bool delButt(const char* _name, const char* win = NULL) { return getWindow(win)->delButt(_name); }
-			inline bool checkButt(const char* win = NULL){return getWindow(win)->checkButt();}
-			inline bool checkTitle(bool rendclear = true, bool copyTex = true,
-				const char* win = NULL){return getWindow(win)->checkTitle(rendclear, copyTex); }
-			inline bool update(const char* win = NULL, bool rendclear = true,
-				bool copyTex = true, bool limitFPS = true){return getWindow(win)->update(rendclear, copyTex, limitFPS); }
-			inline bool pollQuit(const char* win = NULL){return getWindow(win)->pollQuit(); }
+			inline QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re, const char* win = NULL)
+			{
+				return getWindow(win)->addOtherTex(name, tex, re);
+			}
+			inline QUI& updateOtherTex(std::string name, SDL_Texture* tex, const char* win = NULL)
+			{
+				return getWindow(win)->updateOtherTex(name, tex);
+			}
+			inline bool delButt(const char* _name, const char* win = NULL)
+			{
+				return getWindow(win)->delButt(_name);
+			}
+			inline bool checkButt(const char* win = NULL)
+			{
+				return getWindow(win)->checkButt();
+			}
+			inline bool checkTitle(bool rendclear = true, bool copyTex = true, const char* win = NULL)
+			{
+				return getWindow(win)->checkTitle(rendclear, copyTex);
+			}
+			inline bool update(const char* win = NULL, bool rendclear = true, bool copyTex = true, bool limitFPS = true)
+			{
+				return getWindow(win)->update(rendclear, copyTex, limitFPS);
+			}
+			inline bool pollQuit(const char* win = NULL)
+			{
+				return getWindow(win)->pollQuit();
+			}
 
 			int Quit(int code, ...);
 			friend int QUI_Quit(void* pui_, int code, ...);

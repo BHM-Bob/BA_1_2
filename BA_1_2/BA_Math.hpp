@@ -10,19 +10,25 @@
 
 #include"BA_Base.hpp"
 
-//void* MyBA_ZerosD(int* shape, int dims);
-//int* MyBA_Zeros_AllocD(int* ret, int* shape, int dims, int nowdim)
+//TODO : think about https://eigen.tuxfamily.org/index.php?title=Main_Page
+	//or just using OpenCV
+
+//TODO : 有机会尝试一下模板递归
+//template<typename Ty>
+//Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<int> shape, int nowDim)
 //{
-//	ret = (int*)calloc(shape[nowdim], sizeof(int));
-//	for (int i = 0; i < shape[nowdim] && nowdim < dims - 1; i++, ret++)
-//		MyBA_Zeros_AllocD((int*)ret, shape, dims, nowdim + 1);
-//	return ret;
+//	highLeverPtr = (Ty*)calloc(shape[nowDim], sizeof(Ty));
+//	for (int i = 0; nowDim + 1 < shape.size() && i < shape[nowDim]; i++)
+//		allocNDArray_AllocD(highLeverPtr[i], shape, nowDim + 1);
+//	return highLeverPtr;
 //}
-//void* MyBA_ZerosD(int* shape, int dims)
+//template<typename PtrTy>
+//inline PtrTy allocNDArray(std::vector<int> shape)
 //{
-//	void* ret = NULL;
-//	return MyBA_Zeros_AllocD((int*)ret, shape, dims, 0);
+//	PtrTy ret = nullptr;
+//	return allocNDArray_AllocD(ret, shape, 0);
 //}
+
 namespace ba
 {
 	//shape as [n, m] mean first(top) axis is n, last(bottom) is m
@@ -213,7 +219,7 @@ namespace ba
 	template<typename Ty>
 	inline tensor<Ty>& tensor<Ty>::operator[](_LL idx)
 	{
-		if (nowAxis < shape.size() && idx < shape[nowAxis])
+		if ((size_t)nowAxis < shape.size() && idx < shape[nowAxis])
 		{
 			axis[nowAxis] = idx;
 			++nowAxis;
@@ -224,6 +230,7 @@ namespace ba
 		}
 		return *this;
 	}
+	//TODO : 修改为(_LL idx1, ...)
 	template<typename Ty>
 	inline Ty& tensor<Ty>::operator()(_LL idx)
 	{

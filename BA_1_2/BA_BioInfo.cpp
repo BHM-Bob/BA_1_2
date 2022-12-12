@@ -309,7 +309,7 @@ void SequencesSimiCacuer::VizTraceback2(ba::str seqA, ba::str seqB)
 	for (int i = 0; i < H.shape[0]; i++)
 	{
 		for (int j = 0; j < H.shape[1]; j++)
-			printf("%3lld ", traceback.data[i * H.shape[1] + j]);
+			printf("%3d ", traceback.data[i * H.shape[1] + j]);
 		printf("\n");
 	}
 	_ULL maxLen = seqA.len > seqB.len ? seqA.len : seqB.len;

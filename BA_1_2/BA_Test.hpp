@@ -3,8 +3,6 @@
 //Writen By BHM
 //2021年11月24日 21点11分
 
-//#define USE_OPENCV
-
 #ifndef BA_TEST_H
 #define BA_TEST_H
 

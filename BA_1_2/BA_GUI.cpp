@@ -410,6 +410,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
 	SDL_Event* eveTmp = NULL;
 	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0;
+	Uint32 keyTimestamp = SDL_GetTicks();//This value wraps if the program runs for more than ~49 days.
 	for (bool firstRun = true; ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
@@ -430,13 +431,12 @@ int ba::ui::_windowState_checkAll(void* _s)
 			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
 				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
 		}
-		else if (eveTmp->type == SDL_KEYDOWN)
-		{//键盘事件 TODO : 无效？？？
-			if (eveTmp->key.keysym.sym == SDLK_ESCAPE)
-				s->_mutexSafeWrapper([&]() {s->isQuit = true; });
-			s->_putKeyboardEve(eveTmp->key.keysym.sym);
+		else if (eveTmp->key.state > 11 && eveTmp->key.timestamp - keyTimestamp > 30)//最快30ms捕捉一次
+		{//普通键盘事件,ASCII字母。11是因为鼠标在窗口外时state为11。TODO : SDL_KEYDOWN无效，是SDL_TEXTINPUT，但是也有问题
+			keyTimestamp = eveTmp->key.timestamp;
+			s->_mutexSafeWrapper([&]() {s->keys.emplace_back(std::pair<SDL_Keycode, Uint32>(eveTmp->key.state, keyTimestamp)); });
 		}
-		else if ((eveTmp->type == SDL_QUIT))
+		else if (eveTmp->key.keysym.sym == SDLK_ESCAPE || eveTmp->type == SDL_QUIT)
 		{//"退出"事件
 			s->_mutexSafeWrapper([&]() {s->isQuit = true; });
 		}
@@ -448,64 +448,34 @@ void ba::ui::windowState::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 
 {
 	_mutexSafeWrapper([&]() {
 		mousePos[0] = mx;
-	mousePos[1] = my;
-	mouseEndPos[0] = emx;
-	mouseEndPos[1] = emy;
-	dMouseMove[0] = dx;
-	dMouseMove[1] = dy;
-	mouseEveCode = code; });
+		mousePos[1] = my;
+		mouseEndPos[0] = emx;
+		mouseEndPos[1] = emy;
+		dMouseMove[0] = dx;
+		dMouseMove[1] = dy;
+		mouseEveCode = code; });
 }
-void ba::ui::windowState::_putKeyboardEve(SDL_Keycode key)
-{
-	_mutexSafeWrapper([&]() {keys.emplace_back(std::pair<SDL_Keycode, clock_t>(key, clock())); });
-}
-void ba::ui::windowState::pollEvent(void)
-{
-	_mutexSafeWrapper([&]() {SDL_PollEvent(_eve); });
-}
-SDL_Event* ba::ui::windowState::getUpdatedEveCopy(SDL_Event* tmp)
-{
-	if (tmp)
-		free(tmp);
-	tmp = MCALLOC(1, SDL_Event);
-	if (tmp)
-		*tmp = getVar(*tmp, [&]() {SDL_PollEvent(_eve); return *_eve; });
-	return tmp;
-}
-bool ba::ui::windowState::checkMouseIn(SDL_Rect* re)
-{
-	return getVar(false, [&]() {
-		return checkDotInRect(mouseEndPos[0], mouseEndPos[1], re) && checkDotInRect(mousePos[0], mousePos[1], re); });
-}
-void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32* oriy,
-	Sint32* dx, Sint32* dy)
+void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32* oriy, Sint32* dx, Sint32* dy)
 {
 #define _ba_ui_windowState_getMousePos_assign_(p, v) if(p){*p=v;}
-	SDL_LockMutex(_locker);
-	_ba_ui_windowState_getMousePos_assign_(x, mouseEndPos[0]);
-	_ba_ui_windowState_getMousePos_assign_(y, mouseEndPos[1]);
-	_ba_ui_windowState_getMousePos_assign_(orix, mousePos[0]);
-	_ba_ui_windowState_getMousePos_assign_(oriy, mousePos[1]);
-	_ba_ui_windowState_getMousePos_assign_(dx, dMouseMove[0]);
-	_ba_ui_windowState_getMousePos_assign_(dy, dMouseMove[1]);
-	SDL_UnlockMutex(_locker);
+	_mutexSafeWrapper([&]() {
+		_ba_ui_windowState_getMousePos_assign_(x, mouseEndPos[0]);
+		_ba_ui_windowState_getMousePos_assign_(y, mouseEndPos[1]);
+		_ba_ui_windowState_getMousePos_assign_(orix, mousePos[0]);
+		_ba_ui_windowState_getMousePos_assign_(oriy, mousePos[1]);
+		_ba_ui_windowState_getMousePos_assign_(dx, dMouseMove[0]);
+		_ba_ui_windowState_getMousePos_assign_(dy, dMouseMove[1]); });
 }
-int ba::ui::windowState::getMouseEveCode(SDL_Rect* re)
+std::pair<SDL_Keycode, Uint32> ba::ui::windowState::getKeyboardEve(void)
 {
-	if (this->checkMouseIn(re))
-		return getVar(0, [&]() {return mouseEveCode; });
-	return 0;
-}
-std::pair<SDL_Keycode, clock_t> ba::ui::windowState::getKeyboardEve(void)
-{
-	std::pair<SDL_Keycode, clock_t> ret = std::pair<SDL_Keycode, clock_t>(0, 0);
+	std::pair<SDL_Keycode, Uint32> ret = std::pair<SDL_Keycode, Uint32>(0, 0);
 	return getVar(ret, [&]() {
 		if (keys.size() > 0)
 		{
 			ret = keys.front();
 			keys.pop_front();
 		}
-	return ret; });
+		return ret; });
 }
 
 ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
@@ -575,8 +545,10 @@ ba::ui::QUI& ba::ui::window::addOtherTex(std::string name, SDL_Texture* tex, SDL
 	return *ui;
 }
 
-ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex)
+ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex, bool destroyOld)
 {
+	if (destroyOld)
+		SDL_DestroyTexture(otherTex[name]->first);
 	otherTex[name]->first = tex;
 	return *ui;
 }
@@ -680,10 +652,6 @@ int ba::ui::QUI_Quit(void* pui_, int code, ...)
 	// TODO : if ba::ui::QUI was inited as a local var(not a ptr in heap memory),
 		// this will cause mem err
 	ba::ui::QUI* pui = (ba::ui::QUI*)pui_;
-	//SDL_FreeSurface(pui->win->sur);
-	//SDL_DestroyTexture(pui->win->tex);
-	//SDL_DestroyRenderer(pui->win->rend);
-	//SDL_DestroyWindow(pui->win->pwin);
 	return 0;
 }
 ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
@@ -752,10 +720,16 @@ ba::ui::QUI& ba::ui::QUI::setActiveWindow(const char* title, _LL idx)
 int ba::ui::QUI::Quit(int code, ...)
 {
 	window* win = activeWin;
-	SDL_FreeSurface(win->sur);
-	SDL_DestroyTexture(win->tex);
-	SDL_DestroyRenderer(win->rend);
-	SDL_DestroyWindow(win->pwin);
+	for (auto p : windows)
+	{
+		win = p.second;
+		TTF_CloseFont(win->defaultFont);
+		SDL_FreeSurface(win->sur);
+		SDL_DestroyTexture(win->tex);
+		SDL_DestroyRenderer(win->rend);
+		SDL_DestroyWindow(win->pwin);
+	}
+	TTF_Quit();
 	//MyBA_Free_R(mem);
 	List_SetVar(pba->exitFunc, (void*)QUI_Quit, (void*)0x1);
 	return 0;
