@@ -434,10 +434,12 @@ int ba::ui::_windowState_checkAll(void* _s)
 		else if (eveTmp->type == SDL_DROPFILE)
 		{//检测拖拽文件
 			s->_mutexSafeWrapper([&]() {s->dropFilePath = mstrdup(eveTmp->drop.file, s->mem); });
+			SDL_free(eveTmp->drop.file);
 		}
 		else if (eveTmp->type == SDL_DROPTEXT)
 		{//检测拖拽文本
 			s->_mutexSafeWrapper([&]() {s->dropText = mstrdup(eveTmp->drop.file, s->mem); });
+			SDL_free(eveTmp->drop.file);
 		}
 		else if (eveTmp->key.state > 11 && eveTmp->key.timestamp - keyTimestamp > 30)//最快30ms捕捉一次
 		{//普通键盘事件,ASCII字母。11是因为鼠标在窗口外时state为11。TODO : SDL_KEYDOWN无效，是SDL_TEXTINPUT，但是也有问题
@@ -448,6 +450,23 @@ int ba::ui::_windowState_checkAll(void* _s)
 		{//"退出"事件
 			s->_mutexSafeWrapper([&]() {s->isQuit = true; });
 		}
+		//switch (event.type)
+		//{
+		//case SDL_FINGERDOWN:
+		//	//处理触屏触碰事件
+		//	break;
+		//case SDL_FINGERMOTION:
+		//	//处理触屏拖动事件
+		//	if (is_dragging)
+		//	{
+		//		//处理拖动操作
+		//	}
+		//	break;
+		//case SDL_FINGERUP:
+		//	//处理触屏抬起事件
+		//	is_dragging = false;
+		//	break;
+		//}
 	}
 }
 
