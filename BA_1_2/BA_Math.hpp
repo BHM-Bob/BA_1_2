@@ -13,53 +13,31 @@
 //TODO : think about https://eigen.tuxfamily.org/index.php?title=Main_Page
 	//or just using OpenCV
 
-template <typename...> struct WhichType;
-//TODO : 有机会尝试一下模板递归
-template<typename Ty, typename BaseTy>
-Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<int> shape, int nowDim, BaseTy baseV)
-{
-	int* tmp = (int*)malloc(88);
-	highLeverPtr = (Ty*)malloc(shape[nowDim]*sizeof(Ty));
-	if (!highLeverPtr)
-		return nullptr;
-	if constexpr (! std::is_same_v<Ty, BaseTy>)
-		for (int i = 0; nowDim + 1 < shape.size() && i < shape[nowDim]; i++)
-			allocNDArray_AllocD(highLeverPtr[i], shape, nowDim + 1, BaseTy());
-	return highLeverPtr;
-}
-template<typename LessPtrTy, typename BaseTy>
-inline LessPtrTy* allocNDArray(std::vector<int> shape)
-{
-	if (shape.size() == 0)
-		return nullptr;
-	LessPtrTy* ret = nullptr;
-	return allocNDArray_AllocD<LessPtrTy, BaseTy>(ret, shape, 0, BaseTy());
-}
-template<typename Ty, size_t N>
-Ty* create_array(const std::vector<size_t>& dimensions) {
-	// 申请指针数组
-	Ty* ret = new Ty[dimensions[0]]();
-
-	// 递归调用，申请子数组
-	if constexpr (N > 1)
-	{
-		for (size_t i = 0; i < dimensions[0]; i++)
-		{
-			std::vector<size_t> subdimensions(dimensions.begin() + 1, dimensions.end());
-			ret[i] = create_array<Ty, N - 1>(subdimensions);
-		}
-	}
-	else
-	{
-		for (size_t i = 0; i < dimensions[0]; i++)
-			ret[i] = new Ty[dimensions[1]]();
-	}
-
-	return ret;
-}
 
 namespace ba
 {
+
+	template<typename Ty, typename BaseTy>
+	Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<int> shape, int nowDim, BaseTy baseV)
+	{
+		highLeverPtr = (Ty*)calloc(shape[nowDim], sizeof(Ty));
+		if (!highLeverPtr)
+			return nullptr;
+		if constexpr (! std::is_same_v<Ty, BaseTy>)
+			for (int i = 0; i < shape[nowDim]; i++)
+				highLeverPtr[i] = allocNDArray_AllocD(highLeverPtr[i], shape, nowDim + 1, BaseTy());
+		return highLeverPtr;
+	}
+	//int*** p2 = ba::allocNDArray<int**, int>({ 5, 6, 9});
+	template<typename LessPtrTy, typename BaseTy>
+	inline LessPtrTy* allocNDArray(std::vector<int> shape)
+	{
+		if (shape.size() == 0)
+			return nullptr;
+		LessPtrTy* ret = nullptr;
+		return allocNDArray_AllocD<LessPtrTy, BaseTy>(ret, shape, 0, BaseTy());
+	}
+
 	//shape as [n, m] mean first(top) axis is n, last(bottom) is m
 	template<typename Ty>
 	class tensor
