@@ -9,7 +9,7 @@ int main(int argc, char** argvs)
 	//ba::test::_cmd::openlog();
 	//ba::test::_comprehensive::jiebaThreads();
 	//ba::test::_comprehensive::glob();
-	//ba::test::_ui::initSDL2();
+	ba::test::_ui::initSDL2();
 
 	return MyBA_Quit();
 }

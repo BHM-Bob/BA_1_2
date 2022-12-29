@@ -17,26 +17,6 @@
 namespace ba
 {
 
-	template<typename Ty, typename BaseTy>
-	Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<int> shape, int nowDim, BaseTy baseV)
-	{
-		highLeverPtr = (Ty*)calloc(shape[nowDim], sizeof(Ty));
-		if (!highLeverPtr)
-			return nullptr;
-		if constexpr (! std::is_same_v<Ty, BaseTy>)
-			for (int i = 0; i < shape[nowDim]; i++)
-				highLeverPtr[i] = allocNDArray_AllocD(highLeverPtr[i], shape, nowDim + 1, BaseTy());
-		return highLeverPtr;
-	}
-	//int*** p2 = ba::allocNDArray<int**, int>({ 5, 6, 9});
-	template<typename LessPtrTy, typename BaseTy>
-	inline LessPtrTy* allocNDArray(std::vector<int> shape)
-	{
-		if (shape.size() == 0)
-			return nullptr;
-		LessPtrTy* ret = nullptr;
-		return allocNDArray_AllocD<LessPtrTy, BaseTy>(ret, shape, 0, BaseTy());
-	}
 
 	//shape as [n, m] mean first(top) axis is n, last(bottom) is m
 	template<typename Ty>

@@ -1,4 +1,5 @@
 ﻿#include"BA_Base.hpp"
+#include"BA_Mem.hpp"
 #include"BA_File.hpp"
 #include"BA_JSON.hpp"
 #include"BA_String.hpp"
@@ -194,11 +195,7 @@ ba::ui::colorSur::colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos,
 		//r->col[3] = (int)(127.f * sin(0.8f * r->b)) + 0;
 		});
 	if (alloc0Mask)
-	{
-		mask = BALLOC_R(re.h, bool*, mem);
-		for (re_paint.y = 0; (re_paint.y) < (re.h); (re_paint.y)++)
-			mask[re_paint.y] = BALLOC_R(re.w, bool, mem);
-	}
+		mask = ba::allocNDArray<bool*, bool>({ re.h, re.w }, mem);
 }
 ba::ui::colorSur* ba::ui::colorSur::cacu(void)
 {
