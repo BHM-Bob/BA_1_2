@@ -65,7 +65,7 @@ namespace ba {
 		if (!highLeverPtr)
 			return nullptr;
 		if constexpr (!std::is_same_v<Ty, BaseTy>)
-			for (int i = 0; i < shape[nowDim]; i++)
+			for (int i = 0; (_ULL)nowDim < shape.size() && i < shape[nowDim]; i++)
 				highLeverPtr[i] = allocNDArray_AllocD(highLeverPtr[i], shape, nowDim + 1, BaseTy(), mem);
 		return highLeverPtr;
 	}
