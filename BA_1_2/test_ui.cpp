@@ -31,5 +31,8 @@ void ba::test::_ui::initSDL2(void)
 		ui.updateOtherTex("ctt", ct->getTex());
 		ui.checkButt();
 		ui.update();
+
+		//ui.addWindow("tmp");
+		//ui.delWindow("tmp");
 	}
 }

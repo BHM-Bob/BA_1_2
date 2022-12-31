@@ -354,18 +354,17 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 		tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	}
 }
-
 ba::ui::button::button(window* _win, const char* pc, int charSize, SDL_Color charCol,
 	SDL_Rect pos, SDL_Color bgc)
 	: label(_win, pc, charSize, charCol, pos, bgc)
 {
 }
 
-ba::ui::buttons::buttons(window* _win)
+ba::ui::buttons::~buttons()
 {
-	win = _win;
+	for (auto p : butts)
+		delete p.second;
 }
-
 bool ba::ui::buttons::add(const char* _name, const char* _showWords, int charSize,
 	SDL_Color charCol, SDL_Color bgc, SDL_Rect pos, const char* align, SDL_Surface* bg,
 	int(*_eveFunc)(void* pData, ...), void* _eveFuncData)
@@ -410,7 +409,6 @@ bool ba::ui::buttons::add(const char* _name, const char* _showWords, int charSiz
 	}
 	return true;
 }
-
 bool ba::ui::buttons::del(const char* _name)
 {
 	if(butts.contains(_name))
@@ -436,7 +434,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 	SDL_Event* eveTmp = NULL;
 	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0, winW = 0, winH = 0;
 	Uint32 keyTimestamp = SDL_GetTicks();//This value wraps if the program runs for more than ~49 days.
-	for (bool firstRun = true; ; SDL_Delay(20))
+	for ( ; ! s->getVar(false, [=]() {return s->isQuit;}) ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
 		if (eveTmp->type == SDL_MOUSEBUTTONDOWN)
@@ -496,6 +494,11 @@ int ba::ui::_windowState_checkAll(void* _s)
 			s->_setMouseEve(x, y, x, y, 0, 0, 2);
 		}
 	}
+	SDL_DestroyMutex(s->_locker);
+	if (eveTmp)
+		free(eveTmp);
+	delete s;
+	return 0;
 }
 
 void ba::ui::windowState::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
@@ -534,13 +537,12 @@ std::pair<SDL_Keycode, Uint32> ba::ui::windowState::getKeyboardEve(void)
 }
 
 ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
-	int winflags, SDL_Color* bgc)
-	: rect(SDL_Rect(0, 0, winw, winh), bgc ? *bgc : SDL_Color(0, 0, 0, 0))
+	int winflags, SDL_Color bgc)
+	: rect(SDL_Rect(0, 0, winw, winh), bgc)
 {
 	ui = _ui;
 	win = this;
 	titlepc = mstrdup(_titlepc, mem);
-	peve = BALLOC_R(1, SDL_Event, mem);
 	FPS = 25.f;
 
 	if (winflags == 0)
@@ -556,7 +558,7 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 
 	defaultFont = TTF_OpenFont("C:\\Windows\\Fonts\\simkai.ttf", 128);
 
-	if (!bgc)
+	if (bgc.r == bgc.g == bgc.b == bgc.a == 0)
 	{
 		col = { 0,0,0,0 };
 		SDL_VERSION(&(info.version));
@@ -594,14 +596,21 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	SDL_RenderPresent(rend);
 	time = clock();
 }
-
+ba::ui::window::~window()
+{
+	if (title)
+		delete title;
+	delete butts;
+	TTF_CloseFont(defaultFont);
+	SDL_DestroyRenderer(rend);
+	SDL_DestroyWindow(pwin);
+}
 ba::ui::QUI& ba::ui::window::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
 {
 	std::pair<SDL_Texture*, SDL_Rect*>* p = new std::pair<SDL_Texture*, SDL_Rect*>(tex, re);
 	otherTex[name] = p;
 	return *ui;
 }
-
 ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex, bool destroyOld)
 {
 	if (destroyOld)
@@ -609,7 +618,6 @@ ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex, 
 	otherTex[name]->first = tex;
 	return *ui;
 }
-
 bool ba::ui::window::checkButt()
 {
 	// make ui window look like responsible to sys
@@ -640,7 +648,6 @@ bool ba::ui::window::checkButt()
 	}
 	return true;
 }
-
 bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 {
 	// TODO : 速度不能太快：不能捕捉到窗口外的鼠标
@@ -656,12 +663,12 @@ bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 	}
 	return true;
 }
-
 bool ba::ui::window::update(bool rendclear, bool copyTex, bool limitFPS)
 {
 	if(limitFPS)
 		for (float waitt = 1.f / FPS; (float)((float)clock() - time) < waitt* CLOCKS_PER_SEC; SDL_Delay(10));
 	time = clock();
+	winState->_mutexSafeWrapper([=]() {SDL_PollEvent(winState->_eve); });
 	if (rendclear)
 		SDL_RenderClear(rend);
 	if (copyTex)
@@ -688,7 +695,6 @@ bool ba::ui::window::update(bool rendclear, bool copyTex, bool limitFPS)
 	SDL_RenderPresent(rend);
 	return true;
 }
-
 bool ba::ui::window::pollQuit()
 {
 	this->checkButt();
@@ -696,7 +702,6 @@ bool ba::ui::window::pollQuit()
 		return 1;
 	return winState->getVar(false, [&]() {return winState->isQuit; });
 }
-
 bool ba::ui::window::delButt(const char* _name)
 {
 	return butts->del(_name);
@@ -711,7 +716,7 @@ int ba::ui::QUI_Quit(void* pui_, int code, ...)
 	ba::ui::QUI* pui = (ba::ui::QUI*)pui_;
 	return 0;
 }
-ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
+ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color bgc)
 {
 	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
 	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
@@ -722,56 +727,38 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 	{
 		window* win = new window(this, titlepc, winw, winh, winflags, bgc);
 		windows[titlepc] = win;
-		activeWindow = 0;
 		activeWin = win;
 
 		MyBA_AtQuit(QUI_Quit, (void*)this);
 	}
 }
-ba::ui::QUI& ba::ui::QUI::addWindow(const char* titlepc, int winw, int winh, int winflags, SDL_Color* bgc)
+ba::ui::QUI& ba::ui::QUI::addWindow(const char* titlepc, int winw, int winh, int winflags, SDL_Color bgc)
 {
 	window* win = new window(this, titlepc, winw, winh, winflags, bgc);
 	windows[titlepc] = win;
 	return *this;
 }
-ba::ui::QUI& ba::ui::QUI::setActiveWindow(const char* title, _LL idx)
+bool ba::ui::QUI::delWindow(const char* titlepc)
 {
-	if (!title && idx == -1)
+	if (windows.contains(titlepc))
 	{
-		//do nothing
-	}
-	else if (title)
-	{
-		_LL i = 0;
-		for (auto winp : windows)
+		if (activeWin == windows[titlepc])
 		{
-			if (strcmp(title, winp.second->titlepc) == 0)
-			{
-				activeWindow = i;
-				activeWin = windows[title];
-				break;
-			}
-			i++;
+			if (windows.size() == 1)
+				return false;//在只有一个窗口时禁止销毁该窗口
+			activeWin = windows.begin()->second;//回到第一个窗口
 		}
+		window* pwin = windows[titlepc];
+		pwin->winState->_mutexSafeWrapper([&]() {pwin->winState->isQuit = true; });
+		delete windows[titlepc];
+		windows.erase(titlepc);
 	}
-	else if (idx >= 0 && (_ULL)idx < windows.size())
-	{
-		_LL i = 0;
-		for (auto winp : windows)
-		{
-			if (i == idx)
-			{
-				activeWindow = i;
-				activeWin = windows[title];
-				break;
-			}
-			i++;
-		}
-	}
-	else//Illegal idx
-	{
-		MyBA_Err("ba::ui::QUI::setActiveWindow : Illegal idx", 1);
-	}
+	return false;
+}
+ba::ui::QUI& ba::ui::QUI::setActiveWindow(const char* title)
+{
+	if (title && windows.contains(title))
+		activeWin = windows[title];
 	return *this;
 }
 int ba::ui::QUI::Quit(int code, ...)
@@ -780,11 +767,7 @@ int ba::ui::QUI::Quit(int code, ...)
 	for (auto p : windows)
 	{
 		win = p.second;
-		TTF_CloseFont(win->defaultFont);
-		SDL_FreeSurface(win->sur);
-		SDL_DestroyTexture(win->tex);
-		SDL_DestroyRenderer(win->rend);
-		SDL_DestroyWindow(win->pwin);
+		delete win;
 	}
 	TTF_Quit();
 	//MyBA_Free_R(mem);

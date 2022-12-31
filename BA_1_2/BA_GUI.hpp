@@ -33,7 +33,7 @@ namespace ba
 		int* ProduceRainbowCol(int* col, float* i, float* di);
 		int* ProduceRainbowCol(int* col, float* i, float di = 0.05f);
 		SDL_Color* SetSDLCol(SDL_Color* col, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-		SDL_Color* MakeSDLCol(List* mem, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+		SDL_Color* MakeSDLCol(List* mem, Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255);
 		SDL_Rect* SetSDLRect(SDL_Rect* pos, int w, int h, int x, int y);
 		SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y);
 		Uint32 getPixle(SDL_Surface* surface, int x, int y);
@@ -154,7 +154,8 @@ namespace ba
 			std::map<std::string, int (*)(void* pData, ...)> eveFunc;// int (*)(void* pData);
 			std::map<std::string, void*> eveFuncData;// void*
 
-			buttons(window* _win);
+			buttons(window* _win) {	win = _win;}
+			~buttons();
 			// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
 			// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
 			bool add(const char* _name, const char* _showWords, int charSize,
@@ -173,11 +174,11 @@ namespace ba
 		class windowState : public BA_Base
 		{
 		public:
-			//private
+			//protect
 			SDL_mutex* _locker = SDL_CreateMutex();
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, Sint32 dx, Sint32 dy, int code);
-
+			//private
 			Sint32 winW = 0, winH = 0;
 			bool isQuit = false;
 			char* dropFilePath = nullptr;
@@ -187,7 +188,6 @@ namespace ba
 			Sint32 dMouseMove[2] = { 0 };// 鼠标位移
 			int mouseEveCode = 0;// 鼠标事件代码
 			std::deque<std::pair<SDL_Keycode, clock_t>> keys;// 键盘事件缓存队列，每个事件附带时间戳
-
 			//public
 			windowState() { };
 
@@ -202,7 +202,7 @@ namespace ba
 					free(tmp);
 				tmp = MCALLOC(1, SDL_Event);
 				if (tmp)
-					*tmp = getVar(*tmp, [&]() {SDL_PollEvent(_eve); return *_eve; });
+					*tmp = *(getVar(tmp, [&]() {SDL_PollEvent(_eve); return _eve; }));
 				return tmp;
 			}
 			inline bool checkMouseIn(SDL_Rect* re)
@@ -248,8 +248,6 @@ namespace ba
 		class window : public rect
 		{
 		private:
-			balist<event>* events = new balist<event>();
-
 		public:
 			// GUI事件处理。除_windowState_checkAll，外部只可调用非_开头的方法
 			windowState* winState = nullptr;
@@ -262,8 +260,6 @@ namespace ba
 			SDL_SysWMinfo info = SDL_SysWMinfo();
 			HWND hwnd = HWND();
 			SDL_Renderer* rend = nullptr;
-			SDL_PixelFormat* format = nullptr;
-			SDL_Event* peve = nullptr;
 			clock_t time = clock();
 			float FPS = 0.f;
 			const char* exitButtName = nullptr;
@@ -273,7 +269,8 @@ namespace ba
 			std::unordered_map<std::string, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
 
 			window(QUI* _ui, const char* _titlepc = "QUI", int winw = 800, int winh = 500,
-				int winflags = 0, SDL_Color* bgc = NULL);
+				int winflags = 0, SDL_Color bgc = {});
+			~window();
 
 			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
 			QUI& updateOtherTex(std::string name, SDL_Texture* tex, bool destroyOld = false);
@@ -288,17 +285,17 @@ namespace ba
 		class QUI : public BA_Base
 		{
 		public:
-			_LL activeWindow = -1;
 			window* activeWin = NULL;
 			std::unordered_map<std::string, window*> windows;
 
 
 			QUI(const char* titlepc = "QUI", int winw = 800, int winh = 500,
-				int winflags = 0, SDL_Color* bgc = NULL);
+				int winflags = 0, SDL_Color bgc = {});
 
 			QUI& addWindow(const char* titlepc = "QUI", int winw = 800, int winh = 500,
-				int winflags = 0, SDL_Color* bgc = NULL);
-			QUI& setActiveWindow(const char* title = NULL, _LL idx = -1);
+				int winflags = 0, SDL_Color bgc = {});
+			bool delWindow(const char* titlepc);
+			QUI& setActiveWindow(const char* title = NULL);
 			inline window* getWindow(const char* win)
 			{
 				if (win && windows.find(win) != windows.end())
