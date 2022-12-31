@@ -450,12 +450,21 @@ int ba::ui::_windowState_checkAll(void* _s)
 		else if (eveTmp->type == SDL_FINGERDOWN)
 		{//触屏按压事件
 			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
-			for ( ; eveTmp->type != SDL_FINGERUP ; )
-				eveTmp = s->getUpdatedEveCopy(eveTmp);
 			winW = s->getVar(winW, [&]() {return s->winW; });
 			winH = s->getVar(winH, [&]() {return s->winH; });
-			x = (Sint32)(s->winW * eveTmp->tfinger.x);
-			y = (Sint32)(s->winH * eveTmp->tfinger.y);
+			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
+			for (oriX = (Sint32)(s->winW * eveTmp->tfinger.x), oriY = (Sint32)(s->winH * eveTmp->tfinger.y);
+				eveTmp->type != SDL_FINGERUP; )
+			{
+				eveTmp = s->getUpdatedEveCopy(eveTmp);
+				x = (Sint32)(s->winW * eveTmp->tfinger.x);
+				y = (Sint32)(s->winH * eveTmp->tfinger.y);
+				// 发送信号：1: 鼠标按下后移动; -1: 鼠标按下不移动
+				if (eveTmp->type == SDL_FINGERMOTION || eveTmp->type == SDL_WINDOWEVENT)
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, 1);
+				else
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, -1);
+			}
 			s->_setMouseEve(x, y, x, y, 0, 0, 2);
 		}
 	}
