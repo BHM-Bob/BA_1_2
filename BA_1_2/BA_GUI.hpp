@@ -22,9 +22,9 @@ E:\My_Progs\BA\Cpp\BA_1_2\BA_1_2\SDL2\lib\SDL2_ttf.lib
 // TODO : use threads
 // TODO : maybe later : template or func obj of button func
 // TODO : some intersting things in SDL2
-	//SDL_DropEvent : https://wiki.libsdl.org/SDL2/SDL_DropEvent
 	//SDL_GetSystemRAM : https://wiki.libsdl.org/SDL2/SDL_GetSystemRAM
 	//SDL_GetCPUCount : https://wiki.libsdl.org/SDL2/SDL_GetCPUCount
+// TODO : 内存泄露（退出时释放内存）
 
 namespace ba
 {
@@ -176,6 +176,7 @@ namespace ba
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, Sint32 dx, Sint32 dy, int code);
 
+			Sint32 winW = 0, winH = 0;
 			bool isQuit = false;
 			char* dropFilePath = nullptr;
 			char* dropText = nullptr;

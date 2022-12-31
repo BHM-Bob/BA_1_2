@@ -62,10 +62,10 @@ namespace ba {
 	Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<int> shape, int nowDim, BaseTy baseV, List* mem)
 	{
 		highLeverPtr = BALLOC_R(shape[nowDim], Ty, mem);
-		if (!highLeverPtr)
-			return nullptr;
+		if (!highLeverPtr || (_ULL)nowDim + 1 == shape.size())
+			return highLeverPtr;
 		if constexpr (!std::is_same_v<Ty, BaseTy>)
-			for (int i = 0; (_ULL)nowDim < shape.size() && i < shape[nowDim]; i++)
+			for (int i = 0 ; i < shape[nowDim] ; i++)
 				highLeverPtr[i] = allocNDArray_AllocD(highLeverPtr[i], shape, nowDim + 1, BaseTy(), mem);
 		return highLeverPtr;
 	}

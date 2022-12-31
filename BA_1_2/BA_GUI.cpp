@@ -406,7 +406,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 {
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
 	SDL_Event* eveTmp = NULL;
-	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0;
+	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0, winW = 0, winH = 0;
 	Uint32 keyTimestamp = SDL_GetTicks();//This value wraps if the program runs for more than ~49 days.
 	for (bool firstRun = true; ; SDL_Delay(20))
 	{
@@ -447,23 +447,17 @@ int ba::ui::_windowState_checkAll(void* _s)
 		{//"退出"事件
 			s->_mutexSafeWrapper([&]() {s->isQuit = true; });
 		}
-		//switch (event.type)
-		//{
-		//case SDL_FINGERDOWN:
-		//	//处理触屏触碰事件
-		//	break;
-		//case SDL_FINGERMOTION:
-		//	//处理触屏拖动事件
-		//	if (is_dragging)
-		//	{
-		//		//处理拖动操作
-		//	}
-		//	break;
-		//case SDL_FINGERUP:
-		//	//处理触屏抬起事件
-		//	is_dragging = false;
-		//	break;
-		//}
+		else if (eveTmp->type == SDL_FINGERDOWN)
+		{//触屏按压事件
+			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
+			for ( ; eveTmp->type != SDL_FINGERUP ; )
+				eveTmp = s->getUpdatedEveCopy(eveTmp);
+			winW = s->getVar(winW, [&]() {return s->winW; });
+			winH = s->getVar(winH, [&]() {return s->winH; });
+			x = (Sint32)(s->winW * eveTmp->tfinger.x);
+			y = (Sint32)(s->winH * eveTmp->tfinger.y);
+			s->_setMouseEve(x, y, x, y, 0, 0, 2);
+		}
 	}
 }
 
@@ -554,7 +548,9 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 		rendRect();
 	}
 
-	this->winState = new windowState();
+	winState = new windowState();
+	winState->winW = re.w;
+	winState->winH = re.h;
 	SDL_CreateThread(ba::ui::_windowState_checkAll, "events server", (void*)winState);
 	
 	SDL_RenderCopy(rend, tex, NULL, NULL);

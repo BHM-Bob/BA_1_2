@@ -486,9 +486,9 @@
   <ItemGroup>
     <None Include="SDL2\SDL_config.h.cmake" />
     <None Include="SDL2\SDL_config.h.in" />
-    <None Include="SDL2\SDL_config_macosx.h.orig" />
     <None Include="..\README.md">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="SDL2\SDL_config_macosx.h.orig" />
   </ItemGroup>
 </Project>
