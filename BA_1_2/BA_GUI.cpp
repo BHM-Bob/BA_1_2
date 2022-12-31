@@ -477,11 +477,12 @@ int ba::ui::_windowState_checkAll(void* _s)
 		}
 		else if (eveTmp->type == SDL_FINGERDOWN)
 		{//触屏按压事件
+			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
 			winW = s->getVar(winW, [&]() {return s->winW; });
 			winH = s->getVar(winH, [&]() {return s->winH; });
 			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
 			for (oriX = (Sint32)(s->winW * eveTmp->tfinger.x), oriY = (Sint32)(s->winH * eveTmp->tfinger.y);
-				eveTmp->type != SDL_FINGERUP ; )
+				eveTmp->type != SDL_FINGERUP; )
 			{
 				eveTmp = s->getUpdatedEveCopy(eveTmp);
 				x = (Sint32)(s->winW * eveTmp->tfinger.x);
