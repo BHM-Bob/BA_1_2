@@ -16,11 +16,17 @@ void ba::test::_ui::initSDL2(void)
 		{30, 0,0,0}, "tr", (SDL_Surface*)1);
 	ui.activeWin->exitButtName = "exit";
 
+	char* pc = mstrdup("w");
 	for (SDL_Keycode keyboard = ui.activeWin->winState->getKeyboardEve().first; ! ui.pollQuit(); )
 	{
 		keyboard = ui.activeWin->winState->getKeyboardEve().first;
 		if (keyboard != 0)
-			PPX((char)keyboard);
+		{
+			*pc = (char)keyboard;
+			PPX(pc);
+			ui.delButt("key");
+			ui.addButt("key", pc, 20, { 100, 100, 20, 20 });
+		}
 		ui.updateOtherTex("cst", cs->getTex());
 		ui.updateOtherTex("ctt", ct->getTex());
 		ui.checkButt();

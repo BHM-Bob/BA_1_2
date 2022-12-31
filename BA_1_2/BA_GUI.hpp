@@ -95,6 +95,7 @@ namespace ba
 			//must use after ui is assigned
 			void rendRect(void);
 			bool checkMouseIn(Sint32 x, Sint32 y);
+			~rect();
 		};
 		class colorSur : public rect
 		{
@@ -112,7 +113,7 @@ namespace ba
 			colorSur* cacu(void);
 			colorSur* update(void);
 			SDL_Texture* getTex(void);
-			void destroy(void);
+			~colorSur();
 		};
 		class colorText : public colorSur
 		{
@@ -160,6 +161,7 @@ namespace ba
 				SDL_Color charCol = {}, SDL_Color bgc = {.r = 255, .g = 255, .b = 255, .a = 255},
 				SDL_Rect pos = {}, const char* align = "tl", SDL_Surface * bg = NULL,
 				int (*eveFunc)(void* pData, ...) = NULL, void* eveFuncData = NULL);
+			bool del(const char* _name);
 		};
 
 		class event : public BA_Base
@@ -251,8 +253,6 @@ namespace ba
 		public:
 			// GUI事件处理。除_windowState_checkAll，外部只可调用非_开头的方法
 			windowState* winState = nullptr;
-
-			std::mutex locker;
 			QUI* ui = nullptr;
 			TTF_Font* defaultFont = nullptr;
 
@@ -313,6 +313,13 @@ namespace ba
 			inline QUI& updateOtherTex(std::string name, SDL_Texture* tex, const char* win = NULL)
 			{
 				return getWindow(win)->updateOtherTex(name, tex);
+			}
+			inline bool addButt(const char* _name, const char* _showWords, int charSize, SDL_Rect pos = {},
+				SDL_Color charCol = {}, SDL_Color bgc = { .r = 255, .g = 255, .b = 255, .a = 255 },
+				const char* align = "tl", SDL_Surface* bg = NULL,
+				const char* win = NULL, int (*eveFunc)(void* pData, ...) = NULL, void* eveFuncData = NULL)
+			{
+				return getWindow(win)->butts->add(_name, _showWords, charSize, charCol,bgc, pos, align, bg, eveFunc, eveFuncData);
 			}
 			inline bool delButt(const char* _name, const char* win = NULL)
 			{

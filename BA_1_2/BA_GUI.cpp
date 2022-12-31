@@ -166,6 +166,15 @@ bool ba::ui::rect::checkMouseIn(Sint32 x, Sint32 y)
 	return checkDotInRect(x, y, &re);
 }
 
+ba::ui::rect::~rect()
+{
+	MyBA_Free_R(mem, true);
+	if(sur)
+		SDL_FreeSurface(sur);
+	if (tex)
+		SDL_DestroyTexture(tex);
+}
+
 
 ba::ui::colorSur::colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos,
 	bool alloc0Mask, int _sumdot)
@@ -257,7 +266,7 @@ SDL_Texture* ba::ui::colorSur::getTex(void)
 	tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	return tex;
 }
-void ba::ui::colorSur::destroy(void)
+ba::ui::colorSur::~colorSur()
 {
 	delete dots;
 	delete len;
@@ -402,6 +411,25 @@ bool ba::ui::buttons::add(const char* _name, const char* _showWords, int charSiz
 	return true;
 }
 
+bool ba::ui::buttons::del(const char* _name)
+{
+	if(butts.contains(_name))
+	{
+		button* pbutt = butts[_name];
+		events.erase(_name);
+		statue.erase(_name);
+		butts.erase(_name);
+		if (eveFunc.contains(_name))
+		{
+			eveFunc.erase(_name);
+			eveFuncData.erase(_name);
+		}
+		delete pbutt;
+		return true;
+	}
+	return false;
+}
+
 int ba::ui::_windowState_checkAll(void* _s)
 {
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
@@ -449,13 +477,21 @@ int ba::ui::_windowState_checkAll(void* _s)
 		}
 		else if (eveTmp->type == SDL_FINGERDOWN)
 		{//触屏按压事件
-			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
-			for ( ; eveTmp->type != SDL_FINGERUP ; )
-				eveTmp = s->getUpdatedEveCopy(eveTmp);
 			winW = s->getVar(winW, [&]() {return s->winW; });
 			winH = s->getVar(winH, [&]() {return s->winH; });
-			x = (Sint32)(s->winW * eveTmp->tfinger.x);
-			y = (Sint32)(s->winH * eveTmp->tfinger.y);
+			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
+			for (oriX = (Sint32)(s->winW * eveTmp->tfinger.x), oriY = (Sint32)(s->winH * eveTmp->tfinger.y);
+				eveTmp->type != SDL_FINGERUP ; )
+			{
+				eveTmp = s->getUpdatedEveCopy(eveTmp);
+				x = (Sint32)(s->winW * eveTmp->tfinger.x);
+				y = (Sint32)(s->winH * eveTmp->tfinger.y);
+				// 发送信号：1: 鼠标按下后移动; -1: 鼠标按下不移动
+				if (eveTmp->type == SDL_FINGERMOTION || eveTmp->type == SDL_WINDOWEVENT)
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, 1);
+				else
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, -1);
+			}
 			s->_setMouseEve(x, y, x, y, 0, 0, 2);
 		}
 	}
@@ -662,7 +698,7 @@ bool ba::ui::window::pollQuit()
 
 bool ba::ui::window::delButt(const char* _name)
 {
-	return false;
+	return butts->del(_name);
 }
 
 // TODO : why should put this func before ba::ui::QUI::QUI
