@@ -72,11 +72,6 @@ namespace ba
 	bool fnmatch(const std::filesystem::path& name, const std::string& pattern);
 }
 
-char* StringWrite(FILE* pf, char* pc);
-
-//BALLOC_S
-char* StringRead(FILE* pf, List* mem = NULL);
-
 unsigned long long  Get_File_Size(FILE* pf);
 
 char* ReadTXT(const char* path, _ULL loadSize = 0, List* mem = NULL);

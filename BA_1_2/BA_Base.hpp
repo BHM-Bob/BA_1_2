@@ -313,26 +313,15 @@ struct BALog
 
 namespace ba
 {
-	class memRecord;//类的前置声明
-	class singleStack
-	{
-	public:
-		char* funcName = NULL;
-		memRecord* mem = NULL;
-		singleStack* up = NULL;
-		singleStack* next = NULL;
+	class stack;
 
-		singleStack(const char* _funcName, singleStack* _up);
-	};
-
-	class stack//向外提供服务，BA内部函数不使用
-	{
-	public:
-		std::deque<singleStack*> stacks;
-
-		stack();
-	};
+	// end with a NULL
+	char* StrAdd(List* mem, const char* pstr, ...);
 }
+
+char* StringWrite(FILE* pf, char* pc);
+//BALLOC_S
+char* StringRead(FILE* pf, List* mem = NULL);
 
 typedef struct MyBA MyBA;
 struct MyBA
@@ -363,6 +352,8 @@ struct MyBA
 	List* exitFunc;
 
 	float (*GUT)(bool reset);
+
+	std::map<std::string, bool> moudleState;
 };
 extern MyBA* pba;
 void MyBA_Init(int argc = 1, char** argvs = NULL, bool safeMode = false);
@@ -384,6 +375,7 @@ void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli);
 void* MyBA_CALLOC_L(_ULL count, _ULL size);
 void* MyBA_CALLOC_S(_ULL count, _ULL size);
 
+void MyBA_CMD_Warrper(int argc = 1, char** argvs = NULL);
 void MyBA_SafeMode(void);
 //***********************************************************************************************************************
 

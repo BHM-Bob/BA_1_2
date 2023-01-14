@@ -6,7 +6,7 @@
 //#define USE_OPENCV
 
 #include"BA_Base.hpp"
-#include"BA_CMD.hpp"
+// if BA_CMD moudle is needless, put #undef BA_USE_CMD in a new line just before line of #include "BA_1_2.cpp"
 
 MyBA* pba;
 
@@ -40,6 +40,21 @@ float MyBA_Ver(void)
 	*/
 }
 
+#ifdef BA_USE_CMD
+#pragma message( "BA_USE_CMD defined" )
+#include "BA_CMD.hpp"
+void MyBA_CMD_Warrper(int argc, char** argvs)
+{
+	MyBA_CMD(argc, argvs);
+}
+#else
+#pragma message( "BA_USE_CMD undefined" )
+void MyBA_CMD_Warrper(int argc, char** argvs)
+{
+	PPW("not define BA_USE_CMD");
+}
+#endif
+
 void MyBA_Init(int argc, char** argvs, bool safeMode)
 {
 	pba = MCALLOC(1, MyBA);
@@ -66,10 +81,6 @@ void MyBA_Init(int argc, char** argvs, bool safeMode)
 		pba->mem = List_Init();
 		pba->LTmem = List_Init();
 		pba->STmem = List_Init();
-
-		pba->stacks = new ba::stack();
-		ba::singleStack* ps = new ba::singleStack("MyBA_Init", NULL);
-		pba->stacks->stacks.emplace_front(ps);
 
 		pba->exitFunc = List_Init();
 		pba->exitFuncData = List_Init();
@@ -104,7 +115,7 @@ void MyBA_Init(int argc, char** argvs, bool safeMode)
 			switch (_getch())
 			{
 			case 'c':case'C':
-				MyBA_CMD();
+				MyBA_CMD_Warrper();
 				break;
 			case 's':case'S':
 				MyBA_SafeMode();
@@ -115,7 +126,7 @@ void MyBA_Init(int argc, char** argvs, bool safeMode)
 		}
 	}
 	if(argc > 1 && argvs)
-		MyBA_CMD(argc, argvs);
+		MyBA_CMD_Warrper(argc, argvs);
 }
 
 //BALLOC_L
@@ -319,9 +330,8 @@ int MyBA_Quit(int retVal)
 		{
 			if (exitFunc(data, 0) != 0)
 			{
-				MyBA_Errs(1, "int MyBA_Quit(int retVal): exitFunc(pdata, 0) != 0, func No.",
-					ba::Num2Str(pba->exitFunc->now ? pba->exitFunc->now->idx-1 : pba->exitFunc->sumque),
-					" err!", NULL);
+				MyBA_Err("int MyBA_Quit(int retVal): exitFunc(pdata, 0) != 0, func No.", 1);
+				printf("%llu\n", pba->exitFunc->now ? pba->exitFunc->now->idx - 1 : pba->exitFunc->sumque);
 			}
 		}
 	}
@@ -402,19 +412,6 @@ void MyBA_SafeMode(void)
 	pba->isSAFEMODE = true;
 }
 
-ba::singleStack::singleStack(const char* _funcName, singleStack* _up)
-{
-	mem = new memRecord();
-	mem->stack = this;
-	funcName = strdup(_funcName, mem, 0);
-	up = _up;
-}
-
-ba::stack::stack()
-{
-
-}
-
 void JDT(_ULL now, _ULL sum)
 {
 	if (pba->JDT_t == 0)
@@ -466,6 +463,32 @@ COORD GetConsoleCursor(void)
 	return coordScreen; //光标位置
 }
 
+char* ba::StrAdd(List* mem, const char* pstr, ...)
+{
+	va_list parg;
+	va_start(parg, pstr);
+	_ULL sumlen = 1;
+	List* plist = List_Init();
+	sumlen += (pstr ? strlen(pstr) : 0);// handle that if the head ptr is NULL
+	plist->Put(plist, (pstr ? (void*)pstr : BA_FREED_PTR));// handle that if the head ptr is NULL
+	for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
+	{
+		sumlen += (p ? strlen(p) : 0);
+		plist->Put(plist, p);
+	}
+	char* pret = BALLOC_R(sumlen, char, mem);
+	if (!pret)
+	{
+		PPW("OOM");
+		return (char*)1;
+	}
+	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
+		if (p != BA_FREED_PTR)
+			strcat_s(pret, sumlen, p);
+	List_Destroy(plist);
+	return pret;
+}
+
 // if mem == NULL, do not record
 char* mstrdup(const char* p, List* mem)
 {
@@ -488,6 +511,52 @@ float* TypeDupR(List* mem, _ULL num, float firstData, ...)
 		va_end(parg);
 	}
 	return pret;
+}
+
+char* StringWrite(FILE* pf, char* pc)
+{
+	_ULL* plen = MCALLOC(1, _ULL);
+	if (plen != NULL)
+	{
+		(*plen) = strlen(pc);
+		fwrite(plen, sizeof(_ULL), 1, pf);
+		fwrite(pc, sizeof(char), *plen, pf);
+		free(plen);
+	}
+	else
+	{
+		PPW("char* StringWrite(FILE* pf, char* pc):Err to alloc mem, return NULL");
+		return NULL;
+	}
+	return pc;
+}
+
+char* StringRead(FILE* pf, List* mem)
+{
+	_ULL* plen = MCALLOC(1, _ULL);
+	if (plen != NULL)
+	{
+		fread(plen, sizeof(_ULL), 1, pf);
+		if (*plen == 0)
+		{
+			_LL i = ftell(pf);
+			free(plen);
+			return NULL;
+		}
+		mem = mem ? mem : pba->STmem;
+		char* pc = BALLOC_R(*plen + 1, char, mem);
+		if (pc != NULL)
+			fread(pc, sizeof(char), *plen, pf);
+		else
+			PPW("char* StringRead(FILE* pf):Err to alloc mem, return NULL");
+		free(plen);
+		return pc;
+	}
+	else
+	{
+		PPW("char* StringRead(FILE* pf):Err to alloc mem, return NULL");
+		return NULL;
+	}
 }
 
 ////!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -532,7 +601,7 @@ int GetDayOfMonth(int year, int month)
 	//month:1~12
 	if (month < 1 || month >12)
 	{
-		MyBA_Errs(1, "GetDayOfMonth: month is out of range with input:", ba::Num2Str(month), ",return -1");
+		MyBA_Errs(1, "GetDayOfMonth: month is out of range with input", ",return -1", NULL);
 		return -1;
 	}
 	int a[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };

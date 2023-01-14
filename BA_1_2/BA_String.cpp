@@ -519,32 +519,6 @@ List* ba::str::Find(const char* _pc)
 	return NULL;
 }
 
-char* ba::StrAdd(List* mem, const char* pstr, ...)
-{
-	va_list parg;
-	va_start(parg, pstr);
-	_ULL sumlen = 1;
-	List* plist = List_Init();
-	sumlen += (pstr ? strlen(pstr) : 0);// handle that if the head ptr is NULL
-	plist->Put(plist, (pstr ? (void*)pstr : BA_FREED_PTR));// handle that if the head ptr is NULL
-	for (char* p = va_arg(parg, char*); p != NULL; p = va_arg(parg, char*))
-	{
-		sumlen += (p ? strlen(p) : 0);
-		plist->Put(plist, p);
-	}
-	char* pret = BALLOC_R(sumlen, char, mem);
-	if (!pret)
-	{
-		PPW("OOM");
-		return (char*)1;
-	}
-	for (char* p = (char*)(plist->Get(plist)); p != NULL; p = (char*)plist->Get(plist))
-		if (p != BA_FREED_PTR)
-			strcat_s(pret, sumlen, p);
-	List_Destroy(plist);
-	return pret;
-}
-
 char* ba::stradd(ba::memRecord* mem, _LL toBeFreedInStack, const char* pstr, ...)
 {
 	va_list parg;

@@ -82,52 +82,6 @@ bool Encrypt_File(char* path, char* Passwords)
 	return 1;
 }
 
-char* StringWrite(FILE* pf, char* pc)
-{
-	_ULL* plen = MCALLOC(1, _ULL);
-    if (plen != NULL)
-    {
-	    (*plen) = strlen(pc);
-	    fwrite(plen, sizeof(_ULL), 1, pf);
-	    fwrite(pc, sizeof(char), *plen, pf);
-	    free(plen);
-    }
-    else
-    {
-        PPW("char* StringWrite(FILE* pf, char* pc):Err to alloc mem, return NULL");
-        return NULL;
-    }
-	return pc;
-}
-
-char* StringRead(FILE* pf, List* mem)
-{
-	_ULL* plen = MCALLOC(1, _ULL);
-    if (plen != NULL)
-    {
-	    fread(plen, sizeof(_ULL), 1, pf);
-	    if (*plen == 0)
-	    {
-            _LL i = ftell(pf);
-		    free(plen);
-		    return NULL;
-	    }
-        mem = mem ? mem : pba->STmem;
-	    char* pc = BALLOC_R(*plen + 1, char, mem);
-        if (pc != NULL)
-	        fread(pc, sizeof(char), *plen, pf);
-        else
-            PPW("char* StringRead(FILE* pf):Err to alloc mem, return NULL");
-	    free(plen);
-	    return pc;
-    }
-    else
-    {
-        PPW("char* StringRead(FILE* pf):Err to alloc mem, return NULL");
-        return NULL;
-    }
-}
-
 //char* root = mstrdup("E:\\HC\\KOMODO\\Komodo Organism\\");
 //List* fileName = listFiles(StringAdd(root,"*.txt",NULL));
 //List* listFiles(char* dir)

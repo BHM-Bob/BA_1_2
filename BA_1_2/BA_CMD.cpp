@@ -1,6 +1,9 @@
-﻿#include "BA_BASE.HPP"
+﻿#include "BA_Base.hpp"
 #include "BA_CMD.hpp"
 #include "BA_String.hpp"
+
+//初始化发生在main函数之前
+static auto cmdInit = [&]() {pba->moudleState["cmd"] = true; };
 
 void MyBA_CMD(int argc, char** argvs)
 {

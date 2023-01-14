@@ -9,6 +9,8 @@
 #ifndef BA_1_2_H
 #define BA_1_2_H
 
+#define BA_USE_CMD
+
 #include"BA_Base.hpp"
 #include"BA_Mem.hpp"
 #include"BA_Thread.hpp"

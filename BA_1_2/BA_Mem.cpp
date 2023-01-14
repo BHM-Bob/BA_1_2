@@ -1,6 +1,15 @@
 ﻿#include "BA_BASE.HPP"
 #include "BA_Mem.hpp"
+#include "BA_String.hpp"
 
+
+ba::singleStack::singleStack(const char* _funcName, singleStack* _up)
+{
+	mem = new memRecord();
+	mem->stack = this;
+	funcName = strdup(_funcName, mem, 0);
+	up = _up;
+}
 
 ba::memRecordDot::memRecordDot(_LL _size, _LL _toBeFreedInStack,
 	memRecordDot* _next, void* _data)
@@ -33,6 +42,13 @@ int ba::memRecord::destroy(void)
 void ba::stackInit(const char* _funcName)
 {
 	ba::singleStack* ps = new singleStack(_funcName, pba->stacks->stacks[0]);
+	pba->stacks->stacks.emplace_front(ps);
+}
+
+void ba::startBAStack(void)
+{
+	pba->stacks = new ba::stack();
+	ba::singleStack* ps = new ba::singleStack("MyBA_Init", NULL);
 	pba->stacks->stacks.emplace_front(ps);
 }
 

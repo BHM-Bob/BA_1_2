@@ -11,7 +11,28 @@
 #define _balloc(Ty,count,mem) ba::balloc<Ty>(count,mem)
 #define _ballocs(Ty,varName,count,mem,fs,errRetCodeAsPtr); Ty*varName=ba::balloc<Ty>(count,mem,fs);if(!varName){PPW("OOM");return (Ty*)errRetCodeAsPtr;}
 
-namespace ba {
+namespace ba
+{
+	class memRecord;//前置声明
+
+	class singleStack
+	{
+	public:
+		char* funcName = NULL;
+		memRecord* mem = NULL;
+		singleStack* up = NULL;
+		singleStack* next = NULL;
+
+		singleStack(const char* _funcName, singleStack* _up);
+	};
+
+	class stack//向外提供服务，BA内部函数不使用
+	{
+	public:
+		std::deque<singleStack*> stacks;
+
+		stack(){}
+	};
 
 	class memRecordDot
 	{
@@ -57,6 +78,7 @@ namespace ba {
 		delete ps->mem;
 		return retValue;
 	}
+	void startBAStack(void);
 
 	template<typename Ty, typename BaseTy>
 	Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<int> shape, int nowDim, BaseTy baseV, List* mem)

@@ -143,7 +143,11 @@ namespace ba
 				int charSize, SDL_Color* cc = NULL, SDL_Color* bgc = NULL,
 				const char* fontName = NULL);
 		};
+		template<typename baseItemTy>
+		class namedItems : public BA_Base
+		{
 
+		};
 		class buttons : public BA_Base
 		{
 		public:
