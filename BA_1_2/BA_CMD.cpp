@@ -3,7 +3,7 @@
 #include "BA_String.hpp"
 
 //初始化发生在main函数之前
-static auto cmdInit = [&]() {pba->moudleState["cmd"] = true; };
+static auto cmdInit = [&]() {return true; }();
 
 void MyBA_CMD(int argc, char** argvs)
 {
