@@ -44,6 +44,10 @@ namespace ba
 		SDL_Surface* getImageSur(const char* path);
 		// make sure that path is utf-8 coded
 		SDL_Texture* getImageTex(SDL_Renderer* renderer, const char* path);
+		inline void SDL_print_Texture(SDL_Renderer* rend, SDL_Rect Box, SDL_Point center, int angel, SDL_Texture* tex)
+		{
+			SDL_RenderCopyEx(rend, tex, NULL, &Box, angel, &center, SDL_FLIP_NONE);
+		}
 
 		bool checkDotInRect(Sint32 x, Sint32 y, SDL_Rect* re);
 
