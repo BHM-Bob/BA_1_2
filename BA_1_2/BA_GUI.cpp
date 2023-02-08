@@ -258,6 +258,7 @@ ba::ui::colorSur* ba::ui::colorSur::update(void)
 	}
 	return this;
 }
+//colorSur::getTex has SDL_DestroyTexture built in
 SDL_Texture* ba::ui::colorSur::getTex(void)
 {
 	update();

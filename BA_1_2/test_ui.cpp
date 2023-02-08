@@ -19,6 +19,7 @@ void ba::test::_ui::initSDL2(void)
 	char* pc = mstrdup("w");
 	for (SDL_Keycode keyboard = ui.activeWin->winState->getKeyboardEve().first; ! ui.pollQuit(); )
 	{
+		//PPX(pba->GUT(0));
 		keyboard = ui.activeWin->winState->getKeyboardEve().first;
 		if (keyboard != 0)
 		{

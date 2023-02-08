@@ -277,6 +277,7 @@ namespace ba
 			~window();
 
 			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
+			//colorSur::getTex has SDL_DestroyTexture builtin
 			QUI& updateOtherTex(std::string name, SDL_Texture* tex, bool destroyOld = false);
 			bool checkButt();
 			bool checkTitle(bool rendclear = true, bool copyTex = true);
