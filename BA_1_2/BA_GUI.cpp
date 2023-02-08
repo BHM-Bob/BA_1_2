@@ -561,7 +561,7 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 
 	defaultFont = TTF_OpenFont("C:\\Windows\\Fonts\\simkai.ttf", 128);
 
-	if (bgc.r == bgc.g == bgc.b == bgc.a == 0)
+	if (bgc.r == 0 && bgc.g == 0 && bgc.b == 0 && bgc.a == 0)
 	{
 		col = { 0,0,0,0 };
 		SDL_VERSION(&(info.version));
