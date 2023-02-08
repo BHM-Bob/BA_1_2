@@ -607,6 +607,8 @@ ba::ui::window::~window()
 	TTF_CloseFont(defaultFont);
 	SDL_DestroyRenderer(rend);
 	SDL_DestroyWindow(pwin);
+	sur = nullptr;
+	tex = nullptr;
 }
 ba::ui::QUI& ba::ui::window::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
 {

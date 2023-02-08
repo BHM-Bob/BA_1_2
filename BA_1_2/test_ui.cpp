@@ -33,7 +33,8 @@ void ba::test::_ui::initSDL2(void)
 		ui.checkButt();
 		ui.update();
 
-		//ui.addWindow("tmp");
-		//ui.delWindow("tmp");
-	}
+
+	}		
+	ui.addWindow("tmp");
+	ui.delWindow("win1");
 }
