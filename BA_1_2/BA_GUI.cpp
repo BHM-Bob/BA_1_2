@@ -274,7 +274,9 @@ ba::ui::colorSur::~colorSur()
 	delete lv;
 	MyBA_Free_R(mem);
 	SDL_FreeSurface(sur);
+	sur = nullptr;
 	SDL_DestroyTexture(tex);
+	tex = nullptr;
 }
 
 //bool ba::ui::MyUI_ColorText_Destroy(MyUI_ColorText* pct)
