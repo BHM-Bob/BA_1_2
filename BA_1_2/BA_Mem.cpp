@@ -9,6 +9,8 @@ ba::singleStack::singleStack(const char* _funcName, singleStack* _up)
 	mem->stack = this;
 	funcName = strdup(_funcName, mem, 0);
 	up = _up;
+	if (up)
+		up->next = this;
 }
 
 ba::memRecordDot::memRecordDot(_LL _size, _LL _toBeFreedInStack,
@@ -39,16 +41,12 @@ int ba::memRecord::destroy(void)
 	return 0;
 }
 
+//when it comes to the first stack, init and mount it to a nullptr
+//when it comes to the other, simply init and mount it to the last of the queue
 void ba::stackInit(const char* _funcName)
 {
-	ba::singleStack* ps = new singleStack(_funcName, pba->stacks->stacks[0]);
-	pba->stacks->stacks.emplace_front(ps);
-}
-
-void ba::startBAStack(void)
-{
-	pba->stacks = new ba::stack();
-	ba::singleStack* ps = new ba::singleStack("MyBA_Init", NULL);
+	singleStack* up = pba->stacks->stacks.size() == 0 ? nullptr : *(pba->stacks->stacks.end());
+	ba::singleStack* ps = new singleStack(_funcName, up);
 	pba->stacks->stacks.emplace_front(ps);
 }
 

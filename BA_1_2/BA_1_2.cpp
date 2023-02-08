@@ -53,7 +53,24 @@ void MyBA_CMD_Warrper(int argc, char** argvs)
 {
 	PPW("not define BA_USE_CMD");
 }
-#endif
+#endif//BA_USE_CMD
+
+// aboundoned because do not kown whether the func used stack or not
+//#ifdef BA_USE_MEM
+//#pragma message( "BA_USE_MEM defined" )
+//#include "BA_MEM.hpp"
+//const char* MyBA_MEM_Warrper_GetStackFuncName(void)
+//{
+//	ba::singleStack* pte = *(pba->stacks->stacks.end());
+//	return pte->funcName;
+//}
+//#else
+//#pragma message( "BA_USE_MEM undefined" )
+//const char* MyBA_MEM_Warrper_GetStackFuncName(void)
+//{
+//	return " ";
+//}
+//#endif//BA_USE_MEM
 
 void MyBA_Init(int argc, char** argvs, bool safeMode)
 {

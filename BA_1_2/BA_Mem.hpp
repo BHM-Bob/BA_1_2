@@ -78,7 +78,6 @@ namespace ba
 		delete ps->mem;
 		return retValue;
 	}
-	void startBAStack(void);
 
 	template<typename Ty, typename BaseTy>
 	Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<int> shape, int nowDim, BaseTy baseV, List* mem)
