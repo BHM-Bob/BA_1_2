@@ -80,19 +80,19 @@ namespace ba
 	}
 
 	template<typename Ty, typename BaseTy>
-	Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<int> shape, int nowDim, BaseTy baseV, List* mem)
+	Ty* allocNDArray_AllocD(Ty* highLeverPtr, std::vector<_LL> shape, int nowDim, BaseTy baseV, List* mem)
 	{
 		highLeverPtr = BALLOC_R(shape[nowDim], Ty, mem);
 		if (!highLeverPtr || (_ULL)nowDim + 1 == shape.size())
 			return highLeverPtr;
 		if constexpr (!std::is_same_v<Ty, BaseTy>)
-			for (int i = 0 ; i < shape[nowDim] ; i++)
+			for (_ULL i = 0 ; i < shape[nowDim] ; i++)
 				highLeverPtr[i] = allocNDArray_AllocD(highLeverPtr[i], shape, nowDim + 1, BaseTy(), mem);
 		return highLeverPtr;
 	}
 	//int*** p2 = ba::allocNDArray<int**, int>({ 5, 6, 9});
 	template<typename LessPtrTy, typename BaseTy>
-	inline LessPtrTy* allocNDArray(std::vector<int> shape, List* mem = NULL)
+	inline LessPtrTy* allocNDArray(std::vector<_LL> shape, List* mem = NULL)
 	{
 		if (shape.size() == 0)
 			return nullptr;

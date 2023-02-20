@@ -56,6 +56,7 @@ namespace ba
         namespace _comprehensive
         {
             void tensor(void);
+            void array(void);
 
             // or use std::tuple for more var to deliver
             void jiebaThreads_SubThr(_LL id, balist<char>& getQ,

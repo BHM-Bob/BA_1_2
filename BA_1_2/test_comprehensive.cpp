@@ -53,6 +53,14 @@ void ba::test::_comprehensive::tensor(void)
 	PPX(t4.map(0ULL, t, [&](char* p, float f) {return (_ULL)p + (_ULL)&f;})[3](3));
 }
 
+void ba::test::_comprehensive::array(void)
+{
+	ba::array<int**, int> a = ba::array<int**, int>({ 3,3,3 });
+	int i = 0;
+	a.map([&](int& j) {j = i++; });
+	a.map([=](int j) {PPX(j); });
+}
+
 void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
 	balist<std::pair<char*, std::vector<int>*>>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
 {

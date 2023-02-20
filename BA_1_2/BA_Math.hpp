@@ -9,6 +9,7 @@
 #define BA_MATH_H
 
 #include"BA_Base.hpp"
+#include"BA_Mem.hpp"
 
 //TODO : think about https://eigen.tuxfamily.org/index.php?title=Main_Page
 	//or just using OpenCV
@@ -386,6 +387,68 @@ namespace ba
 	inline tensor<Ty>& ba::tensor<Ty>::operator/(tensor<Ty>& other)
 	{
 		return this->map(other, [&](Ty r, Ty l) {return r / l; });
+	}
+
+
+	template<typename LessPtrTy, typename BaseTy>
+	class array : public BA_Base
+	{
+	private:
+		std::vector<_LL> axis;
+		_LL nowAxis = -1;
+		std::vector<_LL> shape;
+
+	public:
+		_LL len = 1;
+		LessPtrTy* data = NULL;
+
+		array(std::vector<_LL> _shape = { 0 });
+		array(LessPtrTy* _data, std::vector<_LL> _shape);
+		~array();
+
+		// func should be a lambda with one para : BaseTy dataElement
+		// if want to change the value of data, para should be  : BaseTy& dataElement
+		template<typename FuncTy>
+		void map(FuncTy func);
+	};
+
+
+	template<typename LessPtrTy, typename BaseTy>
+	inline array<LessPtrTy, BaseTy>::array(std::vector<_LL> _shape)
+	{
+		data = ba::allocNDArray<LessPtrTy, BaseTy>(_shape, mem);
+		shape = _shape;
+	}
+	template<typename LessPtrTy, typename BaseTy>
+	inline array<LessPtrTy, BaseTy>::array(LessPtrTy* _data, std::vector<_LL> _shape)
+	{
+		data = _data;
+		shape = _shape;
+	}
+	template<typename LessPtrTy, typename BaseTy>
+	inline array<LessPtrTy, BaseTy>::~array()
+	{
+	}
+
+	template<typename Ty, typename BaseTy, typename FuncTy>
+	inline void arrayMap_loop(Ty* highLeverPtr, std::vector<_LL> shape, int nowDim, FuncTy func, BaseTy tmpInducVal)
+	{
+		if constexpr (std::is_same_v<Ty, BaseTy>)
+		{
+			for (_ULL i = 0; i < shape[nowDim]; i++)
+				func(highLeverPtr[i]);
+		}
+		else
+		{
+			for (_ULL i = 0; i < shape[nowDim]; i++)
+				arrayMap_loop(highLeverPtr[i], shape, nowDim + 1, func, tmpInducVal);
+		}
+	}
+	template<typename LessPtrTy, typename BaseTy>
+	template<typename FuncTy>
+	inline void array<LessPtrTy, BaseTy>::map(FuncTy func)
+	{
+		arrayMap_loop<LessPtrTy, BaseTy, FuncTy>(data, shape, 0, func, BaseTy());
 	}
 }
 
