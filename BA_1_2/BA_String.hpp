@@ -51,6 +51,8 @@ namespace ba
 		str Replace(const char* _pc, const char* newStr);
 		balist<char>* Split(str string);
 		balist<char>* Split(const char* _pc);
+		std::vector<char*> Split_s(str string);
+		std::vector<char*> Split_s(const char* _pc);
 		//BALLOC_R
 		balist<char>* Splitx(str string);
 		//BALLOC_R
