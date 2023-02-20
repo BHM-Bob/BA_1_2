@@ -433,20 +433,20 @@ balist<char>* ba::str::Split(const char* _pc)
 	pret->plast->usage = lens;
 	return pret;
 }
-std::vector<char*> ba::str::Split_s(str string)
+std::vector<char*>& ba::str::Split_s(str string)
 {
 	return Split_s(string.pc);
 }
-std::vector<char*> ba::str::Split_s(const char* _pc)
+std::vector<char*>& ba::str::Split_s(const char* _pc)
 {
+	std::vector<char*>* pret = new std::vector<char*>();
 	if (_pc == NULL || *_pc == '\0' || pc == NULL || len == 0 || *pc == '\0')
 	{
 		MyBA_Err("List* str::Splitx(const char* _pc): _pc == NULL || pc == NULL,return NULL", 1);
-		return std::vector<char*>(NULL);
+		return *pret;
 	}
 
 	List* pli = this->Find(_pc);
-	std::vector<char*>* pret = new std::vector<char*>();
 	char* pcte = pc;
 	char* ptm = NULL;
 	_ULL lens = 0;
