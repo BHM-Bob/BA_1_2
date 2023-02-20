@@ -57,8 +57,9 @@ void ba::test::_comprehensive::array(void)
 {
 	ba::array<int**, int> a = ba::array<int**, int>({ 3,3,3 });
 	int i = 0;
-	a.map([&](int& j) {j = i++; });
-	a.map([=](int j) {PPX(j); });
+	a.map([&](std::vector<_LL> axis, int& j) {j = i++; });
+	a.map([=](std::vector<_LL> axis, int j) {PPX(j); });
+	a.map([=](std::vector<_LL> axis, int j) {PPX(axis); });
 }
 
 void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,

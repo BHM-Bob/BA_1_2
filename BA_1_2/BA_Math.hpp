@@ -393,21 +393,18 @@ namespace ba
 	template<typename LessPtrTy, typename BaseTy>
 	class array : public BA_Base
 	{
-	private:
-		std::vector<_LL> axis;
-		_LL nowAxis = -1;
-		std::vector<_LL> shape;
-
 	public:
-		_LL len = 1;
+		_LL nowAxis = -1;//read-only
+		std::vector<_LL> axis;//read-only
+		std::vector<_LL> shape;
 		LessPtrTy* data = NULL;
 
 		array(std::vector<_LL> _shape = { 0 });
 		array(LessPtrTy* _data, std::vector<_LL> _shape);
 		~array();
 
-		// func should be a lambda with one para : BaseTy dataElement
-		// if want to change the value of data, para should be  : BaseTy& dataElement
+		// func should be a lambda with tow para : std::vector<_LL> axis, BaseTy dataElement
+		// if want to change the value of data, switch to  BaseTy& dataElement
 		template<typename FuncTy>
 		void map(FuncTy func);
 	};
@@ -418,12 +415,14 @@ namespace ba
 	{
 		data = ba::allocNDArray<LessPtrTy, BaseTy>(_shape, mem);
 		shape = _shape;
+		axis.resize(shape.size());
 	}
 	template<typename LessPtrTy, typename BaseTy>
 	inline array<LessPtrTy, BaseTy>::array(LessPtrTy* _data, std::vector<_LL> _shape)
 	{
 		data = _data;
 		shape = _shape;
+		axis.resize(shape.size());
 	}
 	template<typename LessPtrTy, typename BaseTy>
 	inline array<LessPtrTy, BaseTy>::~array()
@@ -431,24 +430,31 @@ namespace ba
 	}
 
 	template<typename Ty, typename BaseTy, typename FuncTy>
-	inline void arrayMap_loop(Ty* highLeverPtr, std::vector<_LL> shape, int nowDim, FuncTy func, BaseTy tmpInducVal)
+	inline void arrayMap_loop(Ty* highLeverPtr, std::vector<_LL> shape, int nowDim, FuncTy func,
+		BaseTy tmpInducVal, std::vector<_LL> axis)
 	{
 		if constexpr (std::is_same_v<Ty, BaseTy>)
 		{
 			for (_ULL i = 0; i < shape[nowDim]; i++)
-				func(highLeverPtr[i]);
+			{
+				axis[nowDim] = i;
+				func(axis, highLeverPtr[i]);
+			}
 		}
 		else
 		{
 			for (_ULL i = 0; i < shape[nowDim]; i++)
-				arrayMap_loop(highLeverPtr[i], shape, nowDim + 1, func, tmpInducVal);
+			{
+				axis[nowDim] = i;
+				arrayMap_loop(highLeverPtr[i], shape, nowDim + 1, func, tmpInducVal, axis);
+			}
 		}
 	}
 	template<typename LessPtrTy, typename BaseTy>
 	template<typename FuncTy>
 	inline void array<LessPtrTy, BaseTy>::map(FuncTy func)
 	{
-		arrayMap_loop<LessPtrTy, BaseTy, FuncTy>(data, shape, 0, func, BaseTy());
+		arrayMap_loop<LessPtrTy, BaseTy, FuncTy>(data, shape, 0, func, BaseTy(), axis);
 	}
 }
 
