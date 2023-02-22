@@ -43,7 +43,7 @@ void ba::test::_ui::paint(void)
 {
 	ba::ui::QUI ui = ba::ui::QUI("paint", 1000, 800, 0, {0, 64, 122, 255});
 
-	ui.activeWin->title = new ba::ui::label(ui.activeWin, "test", 15);
+	ui.activeWin->title = new ba::ui::label(ui.activeWin, "paint", 15);
 	ui.activeWin->butts->add("exit", "><", 15, { 0,0,0, 255 }, {},
 		{ 30, 0,0,0 }, "tr");
 	ui.activeWin->exitButtName = "exit";
@@ -51,7 +51,7 @@ void ba::test::_ui::paint(void)
 	ba::ui::rect brush = ba::ui::rect({ 0, 0, 2, 2 }, {});
 	brush.win = ui.activeWin;
 	brush.rendRect();
-	for (Sint32 x = 0, y = 0; !ui.pollQuit(); )
+	for ( ; !ui.pollQuit(); )
 	{
 		ui.activeWin->winState->getMousePos(&(brush.re.x), &(brush.re.y));
 		SDL_RenderCopy(ui.activeWin->rend, brush.tex, NULL, &(brush.re));
@@ -59,5 +59,32 @@ void ba::test::_ui::paint(void)
 		ui.checkButt();
 		ui.update(0, 0, 0, 0);
 	}
-	ui.delWindow("win1");
+	ui.delWindow("paint");
+}
+
+void ba::test::_ui::fileExplore(void)
+{
+	char* name = mstrdup("fileExplore  ", pba->LTmem);
+	char* titleStr = ba::StrAdd(pba->STmem, name, "D:\\", NULL);
+	ba::ui::QUI ui = ba::ui::QUI(titleStr, 1000, 800, 0, {0, 64, 122, 255});
+
+	ui.activeWin->title = new ba::ui::label(ui.activeWin, titleStr, 15);
+	ui.activeWin->butts->add("exit", "><", 15, { 0,0,0, 255 }, {},
+		{ 30, 0,0,0 }, "tr");
+	ui.activeWin->exitButtName = "exit";
+
+	auto paths = ba::glob("D:\\*");
+	ba::ui::listView<ba::ui::label*> list(ui.activeWin, {0, 20, 800, 600}, {94, 59, 63, 255});
+	for (auto& path : paths)
+		list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
+			20, {255, 255, 255, 255}));
+	ui.addOtherTex("list", list.getTex(), &list.re);
+
+	for (; !ui.pollQuit(); )
+	{
+		ui.updateOtherTex("list", list.getTex());
+		ui.checkButt();
+		ui.update();
+	}
+	ui.delWindow("fileExplore");
 }

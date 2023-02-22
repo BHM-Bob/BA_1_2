@@ -53,6 +53,7 @@ namespace ba
         {
             void initSDL2(void);
             void paint(void);
+            void fileExplore(void);
         }
         namespace _comprehensive
         {

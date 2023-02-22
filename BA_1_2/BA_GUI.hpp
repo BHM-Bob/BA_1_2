@@ -62,6 +62,7 @@ namespace ba
 			float b = 0.f;
 		};
 
+		// 前置声明
 		class QUI;
 		class window;
 
@@ -147,6 +148,7 @@ namespace ba
 				int charSize, SDL_Color* cc = NULL, SDL_Color* bgc = NULL,
 				const char* fontName = NULL);
 		};
+
 		template<typename baseItemTy>
 		class namedItems : public BA_Base
 		{
@@ -252,6 +254,7 @@ namespace ba
 		/*
 		* 以单独的事件监听线程监听并更新
 		* TODO ：每个window有单独的线程以供渲染使用
+		* _titlepc会内部复制
 		*/
 		class window : public rect
 		{
@@ -351,6 +354,80 @@ namespace ba
 			int Quit(int code, ...);
 			friend int QUI_Quit(void* pui_, int code, ...);
 		};
+
+
+		// 列表视图，baseItemTy为ba::ui::rect子类指针
+		// item需要new来申请，并在listView析构时于其析构函数调用baseItemTy的析构函数
+		// TODO : 支持不同高度，支持多列表同步滚动
+		template<typename baseItemTy>
+		class listView : public rect
+		{
+		private:
+			int sumH = 0;
+			int singleH = 0;
+			int visibleRange[2] = { 0 };
+			bool moving = false;
+		public:
+			std::deque< baseItemTy> items;
+			//std::deque< int> events;
+			//std::deque< int> statue;//0不存在   1存在且显示   2存在不显示
+
+			listView(window* _win, SDL_Rect pos = {}, SDL_Color bgc = {});
+			~listView()
+			{
+				for (auto item : items)
+					delete item;
+			}
+
+			void addItem(baseItemTy _item, int _statue = 1);
+			void addItems(std::deque< baseItemTy> _items);
+			SDL_Texture* getTex(void);
+		};
+		template<typename baseItemTy>
+		inline listView<baseItemTy>::listView(window* _win, SDL_Rect pos, SDL_Color bgc)
+			: rect(pos, bgc)
+		{
+			win = _win;
+			this->rendRect();
+		}
+		template<typename baseItemTy>
+		inline void listView<baseItemTy>::addItem(baseItemTy _item, int _statue)
+		{
+			items.emplace_back(_item);
+			//events.emplace_back(0);
+			//statue.emplace_back(statue);
+			singleH = singleH == 0 ? _item->re.h : singleH;
+			sumH += _item->re.h;
+			if (visibleRange[1] - visibleRange[0] < sumH / singleH)
+				++visibleRange[1];
+		}
+		template<typename baseItemTy>
+		inline void listView<baseItemTy>::addItems(std::deque<baseItemTy> _items)
+		{
+			for (baseItemTy item : _items)
+				this->addItem(item);
+		}
+		template<typename baseItemTy>
+		inline SDL_Texture* listView<baseItemTy>::getTex(void)
+		{
+			//if (!moving)
+			//	return tex;
+			moving = false;
+			if (tex)
+				SDL_DestroyTexture(tex);
+			SDL_Rect reTmp = { 0, 0, 0, singleH };
+			SDL_Surface* surTmp = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
+			SDL_BlitScaled(sur, NULL, surTmp, NULL);
+			for (int i = visibleRange[0]; i < visibleRange[1]; i++)
+			{
+				reTmp.w = items[i]->re.w;
+				SDL_BlitScaled(items[i]->sur, NULL, surTmp, &reTmp);
+				reTmp.y += singleH;
+			}
+			tex = SDL_CreateTextureFromSurface(win->rend, surTmp);
+			SDL_FreeSurface(surTmp);
+			return tex;
+		}
 	}
 }
 
