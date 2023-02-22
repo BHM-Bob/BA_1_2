@@ -52,6 +52,7 @@ namespace ba
         namespace _ui
         {
             void initSDL2(void);
+            void paint(void);
         }
         namespace _comprehensive
         {
