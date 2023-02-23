@@ -431,7 +431,7 @@ namespace ba
 		template<typename baseItemTy>
 		inline void listView<baseItemTy>::clear(void)
 		{
-			data.visibleRange[0] = data.visibleRange[1] = 0;
+			data.sumItems = data.visibleRange[0] = data.visibleRange[1] = 0;
 			data.moving = true;
 			for (auto item : items)
 				delete item;
