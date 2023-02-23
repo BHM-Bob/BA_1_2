@@ -30,7 +30,7 @@ void ba::test::_ui::initSDL2(void)
 		}
 		ui.updateOtherTex("cst", cs->getTex());
 		ui.updateOtherTex("ctt", ct->getTex());
-		ui.checkButt();
+		ui.checkEvent();
 		ui.update();
 
 
@@ -56,7 +56,7 @@ void ba::test::_ui::paint(void)
 		ui.activeWin->winState->getMousePos(&(brush.re.x), &(brush.re.y));
 		SDL_RenderCopy(ui.activeWin->rend, brush.tex, NULL, &(brush.re));
 
-		ui.checkButt();
+		ui.checkEvent();
 		ui.update(0, 0, 0, 0);
 	}
 	ui.delWindow("paint");
@@ -83,7 +83,7 @@ void ba::test::_ui::fileExplore(void)
 	for (; !ui.pollQuit(); )
 	{
 		ui.updateOtherTex("list", list.getTex());
-		ui.checkButt();
+		ui.checkEvent();
 		ui.update();
 	}
 	ui.delWindow("fileExplore");

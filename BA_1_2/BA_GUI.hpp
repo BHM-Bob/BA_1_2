@@ -197,6 +197,8 @@ namespace ba
 			Sint32 mouseEndPos[2] = { 0 };// 事件进行时实时光标位置
 			Sint32 dMouseMove[2] = { 0 };// 鼠标位移
 			int mouseEveCode = 0;// 鼠标事件代码
+			std::deque < Sint32> wheelY;//鼠标滚轮
+			Uint32 timestamp = 0;//timestamp of the event
 			std::deque<std::pair<SDL_Keycode, clock_t>> keys;// 键盘事件缓存队列，每个事件附带时间戳
 			//public
 			windowState() { };
@@ -207,11 +209,11 @@ namespace ba
 			}
 			// if tmp is not nullptr, free will be called in-func
 			inline SDL_Event* getUpdatedEveCopy(SDL_Event* tmp = NULL)
-			{
+			{// TODO : 如果有要处理的事件，则返回1，否则返回0。
 				if (tmp)
 					free(tmp);
 				tmp = MCALLOC(1, SDL_Event);
-				if (tmp)
+				if(tmp)
 					*tmp = *(getVar(tmp, [&]() {SDL_PollEvent(_eve); return _eve; }));
 				return tmp;
 			}
@@ -276,6 +278,7 @@ namespace ba
 			const char* exitButtName = nullptr;
 			label* title = nullptr;
 			buttons* butts = new buttons(this);
+			std::deque<int (*)(window* _win)> checkEventFunc;
 
 			std::unordered_map<std::string, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
 
@@ -286,8 +289,12 @@ namespace ba
 			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
 			//colorSur::getTex has SDL_DestroyTexture builtin
 			QUI& updateOtherTex(std::string name, SDL_Texture* tex, bool destroyOld = false);
-			bool checkButt();
 			bool checkTitle(bool rendclear = true, bool copyTex = true);
+			inline void addCheckEventFunc(int (*func)(window* _win))
+			{
+				checkEventFunc.emplace_back(func);
+			}
+			bool checkEvent();
 			bool update(bool rendclear = true, bool copyTex = true, bool limitFPS = true);
 			bool pollQuit();
 			bool delButt(const char* _name);
@@ -334,13 +341,13 @@ namespace ba
 			{
 				return getWindow(win)->delButt(_name);
 			}
-			inline bool checkButt(const char* win = NULL)
-			{
-				return getWindow(win)->checkButt();
-			}
 			inline bool checkTitle(bool rendclear = true, bool copyTex = true, const char* win = NULL)
 			{
 				return getWindow(win)->checkTitle(rendclear, copyTex);
+			}
+			inline bool checkEvent(const char* win = NULL)
+			{
+				return getWindow(win)->checkEvent();
 			}
 			inline bool update(const char* win = NULL, bool rendclear = true, bool copyTex = true, bool limitFPS = true)
 			{
@@ -369,8 +376,8 @@ namespace ba
 			bool moving = false;
 		public:
 			std::deque< baseItemTy> items;
-			//std::deque< int> events;
-			//std::deque< int> statue;//0不存在   1存在且显示   2存在不显示
+			std::deque< int> events;
+			std::deque< int> statue;//0不存在   1存在且显示   2存在不显示
 
 			listView(window* _win, SDL_Rect pos = {}, SDL_Color bgc = {});
 			~listView()
@@ -383,19 +390,21 @@ namespace ba
 			void addItems(std::deque< baseItemTy> _items);
 			SDL_Texture* getTex(void);
 		};
+		int _listView_check(window* _win);
 		template<typename baseItemTy>
 		inline listView<baseItemTy>::listView(window* _win, SDL_Rect pos, SDL_Color bgc)
 			: rect(pos, bgc)
 		{
 			win = _win;
 			this->rendRect();
+			win->addCheckEventFunc(_listView_check);
 		}
 		template<typename baseItemTy>
 		inline void listView<baseItemTy>::addItem(baseItemTy _item, int _statue)
 		{
 			items.emplace_back(_item);
-			//events.emplace_back(0);
-			//statue.emplace_back(statue);
+			events.emplace_back(0);
+			statue.emplace_back(_statue);
 			singleH = singleH == 0 ? _item->re.h : singleH;
 			sumH += _item->re.h;
 			if (visibleRange[1] - visibleRange[0] < sumH / singleH)

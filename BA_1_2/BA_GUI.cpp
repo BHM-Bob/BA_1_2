@@ -436,8 +436,8 @@ int ba::ui::_windowState_checkAll(void* _s)
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
 	SDL_Event* eveTmp = NULL;
 	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0, winW = 0, winH = 0;
-	Uint32 keyTimestamp = SDL_GetTicks();//This value wraps if the program runs for more than ~49 days.
-	for ( ; ! s->getVar(false, [=]() {return s->isQuit;}) ; SDL_Delay(20))
+	Uint32 keyTimestamp = SDL_GetTicks(), wheelTimestamp = 0;//This value wraps if the program runs for more than ~49 days.
+	for ( ; ! s->getVar(false, [=]() {return s->isQuit;}) ; SDL_Delay(2))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
 		if (eveTmp->type == SDL_MOUSEBUTTONDOWN)
@@ -456,6 +456,11 @@ int ba::ui::_windowState_checkAll(void* _s)
 			// 检测单击事件: 发送信号：2 for LEFT; 3 for RIGHT
 			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
 				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
+		}
+		else if (eveTmp->type == SDL_MOUSEWHEEL && eveTmp->wheel.timestamp != wheelTimestamp)
+		{//鼠标滚轮 1027
+			wheelTimestamp = eveTmp->wheel.timestamp;// TODO : 针对滚轮特别设置的时间戳校验能否去除或扩大化
+			s->_mutexSafeWrapper([&]() {s->wheelY.emplace_back(eveTmp->wheel.y); });
 		}
 		else if (eveTmp->type == SDL_DROPFILE)
 		{//检测拖拽文件
@@ -623,17 +628,32 @@ ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex, 
 	otherTex[name]->first = tex;
 	return *ui;
 }
-bool ba::ui::window::checkButt()
+bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
+{
+	// TODO : 速度不能太快：不能捕捉到窗口外的鼠标
+	if (title && winState->getMouseEveCode(&(title->re)) == 1 && winState->checkMouseIn(&(title->re)))
+	{
+		Sint32 x = 0, y = 0, oriX = 0, oriY = 0;
+		winState->getMousePos(&x, &y, &oriX, &oriY);
+		if (x != 0 && y != 0)
+		{
+			SDL_SetWindowPosition(pwin, winPos[0] + x - oriX, winPos[1] + y - oriY);
+			winPos[0] += (x - oriX);		winPos[1] += (y - oriY);
+		}
+	}
+	return true;
+}
+bool ba::ui::window::checkEvent()
 {
 	// make ui window look like responsible to sys
 	// TODO : deep effect remains unkown
 	winState->pollEvent();
-
+	// checkButt
 	int (*eveFunc)(void* pData, ...) = NULL;
 	void* eveFuncData = NULL;
 	if (winState->getMouseEveCode(&(this->re)) != 0)
 	{
-		if(title && winState->getMouseEveCode(&(title->re)) == 1 && winState->checkMouseIn(&(title->re)))
+		if (title && winState->getMouseEveCode(&(title->re)) == 1 && winState->checkMouseIn(&(title->re)))
 			return this->checkTitle();
 		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
 		{
@@ -651,21 +671,9 @@ bool ba::ui::window::checkButt()
 			}
 		}
 	}
-	return true;
-}
-bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
-{
-	// TODO : 速度不能太快：不能捕捉到窗口外的鼠标
-	if (title && winState->getMouseEveCode(&(title->re)) == 1 && winState->checkMouseIn(&(title->re)))
-	{
-		Sint32 x = 0, y = 0, oriX = 0, oriY = 0;
-		winState->getMousePos(&x, &y, &oriX, &oriY);
-		if (x != 0 && y != 0)
-		{
-			SDL_SetWindowPosition(pwin, winPos[0] + x - oriX, winPos[1] + y - oriY);
-			winPos[0] += (x - oriX);		winPos[1] += (y - oriY);
-		}
-	}
+	// check registered func
+	for (auto func : checkEventFunc)
+		func(this);
 	return true;
 }
 bool ba::ui::window::update(bool rendclear, bool copyTex, bool limitFPS)
@@ -702,7 +710,8 @@ bool ba::ui::window::update(bool rendclear, bool copyTex, bool limitFPS)
 }
 bool ba::ui::window::pollQuit()
 {
-	this->checkButt();
+	// TODO : 一般会checkEvent两遍，不划算。。。
+	//this->checkEvent();
 	if ((exitButtName) && butts->events[exitButtName] == 2)
 		return 1;
 	return winState->getVar(false, [&]() {return winState->isQuit; });
@@ -777,5 +786,20 @@ int ba::ui::QUI::Quit(int code, ...)
 	TTF_Quit();
 	//MyBA_Free_R(mem);
 	List_SetVar(pba->exitFunc, (void*)QUI_Quit, (void*)0x1);
+	return 0;
+}
+
+int ba::ui::_listView_check(window* _win)
+{
+	Sint32 dy = _win->winState->getVar((Sint32)0, [=]() {
+		Sint32 dy = 0;
+		if (_win->winState->wheelY.size() > 0)
+		{
+			dy = _win->winState->wheelY.back();
+			_win->winState->wheelY.pop_back();
+		}
+		return dy;});
+	if(dy)
+		PPX(dy);
 	return 0;
 }
