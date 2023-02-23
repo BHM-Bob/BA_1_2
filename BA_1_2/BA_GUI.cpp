@@ -822,7 +822,7 @@ int ba::ui::_listView_check(window* _win, void* _pData)
 		_win->winState->_mutexSafeWrapper([&]() {_win->winState->mouseEveCode = 0; });
 		Sint32 y = 0;
 		_win->winState->getMousePos(NULL, &y);
-		pData->clickIdx = (y - pData->re.y) / pData->singleH;
+		pData->clickIdx = (y - pData->re.y) / pData->singleH + pData->visibleRange[0];
 	}
 	return 0;
 }
