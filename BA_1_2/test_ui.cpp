@@ -68,10 +68,10 @@ void ba::test::_ui::fileExplore(void)
 	char* titleStr = ba::StrAdd(pba->STmem, name, "D:\\", NULL);
 	ba::ui::QUI ui = ba::ui::QUI(titleStr, 1000, 800, 0, {0, 64, 122, 255});
 
-	ui.activeWin->butts->add("exit", "><", 15, { 0,0,0, 255 }, {},
+	ui.activeWin->butts->add("exit", "><", 15, { 0,0,0, 255 }, { 0, 200, 100, 255 },
 		{ 30, 0,0,0 }, "tr");
 	ui.activeWin->exitButtName = "exit";
-	ui.activeWin->butts->add("return", "return", 15, { 0,0,0, 255 }, {},
+	ui.activeWin->butts->add("return", "return", 15, { 0,0,0, 255 }, {0, 200, 100, 255},
 		{ 0, 20,0,0 }, "tl");
 
 	char* root = mstrdup("D:\\*", pba->STmem);
