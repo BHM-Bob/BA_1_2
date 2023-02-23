@@ -440,8 +440,9 @@ int ba::ui::_windowState_checkAll(void* _s)
 	for ( ; ! s->getVar(false, [=]() {return s->isQuit;}) ; SDL_Delay(2))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
-		if (eveTmp->type == SDL_MOUSEBUTTONDOWN)
+		if (eveTmp->type == SDL_MOUSEBUTTONDOWN && eveTmp->wheel.timestamp != wheelTimestamp)
 		{//鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
+			wheelTimestamp = eveTmp->wheel.timestamp;
 			// 检测拖动事件，一旦有鼠标按下后移动，进入循环不断检测，松开后退出循环
 			for (oriX = eveTmp->motion.x, oriY = eveTmp->motion.y; eveTmp->type != SDL_MOUSEBUTTONUP; )
 			{// loop quit: SDL_MOUSEBUTTONUP(1026)
@@ -660,20 +661,22 @@ bool ba::ui::window::checkEvent()
 			if (butts->statue[p->first])
 			{
 				butts->events[p->first] = winState->getMouseEveCode(&(p->second->re));
-				if (butts->events[p->first] == 2)
+				if (butts->events[p->first] != 0)
 				{
-					if (butts->eveFunc.find(p->first) != butts->eveFunc.end())
+					if (butts->events[p->first] == 2 && butts->eveFunc.find(p->first) != butts->eveFunc.end())
 					{
 						eveFunc = butts->eveFunc[p->first];
 						eveFunc(butts->eveFuncData[p->first]);
+						butts->events[p->first] = 0;
 					}
+					winState->_mutexSafeWrapper([&]() {winState->mouseEveCode = 0; });
 				}
 			}
 		}
 	}
 	// check registered func
-	for (auto func : checkEventFunc)
-		func(this);
+	for (_ULL i = 0; i<checkEventFunc.size(); i++)
+		checkEventFunc[i](this, checkEventFuncData[i]);
 	return true;
 }
 bool ba::ui::window::update(bool rendclear, bool copyTex, bool limitFPS)
@@ -713,7 +716,10 @@ bool ba::ui::window::pollQuit()
 	// TODO : 一般会checkEvent两遍，不划算。。。
 	//this->checkEvent();
 	if ((exitButtName) && butts->events[exitButtName] == 2)
+	{
+		butts->events[exitButtName] = 0;
 		return 1;
+	}
 	return winState->getVar(false, [&]() {return winState->isQuit; });
 }
 bool ba::ui::window::delButt(const char* _name)
@@ -789,8 +795,10 @@ int ba::ui::QUI::Quit(int code, ...)
 	return 0;
 }
 
-int ba::ui::_listView_check(window* _win)
+int ba::ui::_listView_check(window* _win, void* _pData)
 {
+	listView_Data* pData = (listView_Data*)_pData;
+	// scroll
 	Sint32 dy = _win->winState->getVar((Sint32)0, [=]() {
 		Sint32 dy = 0;
 		if (_win->winState->wheelY.size() > 0)
@@ -799,7 +807,22 @@ int ba::ui::_listView_check(window* _win)
 			_win->winState->wheelY.pop_back();
 		}
 		return dy;});
-	if(dy)
-		PPX(dy);
+	if (dy)
+	{//dy>0 : scroll up
+		if (pData->visibleRange[0] - dy >= 0 && pData->visibleRange[1] - dy < pData->sumItems)
+		{
+			pData->visibleRange[0] -= dy;
+			pData->visibleRange[1] -= dy;
+			pData->moving = true;
+		}
+	}
+	// click
+	if (_win->winState->checkMouseIn(&(pData->re)) && _win->winState->getMouseEveCode(&(pData->re)) == 2)
+	{
+		_win->winState->_mutexSafeWrapper([&]() {_win->winState->mouseEveCode = 0; });
+		Sint32 y = 0;
+		_win->winState->getMousePos(NULL, &y);
+		pData->clickIdx = (y - pData->re.y) / pData->singleH;
+	}
 	return 0;
 }

@@ -68,13 +68,17 @@ void ba::test::_ui::fileExplore(void)
 	char* titleStr = ba::StrAdd(pba->STmem, name, "D:\\", NULL);
 	ba::ui::QUI ui = ba::ui::QUI(titleStr, 1000, 800, 0, {0, 64, 122, 255});
 
-	ui.activeWin->title = new ba::ui::label(ui.activeWin, titleStr, 15);
 	ui.activeWin->butts->add("exit", "><", 15, { 0,0,0, 255 }, {},
 		{ 30, 0,0,0 }, "tr");
 	ui.activeWin->exitButtName = "exit";
+	ui.activeWin->butts->add("return", "return", 15, { 0,0,0, 255 }, {},
+		{ 0, 20,0,0 }, "tl");
 
-	auto paths = ba::glob("D:\\*");
-	ba::ui::listView<ba::ui::label*> list(ui.activeWin, {0, 20, 800, 600}, {94, 59, 63, 255});
+	char* root = mstrdup("D:\\*", pba->STmem);
+	ui.activeWin->title = new ba::ui::label(ui.activeWin, titleStr, 15);
+	auto paths = ba::glob(root);
+	std::filesystem::path nowPath;
+	ba::ui::listView<ba::ui::label*> list(ui.activeWin, {0, 40, 800, 600}, {94, 59, 63, 255});
 	for (auto& path : paths)
 		list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
 			20, {255, 255, 255, 255}));
@@ -82,6 +86,27 @@ void ba::test::_ui::fileExplore(void)
 
 	for (; !ui.pollQuit(); )
 	{
+		if (list.data.clickIdx != -1)
+		{
+			nowPath = paths[list.data.clickIdx];
+			root = ba::StrAdd(pba->STmem, list.items[list.data.clickIdx]->text.c_str(), "\\*", NULL);
+			paths = ba::glob(root);
+			list.clear();
+			for (auto& path : paths)
+				list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
+					20, { 255, 255, 255, 255 }));
+			list.data.clickIdx = -1;
+		}
+		if (ui.activeWin->butts->events["return"] == 2)
+		{
+			ui.activeWin->butts->events["return"] = 0;
+			nowPath = nowPath.parent_path();
+			paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
+			list.clear();
+			for (auto& path : paths)
+				list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
+					20, { 255, 255, 255, 255 }));
+		}
 		ui.updateOtherTex("list", list.getTex());
 		ui.checkEvent();
 		ui.update();
