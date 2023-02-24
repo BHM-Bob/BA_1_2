@@ -38,8 +38,12 @@ namespace ba
 		SDL_Rect* MakeSDLRect(List* mem, int w, int h, int x, int y);
 		Uint32 getPixle(SDL_Surface* surface, int x, int y);
 		int formatPixle(Uint32 pixle, char channle = 'r');
-		SDL_Texture* createRGBTexture(SDL_Renderer* rend,
-			int w, int h, int r, int g, int b);
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#define SDL_CreateRGBASurface(w,h) SDL_CreateRGBSurface(0,w,h,32,0xFF000000,0x00FF0000,0x0000FF00,0x000000FF)
+#else
+#define SDL_CreateRGBASurface(w,h) SDL_CreateRGBSurface(0,w,h,32,0x000000FF,0x0000FF00,0x00FF0000,0xFF000000)
+#endif
+		SDL_Texture* createRGBTexture(SDL_Renderer* rend, int w, int h, int r, int g, int b);
 		// make sure that path is utf-8 coded
 		SDL_Surface* getImageSur(const char* path);
 		// make sure that path is utf-8 coded

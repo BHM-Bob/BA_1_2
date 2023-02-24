@@ -79,15 +79,12 @@ void ba::test::_ui::fileExplore(void)
 	auto paths = ba::glob(root);
 	std::filesystem::path nowPath;
 	ba::ui::listView<ba::ui::label*> list(ui.activeWin, {0, 40, 800, 600}, {94, 59, 63, 255});
-	for (auto& path : paths)
-		list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
-			20, {255, 255, 255, 255}));
-	ui.addOtherTex("list", list.getTex(), &list.re);
 	auto reGenList = [&]() {
 		list.clear();
 		for (auto& path : paths)
-			list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
-				20, { 255, 255, 255, 255 })); };
+			list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(), 20)); };
+	reGenList();
+	ui.addOtherTex("list", list.getTex(), &list.re);
 
 	for (; !ui.pollQuit(); )
 	{

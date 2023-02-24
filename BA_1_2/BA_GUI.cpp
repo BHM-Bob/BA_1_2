@@ -7,7 +7,10 @@
 #include"BA_Test.hpp"
 
 // TODO : 有什么更优雅的方法简化windowState中各方法函数中的加解锁
-// lambda似乎有点性能损耗，宏似乎不方便
+	// lambda似乎有点性能损耗，宏似乎不方便
+// TODO : 增加constListView，一次性生成列表，支持动态渲染
+// TODO : 增加输入框、拖动条等
+// TODO : 将listView等移入BA_GUI_Addition.xpp
 
 int* ba::ui::ProduceRainbowCol(int* col, float* i, float* di)// r g b
 {
@@ -97,7 +100,7 @@ Uint32 ba::ui::getPixle(SDL_Surface* surface, int x, int y)
 	}
 	else
 	{
-		MyBA_Err("x or y is negative, return -1", 1);
+		MyBA_Err("ba::ui::getPixle: x or y is negative, return 0", 1);
 		return 0;
 	}
 }
@@ -112,7 +115,7 @@ int ba::ui::formatPixle(Uint32 pixle, char channle)
 	case 'b':
 		return (pixle >> 0) & 0xFF;
 	}
-	MyBA_Err("Unable to handle channle, return -1", 1);
+	MyBA_Err("ba::ui::formatPixle: Unable to handle channle, return -1", 1);
 	PPX(channle);
 	return -1;
 }
@@ -342,18 +345,18 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 		}
 	}
 
-	sur = TTF_RenderUTF8_Blended(win->defaultFont, text.c_str(), charCol);
-	if (sur == NULL)
+	SDL_Surface* surText = TTF_RenderUTF8_Blended(win->defaultFont, text.c_str(), charCol);
+	if (surText == NULL)
 	{
 		MyBA_Errs(1, "ba::ui::label::label: Can't blended Surface with text:",
 			text.c_str(), ", skip", NULL);
 	}
 	else
 	{
-		SDL_Surface* bgs = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
-		SDL_FillRect(bgs, NULL, SDL_MapRGBA(bgs->format, bgc.r, bgc.g, bgc.b, bgc.a));
-		SDL_BlitScaled(sur, NULL, bgs, NULL);
-		SDL_FreeSurface(bgs);
+		sur = SDL_CreateRGBASurface(re.w, re.h)
+		SDL_FillRect(sur, NULL, SDL_MapRGBA(sur->format, bgc.r, bgc.g, bgc.b, bgc.a));
+		SDL_BlitScaled(surText, NULL, sur, NULL);
+		SDL_FreeSurface(surText);
 		tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	}
 }
