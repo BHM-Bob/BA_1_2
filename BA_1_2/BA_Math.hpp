@@ -435,7 +435,7 @@ namespace ba
 	{
 		if constexpr (std::is_same_v<Ty, BaseTy>)
 		{
-			for (_ULL i = 0; i < shape[nowDim]; i++)
+			for (_LL i = 0; i < shape[nowDim]; i++)
 			{
 				axis[nowDim] = i;
 				func(axis, highLeverPtr[i]);
@@ -443,7 +443,7 @@ namespace ba
 		}
 		else
 		{
-			for (_ULL i = 0; i < shape[nowDim]; i++)
+			for (_LL i = 0; i < shape[nowDim]; i++)
 			{
 				axis[nowDim] = i;
 				arrayMap_loop(highLeverPtr[i], shape, nowDim + 1, func, tmpInducVal, axis);

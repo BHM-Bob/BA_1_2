@@ -503,10 +503,8 @@ int ba::ui::_windowState_checkAll(void* _s)
 			s->_setMouseEve(x, y, x, y, 0, 0, 2);
 		}
 	}
-	SDL_DestroyMutex(s->_locker);
 	if (eveTmp)
 		free(eveTmp);
-	delete s;
 	return 0;
 }
 
@@ -615,6 +613,8 @@ ba::ui::window::~window()
 	SDL_DestroyWindow(pwin);
 	sur = nullptr;
 	//tex = nullptr;
+	SDL_DestroyMutex(winState->_locker);
+	delete winState;
 }
 ba::ui::QUI& ba::ui::window::addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re)
 {
@@ -720,7 +720,7 @@ bool ba::ui::window::pollQuit()
 		butts->events[exitButtName] = 0;
 		return 1;
 	}
-	return winState->getVar(false, [&]() {return winState->isQuit; });
+	return winState->getVar(false, [=]() {return winState->isQuit; });
 }
 bool ba::ui::window::delButt(const char* _name)
 {

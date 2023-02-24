@@ -302,7 +302,6 @@ namespace ba
 			bool delButt(const char* _name);
 		};
 
-		// TODO : support multi window
 		class QUI : public BA_Base
 		{
 		public:
