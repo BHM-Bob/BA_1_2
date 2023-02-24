@@ -376,6 +376,7 @@ namespace ba
 			bool moving = true;// enable first draw
 			SDL_Rect re;
 		};
+		int _listView_check(window* _win, void* _pData);
 		// 列表视图，baseItemTy为ba::ui::rect子类指针
 		// item需要new来申请，并在listView析构时于其析构函数调用baseItemTy的析构函数
 		// TODO : 支持不同高度，支持多列表同步滚动
@@ -400,7 +401,6 @@ namespace ba
 			void clear(void);
 			SDL_Texture* getTex(void);
 		};
-		int _listView_check(window* _win, void* _pData);
 		template<typename baseItemTy>
 		inline listView<baseItemTy>::listView(window* _win, SDL_Rect pos, SDL_Color bgc)
 			: rect(pos, bgc)

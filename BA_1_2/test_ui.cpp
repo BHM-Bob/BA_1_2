@@ -83,29 +83,30 @@ void ba::test::_ui::fileExplore(void)
 		list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
 			20, {255, 255, 255, 255}));
 	ui.addOtherTex("list", list.getTex(), &list.re);
+	auto reGenList = [&]() {
+		list.clear();
+		for (auto& path : paths)
+			list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
+				20, { 255, 255, 255, 255 })); };
 
 	for (; !ui.pollQuit(); )
 	{
 		if (list.data.clickIdx != -1)
 		{
 			nowPath = paths[list.data.clickIdx];
+			PPX(nowPath);
 			root = ba::StrAdd(pba->STmem, list.items[list.data.clickIdx]->text.c_str(), "\\*", NULL);
 			paths = ba::glob(root);
-			list.clear();
-			for (auto& path : paths)
-				list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
-					20, { 255, 255, 255, 255 }));
+			reGenList();
 			list.data.clickIdx = -1;
 		}
 		if (ui.activeWin->butts->events["return"] == 2)
 		{
 			ui.activeWin->butts->events["return"] = 0;
 			nowPath = nowPath.parent_path();
-			paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
-			list.clear();
-			for (auto& path : paths)
-				list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(),
-					20, { 255, 255, 255, 255 }));
+			PPX(nowPath);
+			paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "\\*", NULL));
+			reGenList();
 		}
 		ui.updateOtherTex("list", list.getTex());
 		ui.checkEvent();
