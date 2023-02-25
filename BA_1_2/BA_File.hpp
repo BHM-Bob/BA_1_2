@@ -72,7 +72,7 @@ namespace ba
 	bool fnmatch(const std::filesystem::path& name, const std::string& pattern);
 }
 
-unsigned long long  Get_File_Size(FILE* pf);
+unsigned long long  GetFileSize(FILE* pf);
 
 char* ReadTXT(const char* path, _ULL loadSize = 0, List* mem = NULL);
 

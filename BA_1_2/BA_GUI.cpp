@@ -1,16 +1,11 @@
 ﻿#include"BA_Base.hpp"
 #include"BA_Mem.hpp"
-#include"BA_File.hpp"
-#include"BA_JSON.hpp"
 #include"BA_String.hpp"
 #include"BA_GUI.hpp"
-#include"BA_Test.hpp"
 
 // TODO : 有什么更优雅的方法简化windowState中各方法函数中的加解锁
 	// lambda似乎有点性能损耗，宏似乎不方便
-// TODO : 增加constListView，一次性生成列表，支持动态渲染
-// TODO : 增加输入框、拖动条等
-// TODO : 将listView等移入BA_GUI_Addition.xpp
+// TODO : 削减内存消耗
 
 int* ba::ui::ProduceRainbowCol(int* col, float* i, float* di)// r g b
 {
@@ -353,7 +348,7 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 	}
 	else
 	{
-		sur = SDL_CreateRGBASurface(re.w, re.h)
+		sur = SDL_CreateRGBASurface(re.w, re.h);
 		SDL_FillRect(sur, NULL, SDL_MapRGBA(sur->format, bgc.r, bgc.g, bgc.b, bgc.a));
 		SDL_BlitScaled(surText, NULL, sur, NULL);
 		SDL_FreeSurface(surText);
@@ -795,37 +790,5 @@ int ba::ui::QUI::Quit(int code, ...)
 	TTF_Quit();
 	//MyBA_Free_R(mem);
 	List_SetVar(pba->exitFunc, (void*)QUI_Quit, (void*)0x1);
-	return 0;
-}
-
-int ba::ui::_listView_check(window* _win, void* _pData)
-{
-	listView_Data* pData = (listView_Data*)_pData;
-	// scroll
-	Sint32 dy = _win->winState->getVar((Sint32)0, [=]() {
-		Sint32 dy = 0;
-		if (_win->winState->wheelY.size() > 0)
-		{
-			dy = _win->winState->wheelY.back();
-			_win->winState->wheelY.pop_back();
-		}
-		return dy;});
-	if (dy)
-	{//dy>0 : scroll up
-		if (pData->visibleRange[0] - dy >= 0 && pData->visibleRange[1] - dy < pData->sumItems)
-		{
-			pData->visibleRange[0] -= dy;
-			pData->visibleRange[1] -= dy;
-			pData->moving = true;
-		}
-	}
-	// click
-	if (_win->winState->checkMouseIn(&(pData->re)) && _win->winState->getMouseEveCode(&(pData->re)) == 2)
-	{
-		_win->winState->_mutexSafeWrapper([&]() {_win->winState->mouseEveCode = 0; });
-		Sint32 y = 0;
-		_win->winState->getMousePos(NULL, &y);
-		pData->clickIdx = (y - pData->re.y) / pData->singleH + pData->visibleRange[0];
-	}
 	return 0;
 }

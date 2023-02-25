@@ -69,6 +69,9 @@
     <ClCompile Include="test_ui.cpp">
       <Filter>源文件\tests</Filter>
     </ClCompile>
+    <ClCompile Include="BA_GUI_Addition.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BA_1_2.hpp">
@@ -481,6 +484,9 @@
     </ClInclude>
     <ClInclude Include="SDL2\SDL_vulkan.h">
       <Filter>头文件\SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="BA_GUI_Addition.hpp">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,7 @@
 ﻿#include"BA_Base.hpp"
 #include"BA_File.hpp"
 #include"BA_GUI.hpp"
+#include"BA_GUI_Addition.hpp"
 #include"BA_Test.hpp"
 
 void ba::test::_ui::initSDL2(void)
@@ -26,7 +27,7 @@ void ba::test::_ui::initSDL2(void)
 			*pc = (char)keyboard;
 			PPX(pc);
 			ui.delButt("key");
-			ui.addButt("key", pc, 20, { 100, 100, 20, 20 });
+			ui.addButt("key", pc, 20, { 100, 100, 20, 20 }, {255, 255, 255, 255}, {0});
 		}
 		ui.updateOtherTex("cst", cs->getTex());
 		ui.updateOtherTex("ctt", ct->getTex());

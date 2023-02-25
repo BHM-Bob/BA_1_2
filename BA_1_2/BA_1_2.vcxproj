@@ -154,6 +154,7 @@
     <ClCompile Include="BA_CMD.cpp" />
     <ClCompile Include="BA_File.cpp" />
     <ClCompile Include="BA_GUI.cpp" />
+    <ClCompile Include="BA_GUI_Addition.cpp" />
     <ClCompile Include="BA_Jieba.cpp" />
     <ClCompile Include="BA_Mem.cpp" />
     <ClCompile Include="BA_String.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="BA_CMD.hpp" />
     <ClInclude Include="BA_File.hpp" />
     <ClInclude Include="BA_GUI.hpp" />
+    <ClInclude Include="BA_GUI_Addition.hpp" />
     <ClInclude Include="BA_Jieba.hpp" />
     <ClInclude Include="BA_JSON.hpp" />
     <ClInclude Include="BA_Math.hpp" />

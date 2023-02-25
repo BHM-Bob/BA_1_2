@@ -15,7 +15,7 @@
 #include"BA_String.hpp"
 namespace fs = std::filesystem;
 
-_ULL  Get_File_Size(FILE* pf)
+_ULL  GetFileSize(FILE* pf)
 {
     fseek(pf, 0, SEEK_SET);
     _ULL begin = ftell(pf);
@@ -29,7 +29,7 @@ char* ReadTXT(const char* path, _ULL loadSize, List* mem)
     FILE* pf = NULL;
     if (fopen_s(&pf, path, "r") == 0)
     {
-        _ULL size = Get_File_Size(pf);
+        _ULL size = GetFileSize(pf);
         if (loadSize > size)
             return (char*)MyBA_Errs(1, "ReadTXT: loadSize > size:", path, " ,return NULL", NULL);
         if (loadSize == 0)
