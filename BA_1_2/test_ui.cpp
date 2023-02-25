@@ -79,12 +79,13 @@ void ba::test::_ui::fileExplore(void)
 	ui.activeWin->title = new ba::ui::label(ui.activeWin, titleStr, 15);
 	auto paths = ba::glob(root);
 	std::filesystem::path nowPath;
-	ba::ui::listView<ba::ui::label*> list(ui.activeWin, {0, 40, 800, 600}, {94, 59, 63, 255});
-	auto reGenList = [&]() {
-		list.clear();
+	std::deque<ba::ui::label*> labels;
+	auto reGenLabels = [&]() {
+		labels.clear();
 		for (auto& path : paths)
-			list.addItem(new ba::ui::label(ui.activeWin, path.string().c_str(), 20)); };
-	reGenList();
+			labels.emplace_back(new ba::ui::label(ui.activeWin, path.string().c_str(), 20));
+		return labels; };
+	ba::ui::listView<ba::ui::label*> list(ui.activeWin, {0, 40, 800, 600}, {94, 59, 63, 255}, reGenLabels());
 	ui.addOtherTex("list", list.getTex(), &list.re);
 
 	for (; !ui.pollQuit(); )
@@ -92,19 +93,21 @@ void ba::test::_ui::fileExplore(void)
 		if (list.data.clickIdx != -1)
 		{
 			nowPath = paths[list.data.clickIdx];
-			PPX(nowPath);
 			root = ba::StrAdd(pba->STmem, list.items[list.data.clickIdx]->text.c_str(), "\\*", NULL);
 			paths = ba::glob(root);
-			reGenList();
-			list.data.clickIdx = -1;
+			list.clear();
+			list.gen(reGenLabels());
 		}
 		if (ui.activeWin->butts->events["return"] == 2)
 		{
 			ui.activeWin->butts->events["return"] = 0;
 			nowPath = nowPath.parent_path();
-			PPX(nowPath);
-			paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "\\*", NULL));
-			reGenList();
+			if(nowPath == nowPath.parent_path())// is "D::\\"
+				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
+			else
+				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
+			list.clear();
+			list.gen(reGenLabels());
 		}
 		ui.updateOtherTex("list", list.getTex());
 		ui.checkEvent();

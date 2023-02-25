@@ -459,7 +459,8 @@ int ba::ui::_windowState_checkAll(void* _s)
 		else if (eveTmp->type == SDL_MOUSEWHEEL && eveTmp->wheel.timestamp != wheelTimestamp)
 		{//鼠标滚轮 1027
 			wheelTimestamp = eveTmp->wheel.timestamp;// TODO : 针对滚轮特别设置的时间戳校验能否去除或扩大化
-			s->_mutexSafeWrapper([&]() {s->wheelY.emplace_back(eveTmp->wheel.y); });
+			// 顺滑&加速滚轮操作，插帧
+			s->_mutexSafeWrapper([&]() {s->wheelY.insert(s->wheelY.end(), 3, eveTmp->wheel.y); });
 		}
 		else if (eveTmp->type == SDL_DROPFILE)
 		{//检测拖拽文件

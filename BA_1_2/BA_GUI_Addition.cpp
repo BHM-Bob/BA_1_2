@@ -1,6 +1,5 @@
 ﻿#include"BA_Base.hpp"
 #include"BA_Mem.hpp"
-#include"BA_File.hpp"
 #include"BA_String.hpp"
 
 #include"BA_GUI.hpp"
@@ -13,30 +12,31 @@ int ba::ui::_listView_check(window* _win, void* _pData)
 {
 	listView_Data* pData = (listView_Data*)_pData;
 	// scroll
-	Sint32 dy = _win->winState->getVar((Sint32)0, [=]() {
+	_LL dy = _win->winState->getVar((Sint32)0, [=]() {
 		Sint32 dy = 0;
 		if (_win->winState->wheelY.size() > 0)
 		{
 			dy = _win->winState->wheelY.back();
 			_win->winState->wheelY.pop_back();
 		}
-		return dy; });
-	if (dy)
-	{//dy>0 : scroll up
-		if (pData->visibleRange[0] - dy >= 0 && pData->visibleRange[1] - dy < pData->sumItems)
-		{
-			pData->visibleRange[0] -= dy;
-			pData->visibleRange[1] -= dy;
-			pData->moving = true;
-		}
-	}
+		return dy*(_win->winState->wheelY.size()+1)*3; });//放大
+	if (dy > 0 && pData->visPixelRange[0] > 0)//scroll up
+		dy = -min(dy, pData->visPixelRange[0]);//请求上滑距离和剩余可上滑距离的最小者
+	else if (dy < 0 && pData->visPixelRange[1] < pData->sumHeight - 1)//scroll down
+		dy = min(-dy, pData->sumHeight - pData->visPixelRange[1] - 1);//请求下滑距离和剩余可下滑距离的最小者
+	else
+		goto GOTO_LABEL_BA_UI__listView_check_1;
+	pData->visPixelRange[0] += dy;
+	pData->visPixelRange[1] += dy;
+	pData->refreshTex = true;
+GOTO_LABEL_BA_UI__listView_check_1:;
 	// click
 	if (_win->winState->checkMouseIn(&(pData->re)) && _win->winState->getMouseEveCode(&(pData->re)) == 2)
 	{
 		_win->winState->_mutexSafeWrapper([&]() {_win->winState->mouseEveCode = 0; });
 		Sint32 y = 0;
 		_win->winState->getMousePos(NULL, &y);
-		pData->clickIdx = (y - pData->re.y) / pData->singleH + pData->visibleRange[0];
+		pData->clickIdx = pData->pixel2idx[y - pData->re.y + pData->visPixelRange[0]];
 	}
 	return 0;
 }
