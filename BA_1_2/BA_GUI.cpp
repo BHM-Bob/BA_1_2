@@ -435,7 +435,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 	SDL_Event* eveTmp = NULL;
 	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0, winW = 0, winH = 0;
 	Uint32 keyTimestamp = SDL_GetTicks(), wheelTimestamp = 0;//This value wraps if the program runs for more than ~49 days.
-	for ( ; ! s->getVar(false, [=]() {return s->isQuit;}) ; SDL_Delay(2))
+	for ( ; ! s->getVar(false, [=]() {return s->isQuit;}) ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
 		if (eveTmp->type == SDL_MOUSEBUTTONDOWN && eveTmp->wheel.timestamp != wheelTimestamp)
@@ -501,6 +501,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 			}
 			s->_setMouseEve(x, y, x, y, 0, 0, 2);
 		}
+		s->_mutexSafeWrapper([&]() {s->mouseEndPos[0] = eveTmp->motion.x; s->mouseEndPos[1] = eveTmp->motion.y; });
 	}
 	if (eveTmp)
 		free(eveTmp);

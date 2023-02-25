@@ -8,9 +8,27 @@
 // TODO : 增加constListView，一次性生成列表，支持动态渲染
 // TODO : 增加输入框、拖动条等
 
+
+_LL ba::ui::_listView_Data_ApplyDy(_LL dy, listView_Data* pData)
+{
+	if (dy > 0 && pData->visPixelRange[0] > 0)//scroll up
+		dy = -min(dy, pData->visPixelRange[0]);//请求上滑距离和剩余可上滑距离的最小者
+	else if (dy < 0 && pData->visPixelRange[1] < pData->sumHeight - 1)//scroll down
+		dy = min(-dy, pData->sumHeight - pData->visPixelRange[1] - 1);//请求下滑距离和剩余可下滑距离的最小者
+	else
+		return 0;
+	pData->visPixelRange[0] += dy;
+	pData->visPixelRange[1] += dy;
+	pData->refreshTex = true;
+	return dy;
+}
+
 int ba::ui::_listView_check(window* _win, void* _pData)
 {
 	listView_Data* pData = (listView_Data*)_pData;
+	if (! _win->winState->getVar(true, [=]() {return checkDotInRect(
+		_win->winState->mouseEndPos[0], _win->winState->mouseEndPos[1], &(pData->re)); }))
+		return -1;
 	// scroll
 	_LL dy = _win->winState->getVar((Sint32)0, [=]() {
 		Sint32 dy = 0;
@@ -20,16 +38,9 @@ int ba::ui::_listView_check(window* _win, void* _pData)
 			_win->winState->wheelY.pop_back();
 		}
 		return dy*(_win->winState->wheelY.size()+1)*3; });//放大
-	if (dy > 0 && pData->visPixelRange[0] > 0)//scroll up
-		dy = -min(dy, pData->visPixelRange[0]);//请求上滑距离和剩余可上滑距离的最小者
-	else if (dy < 0 && pData->visPixelRange[1] < pData->sumHeight - 1)//scroll down
-		dy = min(-dy, pData->sumHeight - pData->visPixelRange[1] - 1);//请求下滑距离和剩余可下滑距离的最小者
-	else
-		goto GOTO_LABEL_BA_UI__listView_check_1;
-	pData->visPixelRange[0] += dy;
-	pData->visPixelRange[1] += dy;
-	pData->refreshTex = true;
-GOTO_LABEL_BA_UI__listView_check_1:;
+	_listView_Data_ApplyDy(dy, pData);
+	for (listView_Data* pD : pData->synListViewData)
+		_listView_Data_ApplyDy(dy, pD);
 	// click
 	if (_win->winState->checkMouseIn(&(pData->re)) && _win->winState->getMouseEveCode(&(pData->re)) == 2)
 	{

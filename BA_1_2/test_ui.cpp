@@ -85,8 +85,10 @@ void ba::test::_ui::fileExplore(void)
 		for (auto& path : paths)
 			labels.emplace_back(new ba::ui::label(ui.activeWin, path.string().c_str(), 20));
 		return labels; };
-	ba::ui::listView<ba::ui::label*> list(ui.activeWin, {0, 40, 800, 600}, {94, 59, 63, 255}, reGenLabels());
+	ba::ui::listView<ba::ui::label*> list(ui.activeWin, { 0, 40, 800, 600 }, { 94, 59, 63, 255 }, reGenLabels());
+	ba::ui::listView<ba::ui::label*> list2(ui.activeWin, { 900, 40, 100, 600 }, { 0, 59, 63, 255 }, reGenLabels());
 	ui.addOtherTex("list", list.getTex(), &list.re);
+	ui.addOtherTex("list2", list2.getTex(), &list2.re);
 
 	for (; !ui.pollQuit(); )
 	{
@@ -97,6 +99,8 @@ void ba::test::_ui::fileExplore(void)
 			paths = ba::glob(root);
 			list.clear();
 			list.gen(reGenLabels());
+			list2.clear();
+			list2.gen(reGenLabels());
 		}
 		if (ui.activeWin->butts->events["return"] == 2)
 		{
@@ -108,8 +112,11 @@ void ba::test::_ui::fileExplore(void)
 				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
 			list.clear();
 			list.gen(reGenLabels());
+			list2.clear();
+			list2.gen(reGenLabels());
 		}
 		ui.updateOtherTex("list", list.getTex());
+		ui.updateOtherTex("list2", list2.getTex());
 		ui.checkEvent();
 		ui.update();
 	}

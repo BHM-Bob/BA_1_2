@@ -22,7 +22,10 @@ namespace ba
 			SDL_Rect re;//listView.re
 			std::deque<_LL> eachHeight;
 			std::deque<_LL> pixel2idx;
+			std::deque< listView_Data*> synListViewData;
+
 		};
+		_LL _listView_Data_ApplyDy(_LL dy, listView_Data* pData);
 		int _listView_check(window* _win, void* _pData);
 		// 列表视图，baseItemTy为ba::ui::rect子类的指针
 		// item需要new来申请，并在listView析构时于其析构函数调用baseItemTy的析构函数
@@ -38,7 +41,7 @@ namespace ba
 			std::deque< int> statue;//0不存在   1存在且显示   2存在不显示
 
 			listView(window* _win, SDL_Rect pos, SDL_Color bgc,
-				std::deque< baseItemTy> _items);
+				std::deque< baseItemTy> _items, bool synToOther = false);
 			void gen(std::deque< baseItemTy> _items);
 			~listView()
 			{
@@ -51,13 +54,14 @@ namespace ba
 		};
 		template<typename baseItemTy>
 		inline listView<baseItemTy>::listView(window* _win, SDL_Rect pos, SDL_Color bgc,
-			std::deque< baseItemTy> _items)
+			std::deque< baseItemTy> _items, bool synToOther)
 			: rect(pos, bgc)
 		{
 			win = _win;
 			rendRect();
 			data.re = re;
-			win->addCheckEventFunc(_listView_check, &data);
+			if(! synToOther)
+				win->addCheckEventFunc(_listView_check, &data);
 			gen(_items);
 		}
 		template<typename baseItemTy>
@@ -82,6 +86,7 @@ namespace ba
 			data.sumHeight = data.visPixelRange[0] = data.visPixelRange[1] = 0;
 			data.eachHeight.clear();
 			data.pixel2idx.clear();
+			data.synListViewData.clear();
 			data.refreshTex = true;
 			data.clickIdx = -1;
 			for (auto item : items)
