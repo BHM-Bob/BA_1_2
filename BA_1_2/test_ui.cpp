@@ -80,29 +80,35 @@ void ba::test::_ui::fileExplore(void)
 	auto paths = ba::glob(root);
 	std::filesystem::path nowPath;
 	std::deque<ba::ui::label*> labels;
-	auto reGenLabels = [&]() {
+	auto reGenList = [&](ba::ui::listView* list) {
+		list->clear();
 		labels.clear();
 		for (auto& path : paths)
+		{
 			labels.emplace_back(new ba::ui::label(ui.activeWin, path.string().c_str(), 20));
-		return labels; };
-	ba::ui::listView<ba::ui::label*> list(ui.activeWin, { 0, 40, 800, 600 }, { 94, 59, 63, 255 }, reGenLabels());
-	ba::ui::listView<ba::ui::label*> list2(ui.activeWin, { 900, 40, 100, 600 }, { 0, 59, 63, 255 }, reGenLabels());
-	list.data.synListViewData.emplace_back(&(list2.data));
-	list2.data.synListViewData.emplace_back(&(list.data));
-	ui.addOtherTex("list", list.getTex(), &list.re);
-	ui.addOtherTex("list2", list2.getTex(), &list2.re);
+			list->gen1(labels.back(), list->items.size() == labels.size() - 1);
+		}
+		return list; };
+	ba::ui::listView* list = new ba::ui::listView(ui.activeWin, { 0, 40, 800, 600 }, { 94, 59, 63, 255 });
+	ba::ui::listView* list2 = new ba::ui::listView(ui.activeWin, { 900, 40, 100, 600 }, { 0, 59, 63, 255 });
+	list = reGenList(list);
+	list2 = reGenList(list2);
+	list->data.synListViewData.emplace_back(&(list2->data));
+	list2->data.synListViewData.emplace_back(&(list->data));
+	ui.addOtherTex("list", list->getTex(), &list->re);
+	ui.addOtherTex("list2", list2->getTex(), &list2->re);
 
 	for (; !ui.pollQuit(); )
 	{
-		if (list.data.clickIdx != -1)
+		if (list->data.clickIdx != -1)
 		{
-			nowPath = paths[list.data.clickIdx];
-			root = ba::StrAdd(pba->STmem, list.items[list.data.clickIdx]->text.c_str(), "\\*", NULL);
+			nowPath = paths[list->data.clickIdx];
+			root = ba::StrAdd(pba->STmem, labels[list->data.clickIdx]->text.c_str(), "\\*", NULL);
 			paths = ba::glob(root);
-			list.clear();
-			list.gen(reGenLabels());
-			list2.clear();
-			list2.gen(reGenLabels());
+			list = reGenList(list);
+			list2 = reGenList(list2);
+			list->data.synListViewData.emplace_back(&(list2->data));
+			list2->data.synListViewData.emplace_back(&(list->data));
 		}
 		if (ui.activeWin->butts->events["return"] == 2)
 		{
@@ -112,13 +118,13 @@ void ba::test::_ui::fileExplore(void)
 				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
 			else
 				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
-			list.clear();
-			list.gen(reGenLabels());
-			list2.clear();
-			list2.gen(reGenLabels());
+			list = reGenList(list);
+			list2 = reGenList(list2);
+			list->data.synListViewData.emplace_back(&(list2->data));
+			list2->data.synListViewData.emplace_back(&(list->data));
 		}
-		ui.updateOtherTex("list", list.getTex());
-		ui.updateOtherTex("list2", list2.getTex());
+		ui.updateOtherTex("list", list->getTex());
+		ui.updateOtherTex("list2", list2->getTex());
 		ui.checkEvent();
 		ui.update();
 	}

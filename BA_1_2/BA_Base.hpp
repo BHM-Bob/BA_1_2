@@ -369,7 +369,7 @@ _ULL MyBA_AtQuit(int (*exitFunc)(void* data, int code, ...), void* data);
 int MyBA_Quit(int retVal = 0);
 
 void MyBA_Free(void* p, List* mem);
-void MyBA_Free_R(List* pli, bool destoryList = false);
+List* MyBA_Free_R(List* pli, bool destoryList = false);
 void MyBA_FreeInstance(void);
 void* MyBA_CALLOC_R(_ULL count, _ULL size, List* pli);
 void* MyBA_CALLOC_L(_ULL count, _ULL size);

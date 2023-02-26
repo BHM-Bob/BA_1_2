@@ -366,23 +366,27 @@ int MyBA_Quit(int retVal)
 	return retVal;
 }
 
-void MyBA_Free_R(List* pli, bool destoryList)
+List* MyBA_Free_R(List* pli, bool destoryList)
 {
 	if (pba->isSAFEMODE)
-		return;// do not free mem manually
-	if (pli != NULL)
+		return pli;// do not free mem manually
+	if (pli != NULL && pli != (List*)BA_FREED_PTR)
 	{
 		for (void* pm = List_Get(pli); pm != NULL; pm = List_Get(pli))
 			if (pm != (void*)0x1)
 				free(pm);
 		pli->now = pli->pfirst;
 		if (destoryList)
+		{
 			free(pli);
+			pli = (List*)BA_FREED_PTR;
+		}
 	}
 	else
 	{
 		PPW("MyBA_Free_R: pli==NULL,return");
 	}
+	return pli;
 }
 
 void MyBA_Free(void* p, List* mem)

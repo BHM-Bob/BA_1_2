@@ -166,7 +166,7 @@ bool ba::ui::rect::checkMouseIn(Sint32 x, Sint32 y)
 
 ba::ui::rect::~rect()
 {
-	MyBA_Free_R(mem, true);
+	mem = MyBA_Free_R(mem, true);
 	if(sur)
 		SDL_FreeSurface(sur);
 	if (tex)
