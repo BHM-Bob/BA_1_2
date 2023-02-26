@@ -26,18 +26,17 @@ _LL ba::ui::_listView_Data_ApplyDy(_LL dy, listView_Data* pData)
 int ba::ui::_listView_check(window* _win, void* _pData)
 {
 	listView_Data* pData = (listView_Data*)_pData;
-	if (! _win->winState->getVar(true, [=]() {return checkDotInRect(
-		_win->winState->mouseEndPos[0], _win->winState->mouseEndPos[1], &(pData->re)); }))
+	if (! _win->winState->checkMouseIn(&(pData->re)))
 		return -1;
 	// scroll
-	_LL dy = _win->winState->getVar((Sint32)0, [=]() {
+	_LL dy = _win->winState->getVar((_LL)0, [=]() {
 		Sint32 dy = 0;
-		if (_win->winState->wheelY.size() > 0)
+		if ( !_win->winState->wheelY.empty())
 		{
-			dy = _win->winState->wheelY.back();
-			_win->winState->wheelY.pop_back();
+			dy = _win->winState->wheelY.front();
+			_win->winState->wheelY.pop_front();
 		}
-		return dy*(_win->winState->wheelY.size()+1)*3; });//放大
+		return dy*(_win->winState->wheelY.size()+1)*4; });//放大
 	_listView_Data_ApplyDy(dy, pData);
 	for (listView_Data* pD : pData->synListViewData)
 		_listView_Data_ApplyDy(dy, pD);

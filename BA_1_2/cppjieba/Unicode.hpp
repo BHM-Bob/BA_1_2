@@ -17,9 +17,9 @@ typedef uint32_t Rune;
 
 struct Word {
   string word;
-  uint32_t offset;
-  uint32_t unicode_offset;
-  uint32_t unicode_length;
+  uint32_t offset = 0;
+  uint32_t unicode_offset = 0;
+  uint32_t unicode_length = 0;
   Word(const string& w, uint32_t o)
    : word(w), offset(o) {
   }

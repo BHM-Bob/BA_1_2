@@ -87,6 +87,8 @@ void ba::test::_ui::fileExplore(void)
 		return labels; };
 	ba::ui::listView<ba::ui::label*> list(ui.activeWin, { 0, 40, 800, 600 }, { 94, 59, 63, 255 }, reGenLabels());
 	ba::ui::listView<ba::ui::label*> list2(ui.activeWin, { 900, 40, 100, 600 }, { 0, 59, 63, 255 }, reGenLabels());
+	list.data.synListViewData.emplace_back(&(list2.data));
+	list2.data.synListViewData.emplace_back(&(list.data));
 	ui.addOtherTex("list", list.getTex(), &list.re);
 	ui.addOtherTex("list2", list2.getTex(), &list2.re);
 

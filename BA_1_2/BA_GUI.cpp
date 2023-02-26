@@ -438,6 +438,8 @@ int ba::ui::_windowState_checkAll(void* _s)
 	for ( ; ! s->getVar(false, [=]() {return s->isQuit;}) ; SDL_Delay(20))
 	{
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
+		if(eveTmp->type != SDL_MOUSEWHEEL)
+			s->_setMouseEve(eveTmp->motion.x, eveTmp->motion.y, eveTmp->motion.x, eveTmp->motion.y, 0, 0, 0);
 		if (eveTmp->type == SDL_MOUSEBUTTONDOWN && eveTmp->wheel.timestamp != wheelTimestamp)
 		{//鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
 			wheelTimestamp = eveTmp->wheel.timestamp;
@@ -457,7 +459,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
 		}
 		else if (eveTmp->type == SDL_MOUSEWHEEL && eveTmp->wheel.timestamp != wheelTimestamp)
-		{//鼠标滚轮 1027
+		{//鼠标滚轮 1027// will change eveTmp->motion.x to be same as eveTmp->wheel.y !!!
 			wheelTimestamp = eveTmp->wheel.timestamp;// TODO : 针对滚轮特别设置的时间戳校验能否去除或扩大化
 			// 顺滑&加速滚轮操作，插帧
 			s->_mutexSafeWrapper([&]() {s->wheelY.insert(s->wheelY.end(), 3, eveTmp->wheel.y); });
@@ -501,7 +503,6 @@ int ba::ui::_windowState_checkAll(void* _s)
 			}
 			s->_setMouseEve(x, y, x, y, 0, 0, 2);
 		}
-		s->_mutexSafeWrapper([&]() {s->mouseEndPos[0] = eveTmp->motion.x; s->mouseEndPos[1] = eveTmp->motion.y; });
 	}
 	if (eveTmp)
 		free(eveTmp);

@@ -198,7 +198,7 @@ namespace ba
 			Sint32 mouseEndPos[2] = { 0 };// 事件进行时实时光标位置
 			Sint32 dMouseMove[2] = { 0 };// 鼠标位移
 			int mouseEveCode = 0;// 鼠标事件代码：0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT
-			std::deque < Sint32> wheelY;//鼠标滚轮
+			std::list < Sint32> wheelY;//鼠标滚轮
 			Uint32 timestamp = 0;//timestamp of the event
 			std::deque<std::pair<SDL_Keycode, clock_t>> keys;// 键盘事件缓存队列，每个事件附带时间戳
 			//public

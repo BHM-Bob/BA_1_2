@@ -172,7 +172,7 @@ const
 }
 
 void cppjieba::HMMSegment::InternalCut(RuneStrArray::const_iterator begin, RuneStrArray::const_iterator end, vector<WordRange>& res) const
-const
+//const//warning C4114: 多次使用同一类型限定符
  {
     vector<size_t> status;
     Viterbi(begin, end, status);

@@ -16,7 +16,7 @@ class KeywordExtractor {
   struct Word {
     string word;
     vector<size_t> offsets;
-    double weight;
+    double weight = 0.;
   }; // struct Word
 
   KeywordExtractor(const string& dictPath, 
