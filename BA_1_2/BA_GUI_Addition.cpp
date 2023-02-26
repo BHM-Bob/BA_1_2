@@ -33,7 +33,8 @@ int ba::ui::_listView_check(window* _win, void* _pData)
 		Sint32 dy = 0;
 		if ( !_win->winState->wheelY.empty())
 		{
-			dy = _win->winState->wheelY.front();
+			if(SDL_GetTicks() - _win->winState->wheelY.front().second < 300)
+				dy = _win->winState->wheelY.front().first;
 			_win->winState->wheelY.pop_front();
 		}
 		return dy*(_win->winState->wheelY.size()+1)*4; });//放大

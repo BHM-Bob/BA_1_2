@@ -462,7 +462,7 @@ int ba::ui::_windowState_checkAll(void* _s)
 		{//鼠标滚轮 1027// will change eveTmp->motion.x to be same as eveTmp->wheel.y !!!
 			wheelTimestamp = eveTmp->wheel.timestamp;// TODO : 针对滚轮特别设置的时间戳校验能否去除或扩大化
 			// 顺滑&加速滚轮操作，插帧
-			s->_mutexSafeWrapper([&]() {s->wheelY.insert(s->wheelY.end(), 3, eveTmp->wheel.y); });
+			s->_mutexSafeWrapper([&]() {s->wheelY.insert(s->wheelY.end(), 3, std::pair(eveTmp->wheel.y, wheelTimestamp)); });
 		}
 		else if (eveTmp->type == SDL_DROPFILE)
 		{//检测拖拽文件
