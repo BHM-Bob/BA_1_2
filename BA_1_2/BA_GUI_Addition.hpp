@@ -12,6 +12,14 @@ namespace ba
 {
 	namespace ui
 	{
+		//底层级的window
+		class layout : public virtual rect
+		{//虚基类，与子类共享一个基类rect对象。
+		public:
+			std::deque< rect*> items;
+			std::deque< int> events;
+			std::deque< int> statue;//0不存在   1存在且显示   2存在不显示
+		};
 		class listView_Data
 		{
 		public:
@@ -30,14 +38,10 @@ namespace ba
 		// 列表视图，baseItemTy为ba::ui::rect子类的指针
 		// item需要new来申请，并在listView析构时于其析构函数调用baseItemTy的析构函数
 		// 一次性生成，支持不同高度，元素的re.y被修改为在列表总视图中的y
-		// TODO : 支持多列表同步滚动
-		class listView : public rect
+		class listView : public layout
 		{
 		public:
 			listView_Data data;
-			std::deque< rect*> items;
-			std::deque< int> events;
-			std::deque< int> statue;//0不存在   1存在且显示   2存在不显示
 
 			listView(window* _win, SDL_Rect pos, SDL_Color bgc,
 				std::deque< rect*> _items = std::deque< rect*>(), bool synToOther = false);
