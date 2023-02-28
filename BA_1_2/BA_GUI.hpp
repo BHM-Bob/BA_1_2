@@ -101,6 +101,7 @@ namespace ba
 			//must use after ui is assigned
 			void rendRect(void);
 			bool checkMouseIn(Sint32 x, Sint32 y);
+			virtual SDL_Texture* getTex();
 			~rect();
 		};
 		class colorSur : public rect

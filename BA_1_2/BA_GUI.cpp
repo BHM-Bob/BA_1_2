@@ -164,6 +164,11 @@ bool ba::ui::rect::checkMouseIn(Sint32 x, Sint32 y)
 	return checkDotInRect(x, y, &re);
 }
 
+SDL_Texture* ba::ui::rect::getTex()
+{
+	return tex;
+}
+
 ba::ui::rect::~rect()
 {
 	mem = MyBA_Free_R(mem, true);
