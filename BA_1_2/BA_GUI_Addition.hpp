@@ -34,7 +34,6 @@ namespace ba
 
 		};
 		_LL _listView_Data_ApplyDy(_LL dy, listView_Data* pData);
-		int _listView_check(window* _win, void* _pData);
 		// 列表视图，baseItemTy为ba::ui::rect子类的指针
 		// item需要new来申请，并在listView析构时于其析构函数调用baseItemTy的析构函数
 		// 一次性生成，支持不同高度，元素的re.y被修改为在列表总视图中的y
@@ -44,7 +43,7 @@ namespace ba
 			listView_Data data;
 
 			listView(window* _win, SDL_Rect pos, SDL_Color bgc,
-				std::deque< rect*> _items = std::deque< rect*>(), bool synToOther = false);
+				std::deque< rect*> _items = std::deque< rect*>());
 			void gen(std::deque< rect*> items);
 			void gen1(rect* _item, bool isEnd = false);
 			~listView()
@@ -56,6 +55,7 @@ namespace ba
 			void clear(void);
 			SDL_Texture* getTex(void);
 		};
+		int _listView_check(window* _win, void* _self, int mouseEveCode, void* _pData);
 	}
 }
 

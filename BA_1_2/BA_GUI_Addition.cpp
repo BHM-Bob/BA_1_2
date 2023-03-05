@@ -9,14 +9,12 @@
 
 
 ba::ui::listView::listView(window* _win, SDL_Rect pos, SDL_Color bgc,
-	std::deque< rect*> _items, bool synToOther)
+	std::deque< rect*> _items)
 	: rect(pos, bgc)
 {
 	win = _win;
 	rendRect();
 	data.re = re;
-	if (!synToOther)
-		win->addCheckEventFunc(_listView_check, &data);
 	if( !_items.empty())
 		gen(_items);
 }
@@ -98,11 +96,9 @@ _LL ba::ui::_listView_Data_ApplyDy(_LL dy, listView_Data* pData)
 	return dy;
 }
 
-int ba::ui::_listView_check(window* _win, void* _pData)
+int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _pData)
 {
-	listView_Data* pData = (listView_Data*)_pData;
-	if (! _win->winState->checkMouseIn(&(pData->re)))
-		return -1;
+	ba::ui::listView* self = (ba::ui::listView*)_self;
 	// scroll
 	_LL dy = _win->winState->getVar((_LL)0, [=]() {
 		Sint32 dy = 0;
@@ -113,16 +109,15 @@ int ba::ui::_listView_check(window* _win, void* _pData)
 			_win->winState->wheelY.pop_front();
 		}
 		return dy*(_win->winState->wheelY.size()+1)*4; });//放大
-	_listView_Data_ApplyDy(dy, pData);
-	for (listView_Data* pD : pData->synListViewData)
+	_listView_Data_ApplyDy(dy, &(self->data));
+	for (listView_Data* pD : self->data.synListViewData)
 		_listView_Data_ApplyDy(dy, pD);
 	// click
-	if (_win->winState->checkMouseIn(&(pData->re)) && _win->winState->getMouseEveCode(&(pData->re)) == 2)
+	if (_win->winState->checkMouseIn(&(self->data.re)) && mouseEveCode == 2)
 	{
-		_win->winState->_mutexSafeWrapper([&]() {_win->winState->mouseEveCode = 0; });
 		Sint32 y = 0;
 		_win->winState->getMousePos(NULL, &y);
-		pData->clickIdx = pData->pixel2idx[y - pData->re.y + pData->visPixelRange[0]];
+		self->data.clickIdx = self->data.pixel2idx[y - self->data.re.y + self->data.visPixelRange[0]];
 	}
 	return 0;
 }

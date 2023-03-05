@@ -139,43 +139,118 @@ namespace ba
 			label(window* _win, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
 				SDL_Rect pos = {  }, SDL_Color bgc = { });
 		};
+		// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
+		// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
 		class button : public label
 		{
 		public:
 			colorSur* cs = NULL;
-			button(window* _win, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
-				SDL_Rect pos = {  }, SDL_Color bgc = {  });
+			button(window* _win, const char* _name, const char* _showWords, int charSize,
+				SDL_Color charCol, SDL_Color bgc, SDL_Rect pos, const char* align, SDL_Surface* bg);
 			// _showWords 会mstrdup
 			bool changeButtShowWords(const char* _showWords,
 				int charSize, SDL_Color* cc = NULL, SDL_Color* bgc = NULL,
 				const char* fontName = NULL);
+			SDL_Texture* getTex();
 		};
 
+		// baseItemTy is a ptr
 		template<typename baseItemTy>
-		class namedItems : public BA_Base
-		{
-
-		};
-		class buttons : public BA_Base
+		class namedItems : public rect
 		{
 		public:
 			window* win = NULL;
 			std::map<std::string, int> events;//1 left ; 2 right
-			std::map<std::string, int> statue;//按钮列表占用 0不存在   1存在且显示   2存在不显示
-			std::map<std::string, button*> butts;//按钮列表
-			std::map<std::string, int (*)(void* pData, ...)> eveFunc;// int (*)(void* pData);
+			std::map<std::string, int> statue;//占用 0不存在   1存在且显示   2存在不显示
+			std::map<std::string, baseItemTy> items;//列表
+			std::map<std::string, int (*)(window* _win, void* _self, int mouseEveCode, void* pData)> eveFunc;// int (*)(void* pData);
+			std::map<std::string, void*> eveFuncSelfData;// void*
 			std::map<std::string, void*> eveFuncData;// void*
 
-			buttons(window* _win) {	win = _win;}
-			~buttons();
-			// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
-			// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
-			bool add(const char* _name, const char* _showWords, int charSize,
-				SDL_Color charCol = {}, SDL_Color bgc = {.r = 255, .g = 255, .b = 255, .a = 255},
-				SDL_Rect pos = {}, const char* align = "tl", SDL_Surface * bg = NULL,
-				int (*eveFunc)(void* pData, ...) = NULL, void* eveFuncData = NULL);
+			namedItems() {};
+			namedItems(window* _win) { win = _win; };
+			~namedItems();
+			bool add(const char* _name, baseItemTy item,
+				int (*_eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData) = NULL, void* _self = NULL, void* _eveFuncData = NULL);
 			bool del(const char* _name);
+			void check(void);
+			void update(void);
+			bool update(const char* _name, baseItemTy newItem, bool delOldOne = false);
 		};
+		template<typename baseItemTy>
+		inline namedItems<baseItemTy>::~namedItems()
+		{
+				for (auto p : items)
+					delete p.second;
+		}
+		template<typename baseItemTy>
+		inline bool namedItems<baseItemTy>::add(const char* _name, baseItemTy item,
+			int(*_eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData), void* _self, void* _eveFuncData)
+		{
+			char* name = mstrdup(_name, mem);
+			items[name] = item;
+			statue[name] = 1;
+			events[name] = false;
+			if (_eveFunc)
+			{
+				eveFunc[name] = _eveFunc;
+				eveFuncSelfData[name] = _self;
+				eveFuncData[name] = _eveFuncData;
+			}
+			return true;
+		}
+		template<typename baseItemTy>
+		inline bool namedItems<baseItemTy>::del(const char* _name)
+		{
+			if (items.contains(_name))
+			{
+				baseItemTy item = items[_name];
+				events.erase(_name);
+				statue.erase(_name);
+				items.erase(_name);
+				if (eveFunc.contains(_name))
+				{
+					eveFunc.erase(_name);
+					eveFuncData.erase(_name);
+				}
+				delete item;
+				return true;
+			}
+			return false;
+		}
+		template<typename baseItemTy>
+		inline void namedItems<baseItemTy>::check(void)
+		{
+			for (auto p = items.begin(); p != items.end(); p++)
+			{
+				if (statue[p->first])
+				{
+					events[p->first] = win->winState->getMouseEveCode(&(p->second->re));
+					if (events[p->first] != 0)
+					{
+						//if (events[p->first] == 2 && eveFunc.find(p->first) != eveFunc.end()) {}
+						if(eveFunc[p->first])
+							eveFunc[p->first](win, eveFuncSelfData[p->first], events[p->first], eveFuncData[p->first]);
+						//events[p->first] = 0;
+						win->winState->_mutexSafeWrapper([&]() {win->winState->mouseEveCode = 0; });
+					}
+				}
+			}
+		}
+		template<typename baseItemTy>
+		inline void namedItems<baseItemTy>::update(void)
+		{
+			for (auto p = items.begin(); p != items.end(); p++)
+			{
+				if (statue[p->first])
+					SDL_RenderCopy(win->rend, items[p->first]->getTex(), NULL, &(items[p->first]->re));
+			}
+		}
+		template<typename baseItemTy>
+		inline bool namedItems<baseItemTy>::update(const char* _name, baseItemTy newItem, bool delOldOne)
+		{
+			return false;
+		}
 
 		class event : public BA_Base
 		{
@@ -198,7 +273,7 @@ namespace ba
 			Sint32 mousePos[2] = { 0 };// 按下鼠标时光标位置			
 			Sint32 mouseEndPos[2] = { 0 };// 事件进行时实时光标位置
 			Sint32 dMouseMove[2] = { 0 };// 鼠标位移
-			int mouseEveCode = 0;// 鼠标事件代码：0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT
+			int mouseEveCode = 0;// 鼠标事件代码：0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel
 			std::list < std::pair<Sint32, Uint32>> wheelY;//鼠标滚轮（滑动值，时间戳）
 			Uint32 timestamp = 0;//timestamp of the event
 			std::deque<std::pair<SDL_Keycode, clock_t>> keys;// 键盘事件缓存队列，每个事件附带时间戳
@@ -279,11 +354,14 @@ namespace ba
 			float FPS = 0.f;
 			const char* exitButtName = nullptr;
 			label* title = nullptr;
-			buttons* butts = new buttons(this);
+
+			namedItems<button*> butts = namedItems<button*>(this);
+			namedItems<rect*> rects = namedItems<rect*>(this);
+			// will be abandoned
+			std::unordered_map<std::string, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
 			std::deque<int (*)(window* _win, void* pData)> checkEventFunc;
 			std::deque<void*> checkEventFuncData;
 
-			std::unordered_map<std::string, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
 
 			window(QUI* _ui, const char* _titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color bgc = {});
@@ -338,13 +416,22 @@ namespace ba
 			inline bool addButt(const char* _name, const char* _showWords, int charSize, SDL_Rect pos = {},
 				SDL_Color charCol = {}, SDL_Color bgc = { .r = 255, .g = 255, .b = 255, .a = 255 },
 				const char* align = "tl", SDL_Surface* bg = NULL,
-				const char* win = NULL, int (*eveFunc)(void* pData, ...) = NULL, void* eveFuncData = NULL)
+				const char* win = NULL, int (*eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData) = NULL, void* eveFuncData = NULL)
 			{
-				return getWindow(win)->butts->add(_name, _showWords, charSize, charCol,bgc, pos, align, bg, eveFunc, eveFuncData);
+				return getWindow(win)->butts.add(_name, new button(getWindow(win), _name, _showWords, charSize, charCol, bgc, pos, align, bg),
+					eveFunc, eveFuncData);
 			}
 			inline bool delButt(const char* _name, const char* win = NULL)
 			{
 				return getWindow(win)->delButt(_name);
+			}
+			inline bool addRect(const char* name, rect* re, int (*eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData) = NULL, void* eveFuncSelfData = NULL, void* eveFuncData = NULL, const char* win = NULL)
+			{
+				return getWindow(win)->rects.add(name, re, eveFunc, eveFuncSelfData, eveFuncData);
+			}
+			inline bool delRect(const char* _name, const char* win = NULL)
+			{
+				return getWindow(win)->rects.del(_name);
 			}
 			inline bool checkTitle(bool rendclear = true, bool copyTex = true, const char* win = NULL)
 			{
@@ -366,7 +453,7 @@ namespace ba
 			int Quit(int code, ...);
 			friend int QUI_Quit(void* pui_, int code, ...);
 		};
-	}
+}
 }
 
 

@@ -13,8 +13,8 @@ void ba::test::_ui::initSDL2(void)
 	ba::ui::colorText* ct = new ba::ui::colorText(ui.activeWin, "test");
 	ui.addOtherTex("ctt", NULL, &ui.activeWin->re);
 	ui.activeWin->title = new ba::ui::label(ui.activeWin, "test", 15);
-	ui.activeWin->butts->add("exit", "><", 15, {0,0,0, 255 }, {},
-		{30, 0,0,0}, "tr", (SDL_Surface*)1);
+	ui.addButt("exit", "><", 15,
+		{0,0,0,0}, {0,0,0, 255 }, {}, "tr", (SDL_Surface*)1);
 	ui.activeWin->exitButtName = "exit";
 
 	char* pc = mstrdup("w");
@@ -45,8 +45,8 @@ void ba::test::_ui::paint(void)
 	ba::ui::QUI ui = ba::ui::QUI("paint", 1000, 800, 0, {0, 64, 122, 255});
 
 	ui.activeWin->title = new ba::ui::label(ui.activeWin, "paint", 15);
-	ui.activeWin->butts->add("exit", "><", 15, { 0,0,0, 255 }, {},
-		{ 30, 0,0,0 }, "tr");
+	ui.addButt("exit", "><", 15,
+		{ 30, 0,0,0 }, { 0,0,0, 255 }, {}, "tr");
 	ui.activeWin->exitButtName = "exit";
 
 	ba::ui::rect brush = ba::ui::rect({ 0, 0, 2, 2 }, {});
@@ -69,11 +69,11 @@ void ba::test::_ui::fileExplore(void)
 	char* titleStr = ba::StrAdd(pba->STmem, name, "D:\\", NULL);
 	ba::ui::QUI ui = ba::ui::QUI(titleStr, 1000, 800, 0, {0, 64, 122, 255});
 
-	ui.activeWin->butts->add("exit", "><", 15, { 0,0,0, 255 }, { 0, 200, 100, 255 },
-		{ 30, 0,0,0 }, "tr");
+	ui.addButt("exit", "><", 15,
+		{ 0,0,0,0 }, { 0,0,0, 255 }, { 0, 200, 100, 255 }, "tr");
 	ui.activeWin->exitButtName = "exit";
-	ui.activeWin->butts->add("return", "return", 15, { 0,0,0, 255 }, {0, 200, 100, 255},
-		{ 0, 20,0,0 }, "tl");
+	ui.addButt("return", "return", 15,
+		{ 0,15,0,0 }, { 0,0,0, 255 }, {0, 200, 100, 255}, "tl");
 
 	char* root = mstrdup("D:\\*", pba->STmem);
 	ui.activeWin->title = new ba::ui::label(ui.activeWin, titleStr, 15);
@@ -95,13 +95,14 @@ void ba::test::_ui::fileExplore(void)
 	list2 = reGenList(list2);
 	list->data.synListViewData.emplace_back(&(list2->data));
 	list2->data.synListViewData.emplace_back(&(list->data));
-	ui.addOtherTex("list", list->getTex(), &list->re);
-	ui.addOtherTex("list2", list2->getTex(), &list2->re);
+	ui.addRect("list", list, ba::ui::_listView_check, list);
+	ui.addRect("list2", list2, ba::ui::_listView_check, list2);
 
 	for (; !ui.pollQuit(); )
 	{
 		if (list->data.clickIdx != -1)
 		{
+			PPT();
 			nowPath = paths[list->data.clickIdx];
 			root = ba::StrAdd(pba->STmem, labels[list->data.clickIdx]->text.c_str(), "\\*", NULL);
 			paths = ba::glob(root);
@@ -110,9 +111,9 @@ void ba::test::_ui::fileExplore(void)
 			list->data.synListViewData.emplace_back(&(list2->data));
 			list2->data.synListViewData.emplace_back(&(list->data));
 		}
-		if (ui.activeWin->butts->events["return"] == 2)
+		if (ui.activeWin->butts.events["return"] == 2)
 		{
-			ui.activeWin->butts->events["return"] = 0;
+			ui.activeWin->butts.events["return"] = 0;
 			nowPath = nowPath.parent_path();
 			if(nowPath == nowPath.parent_path())// is "D::\\"
 				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
@@ -123,8 +124,6 @@ void ba::test::_ui::fileExplore(void)
 			list->data.synListViewData.emplace_back(&(list2->data));
 			list2->data.synListViewData.emplace_back(&(list->data));
 		}
-		ui.updateOtherTex("list", list->getTex());
-		ui.updateOtherTex("list2", list2->getTex());
 		ui.checkEvent();
 		ui.update();
 	}

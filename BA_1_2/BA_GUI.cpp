@@ -202,7 +202,7 @@ ba::ui::colorSur::colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos,
 		r->b = 500.f / (float)(1.f + rand() % 200);
 		r->x = 1 + rand() % (re.w - 1);
 		r->y = 1 + rand() % (re.h - 1);
-		r->fx = r->fy = 1.0;
+		r->fx = r->fy = 1.f;
 		ProduceRainbowCol(r->col, &(r->b));
 		//r->col[3] = (int)(127.f * sin(0.8f * r->b)) + 0;
 		});
@@ -282,16 +282,6 @@ ba::ui::colorSur::~colorSur()
 	tex = nullptr;
 }
 
-//bool ba::ui::MyUI_ColorText_Destroy(MyUI_ColorText* pct)
-//{
-//	MyBA_Free_R(mem);
-//	SDL_FreeSurface(fontSur);
-//	SDL_FreeSurface(pSur);
-//	free(pct);
-//	return true;
-//}
-
-
 ba::ui::colorText::colorText(window* _win, const char* pc)
 	: colorSur(_win, TTF_RenderUTF8_Blended(_win->defaultFont, pc, { .r = 0 , .g = 255 , .b = 0, .a = 255 }),
 		{ 0 }, true)
@@ -360,78 +350,31 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 		tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	}
 }
-ba::ui::button::button(window* _win, const char* pc, int charSize, SDL_Color charCol,
-	SDL_Rect pos, SDL_Color bgc)
-	: label(_win, pc, charSize, charCol, pos, bgc)
+ba::ui::button::button(window* _win, const char* _name, const char* _showWords, int charSize,
+	SDL_Color charCol, SDL_Color bgc, SDL_Rect pos, const char* align, SDL_Surface* bg)
+	: label(_win, _showWords ? _showWords : _name, charSize, charCol, pos, bgc)
 {
-}
-
-ba::ui::buttons::~buttons()
-{
-	for (auto p : butts)
-		delete p.second;
-}
-bool ba::ui::buttons::add(const char* _name, const char* _showWords, int charSize,
-	SDL_Color charCol, SDL_Color bgc, SDL_Rect pos, const char* align, SDL_Surface* bg,
-	int(*_eveFunc)(void* pData, ...), void* _eveFuncData)
-{
-	char* name = mstrdup(_name, mem);
-	if (!_showWords)
-		_showWords = _name;
-	char* showWords = _strdup(_showWords);
-	if (pos.w <= 0 || pos.h <= 0)//自行根据字符串大小计算按钮大小
+	if (!strcmp(align, "tr"))//top && right
 	{
-		if (charSize == 0 || strlen(showWords) == 0)
-			return 0;
-		if (pos.w < 0)
-			pos.w = (int)strlen(showWords) * charSize;
-		if (pos.h < 0)
-			pos.h = charSize;
-		if (!strcmp(align, "tr"))//top && right
-		{
-			pos.x = win->re.w - pos.x;
-		}
-		else if (!strcmp(align, "bl"))//bottom && left
-		{
-			pos.h = win->re.h - pos.h;
-		}
-		else if (!strcmp(align, "br"))//bottom && right
-		{
-			pos.h = win->re.h - pos.h;
-			pos.x = win->re.w - pos.x;
-		}
+		re.x += win->re.w - re.w;
 	}
-	button* pb = new button(win, showWords, charSize, charCol, pos, bgc);
+	else if (!strcmp(align, "bl"))//bottom && left
+	{
+		re.y = win->re.h - re.h - re.y;
+	}
+	else if (!strcmp(align, "br"))//bottom && right
+	{
+		re.y = win->re.h - re.h - re.y;
+		re.x += win->re.w - re.w;
+	}
 	if (bg == (SDL_Surface*)(0x1))//Use colorSur
-		pb->cs = new colorSur(win, NULL, pb->re);
-
-	butts[name] = pb;
-	statue[name] = 1;
-	events[name] = false;
-	if (_eveFunc)
-	{
-		eveFunc[name] = _eveFunc;
-		eveFuncData[name] = _eveFuncData;
-	}
-	return true;
+		this->cs = new colorSur(win, NULL, re);
 }
-bool ba::ui::buttons::del(const char* _name)
-{
-	if(butts.contains(_name))
-	{
-		button* pbutt = butts[_name];
-		events.erase(_name);
-		statue.erase(_name);
-		butts.erase(_name);
-		if (eveFunc.contains(_name))
-		{
-			eveFunc.erase(_name);
-			eveFuncData.erase(_name);
-		}
-		delete pbutt;
-		return true;
-	}
-	return false;
+SDL_Texture* ba::ui::button::getTex()
+{//TODO : 优化cs的渲染逻辑（混合Surface可能有点消耗性能）
+	if (cs)
+		SDL_RenderCopy(win->rend, cs->getTex(), NULL, &re);
+	return tex;
 }
 
 int ba::ui::_windowState_checkAll(void* _s)
@@ -467,7 +410,8 @@ int ba::ui::_windowState_checkAll(void* _s)
 		{//鼠标滚轮 1027// will change eveTmp->motion.x to be same as eveTmp->wheel.y !!!
 			wheelTimestamp = eveTmp->wheel.timestamp;// TODO : 针对滚轮特别设置的时间戳校验能否去除或扩大化
 			// 顺滑&加速滚轮操作，插帧
-			s->_mutexSafeWrapper([&]() {s->wheelY.insert(s->wheelY.end(), 3, std::pair(eveTmp->wheel.y, wheelTimestamp)); });
+			s->_mutexSafeWrapper([&]() {s->wheelY.insert(s->wheelY.end(), 3, std::pair(eveTmp->wheel.y, wheelTimestamp));
+				s->mouseEveCode = 4; });
 		}
 		else if (eveTmp->type == SDL_DROPFILE)
 		{//检测拖拽文件
@@ -613,7 +557,6 @@ ba::ui::window::~window()
 {
 	if (title)
 		delete title;
-	delete butts;
 	TTF_CloseFont(defaultFont);
 	SDL_DestroyRenderer(rend);
 	SDL_DestroyWindow(pwin);
@@ -662,23 +605,8 @@ bool ba::ui::window::checkEvent()
 	{
 		if (title && winState->getMouseEveCode(&(title->re)) == 1 && winState->checkMouseIn(&(title->re)))
 			return this->checkTitle();
-		for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
-		{
-			if (butts->statue[p->first])
-			{
-				butts->events[p->first] = winState->getMouseEveCode(&(p->second->re));
-				if (butts->events[p->first] != 0)
-				{
-					if (butts->events[p->first] == 2 && butts->eveFunc.find(p->first) != butts->eveFunc.end())
-					{
-						eveFunc = butts->eveFunc[p->first];
-						eveFunc(butts->eveFuncData[p->first]);
-						butts->events[p->first] = 0;
-					}
-					winState->_mutexSafeWrapper([&]() {winState->mouseEveCode = 0; });
-				}
-			}
-		}
+		butts.check();
+		rects.check();
 	}
 	// check registered func
 	for (_ULL i = 0; i<checkEventFunc.size(); i++)
@@ -698,20 +626,8 @@ bool ba::ui::window::update(bool rendclear, bool copyTex, bool limitFPS)
 	for (auto p = otherTex.begin(); p != otherTex.end(); p++)
 		SDL_RenderCopy(rend, p->second->first,
 			NULL, p->second->second);
-	button* pb = NULL;
-	for (auto p = butts->butts.begin(); p != butts->butts.end(); p++)
-	{
-		if (butts->statue[p->first])
-		{
-			pb = butts->butts[p->first];
-			if (pb->cs)
-			{
-				pb->cs->getTex();
-				SDL_RenderCopy(rend, pb->cs->tex, NULL, &(pb->re));
-			}
-			SDL_RenderCopy(rend, pb->tex, NULL, &(pb->re));
-		}
-	}
+	butts.update();
+	rects.update();
 	if (title && title->tex)
 		SDL_RenderCopy(rend, title->tex, NULL, &(title->re));
 	SDL_RenderPresent(rend);
@@ -721,16 +637,16 @@ bool ba::ui::window::pollQuit()
 {
 	// TODO : 一般会checkEvent两遍，不划算。。。
 	//this->checkEvent();
-	if ((exitButtName) && butts->events[exitButtName] == 2)
+	if ((exitButtName) && butts.events[exitButtName] == 2)
 	{
-		butts->events[exitButtName] = 0;
+		butts.events[exitButtName] = 0;
 		return 1;
 	}
 	return winState->getVar(false, [=]() {return winState->isQuit; });
 }
 bool ba::ui::window::delButt(const char* _name)
 {
-	return butts->del(_name);
+	return butts.del(_name);
 }
 
 // TODO : why should put this func before ba::ui::QUI::QUI
