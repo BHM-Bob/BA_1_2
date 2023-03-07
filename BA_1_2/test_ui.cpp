@@ -91,10 +91,12 @@ void ba::test::_ui::fileExplore(void)
 		return list; };
 	ba::ui::listView* list = new ba::ui::listView(ui.activeWin, { 0, 40, 800, 600 }, { 94, 59, 63, 255 });
 	ba::ui::listView* list2 = new ba::ui::listView(ui.activeWin, { 900, 40, 100, 600 }, { 0, 59, 63, 255 });
-	list = reGenList(list);
-	list2 = reGenList(list2);
-	list->data.synListViewData.emplace_back(&(list2->data));
-	list2->data.synListViewData.emplace_back(&(list->data));
+	auto reGenListA = [&]() {
+		list = reGenList(list);
+		list2 = reGenList(list2);
+		list->data.synListViewData.emplace_back(&(list2->data));
+		list2->data.synListViewData.emplace_back(&(list->data));};
+	reGenListA();
 	ui.addRect("list", list, ba::ui::_listView_check, list);
 	ui.addRect("list2", list2, ba::ui::_listView_check, list2);
 
@@ -102,14 +104,10 @@ void ba::test::_ui::fileExplore(void)
 	{
 		if (list->data.clickIdx != -1)
 		{
-			PPT();
 			nowPath = paths[list->data.clickIdx];
 			root = ba::StrAdd(pba->STmem, labels[list->data.clickIdx]->text.c_str(), "\\*", NULL);
 			paths = ba::glob(root);
-			list = reGenList(list);
-			list2 = reGenList(list2);
-			list->data.synListViewData.emplace_back(&(list2->data));
-			list2->data.synListViewData.emplace_back(&(list->data));
+			reGenListA();
 		}
 		if (ui.activeWin->butts.events["return"] == 2)
 		{
@@ -119,10 +117,7 @@ void ba::test::_ui::fileExplore(void)
 				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
 			else
 				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
-			list = reGenList(list);
-			list2 = reGenList(list2);
-			list->data.synListViewData.emplace_back(&(list2->data));
-			list2->data.synListViewData.emplace_back(&(list->data));
+			reGenListA();
 		}
 		ui.checkEvent();
 		ui.update();

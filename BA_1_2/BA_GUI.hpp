@@ -154,7 +154,8 @@ namespace ba
 			SDL_Texture* getTex();
 		};
 
-		// baseItemTy is a ptr
+		// baseItemTy is a ptr based on ba::ui::rect
+		// eveFunc return a int which will be set as mouseEveCode
 		template<typename baseItemTy>
 		class namedItems : public rect
 		{
@@ -221,6 +222,7 @@ namespace ba
 		template<typename baseItemTy>
 		inline void namedItems<baseItemTy>::check(void)
 		{
+			int mouseEveCode = 0;
 			for (auto p = items.begin(); p != items.end(); p++)
 			{
 				if (statue[p->first])
@@ -228,11 +230,13 @@ namespace ba
 					events[p->first] = win->winState->getMouseEveCode(&(p->second->re));
 					if (events[p->first] != 0)
 					{
-						//if (events[p->first] == 2 && eveFunc.find(p->first) != eveFunc.end()) {}
 						if(eveFunc[p->first])
-							eveFunc[p->first](win, eveFuncSelfData[p->first], events[p->first], eveFuncData[p->first]);
+						{
+							mouseEveCode = eveFunc[p->first](win, eveFuncSelfData[p->first], events[p->first], eveFuncData[p->first]);
+							events[p->first] = 0;
+						}
 						//events[p->first] = 0;
-						win->winState->_mutexSafeWrapper([&]() {win->winState->mouseEveCode = 0; });
+						win->winState->_mutexSafeWrapper([&]() {win->winState->mouseEveCode = mouseEveCode; });
 					}
 				}
 			}

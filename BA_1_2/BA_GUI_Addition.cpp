@@ -98,9 +98,10 @@ _LL ba::ui::_listView_Data_ApplyDy(_LL dy, listView_Data* pData)
 
 int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _pData)
 {
+	int retMouseEveCode = 0;
 	ba::ui::listView* self = (ba::ui::listView*)_self;
 	// scroll
-	_LL dy = _win->winState->getVar((_LL)0, [=]() {
+	_LL dy = _win->winState->getVar((_LL)0, [&]() {
 		Sint32 dy = 0;
 		if ( !_win->winState->wheelY.empty())
 		{
@@ -108,6 +109,10 @@ int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _
 				dy = _win->winState->wheelY.front().first;
 			_win->winState->wheelY.pop_front();
 		}
+		if (!_win->winState->wheelY.empty())
+			retMouseEveCode = 4;
+		else
+			retMouseEveCode = 0;
 		return dy*(_win->winState->wheelY.size()+1)*4; });//放大
 	_listView_Data_ApplyDy(dy, &(self->data));
 	for (listView_Data* pD : self->data.synListViewData)
@@ -119,5 +124,5 @@ int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _
 		_win->winState->getMousePos(NULL, &y);
 		self->data.clickIdx = self->data.pixel2idx[y - self->data.re.y + self->data.visPixelRange[0]];
 	}
-	return 0;
+	return retMouseEveCode;
 }
