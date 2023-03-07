@@ -175,6 +175,7 @@ namespace ba
 				int (*_eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData) = NULL, void* _self = NULL, void* _eveFuncData = NULL);
 			bool del(const char* _name);
 			void check(void);
+			int getMouseEveCode(const char* _name);
 			void update(void);
 			bool update(const char* _name, baseItemTy newItem, bool delOldOne = false);
 		};
@@ -225,6 +226,7 @@ namespace ba
 			int mouseEveCode = 0;
 			for (auto p = items.begin(); p != items.end(); p++)
 			{
+				mouseEveCode = 0;
 				if (statue[p->first])
 				{
 					events[p->first] = win->winState->getMouseEveCode(&(p->second->re));
@@ -235,11 +237,21 @@ namespace ba
 							mouseEveCode = eveFunc[p->first](win, eveFuncSelfData[p->first], events[p->first], eveFuncData[p->first]);
 							events[p->first] = 0;
 						}
-						//events[p->first] = 0;
 						win->winState->_mutexSafeWrapper([&]() {win->winState->mouseEveCode = mouseEveCode; });
 					}
 				}
 			}
+		}
+		template<typename baseItemTy>
+		inline int namedItems<baseItemTy>::getMouseEveCode(const char* _name)
+		{
+			int ret = 0;
+			if (statue.find(_name) != statue.end() && statue[_name])
+			{
+				ret = events[_name];
+				events[_name] = 0;
+			}
+			return ret;
 		}
 		template<typename baseItemTy>
 		inline void namedItems<baseItemTy>::update(void)
