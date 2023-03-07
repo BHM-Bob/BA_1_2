@@ -279,7 +279,7 @@ namespace ba
 		{
 		public:
 			//protect
-			SDL_mutex* _locker = SDL_CreateMutex();
+			SDL_mutex* _locker = nullptr;
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
 			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, Sint32 dx, Sint32 dy, int code);
 			//private
@@ -295,7 +295,8 @@ namespace ba
 			Uint32 timestamp = 0;//timestamp of the event
 			std::deque<std::pair<SDL_Keycode, clock_t>> keys;// 键盘事件缓存队列，每个事件附带时间戳
 			//public
-			windowState() { };
+			windowState() {};
+			windowState(SDL_mutex* locker) { _locker = locker; };
 
 			inline void pollEvent(void)
 			{
@@ -341,11 +342,6 @@ namespace ba
 				return ret;
 			}
 		};
-		/*windowState的线程，单独在windowState所属的windowState初始化时，合适的时候launch
-		* mouse : 0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel
-		* keyboard : 直接返回std::pair<SDL_Keycode, clock_t>
-		*/
-		int _windowState_checkAll(void* _s);
 
 		/*
 		* 以单独的事件监听线程监听并更新
@@ -398,81 +394,23 @@ namespace ba
 			bool pollQuit();
 			bool delButt(const char* _name);
 		};
-		class QUIEventThread : public BA_Base
+		class QUIEventThread : public windowState
 		{
 		public:
-			//protect
-			QUI* ui = nullptr;// to reach each window
-			SDL_mutex* _locker = SDL_CreateMutex();
-			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
-			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, Sint32 dx, Sint32 dy, int code);
-			//private
-			bool isErr = 0;
-			Sint32 winW = 0, winH = 0;
-			bool isQuit = false;
-			char* dropFilePath = nullptr;
-			char* dropText = nullptr;
-			Sint32 mousePos[2] = { 0 };// 按下鼠标时光标位置			
-			Sint32 mouseEndPos[2] = { 0 };// 事件进行时实时光标位置
-			Sint32 dMouseMove[2] = { 0 };// 鼠标位移
-			int mouseEveCode = 0;// 鼠标事件代码：0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel
-			std::list < std::pair<Sint32, Uint32>> wheelY;//鼠标滚轮（滑动值，时间戳）
-			Uint32 timestamp = 0;//timestamp of the event
-			std::deque<std::pair<SDL_Keycode, clock_t>> keys;// 键盘事件缓存队列，每个事件附带时间戳
-			//public
-			QUIEventThread();
-
-			inline void pollEvent(void)
-			{
-				_mutexSafeWrapper([&]() {SDL_PollEvent(_eve); });
-			}
-			// if tmp is not nullptr, free will be called in-func
-			inline SDL_Event* getUpdatedEveCopy(SDL_Event* tmp = NULL)
-			{// TODO : 如果有要处理的事件，则返回1，否则返回0。
-				if (tmp)
-					free(tmp);
-				tmp = MCALLOC(1, SDL_Event);
-				if (tmp)
-					*tmp = *(getVar(tmp, [&]() {SDL_PollEvent(_eve); return _eve; }));
-				return tmp;
-			}
-			inline bool checkMouseIn(SDL_Rect* re)
-			{
-				return getVar(false, [&]() {
-					return checkDotInRect(mouseEndPos[0], mouseEndPos[1], re) && checkDotInRect(mousePos[0], mousePos[1], re); });
-			}
-			inline int getMouseEveCode(SDL_Rect* re)
-			{
-				if (this->checkMouseIn(re))
-					return getVar(0, [&]() {return mouseEveCode; });
-				return 0;
-			}
-			void getMousePos(Sint32* x = NULL, Sint32* y = NULL, Sint32* orix = NULL, Sint32* oriy = NULL, Sint32* dx = NULL, Sint32* dy = NULL);
-			std::pair<SDL_Keycode, Uint32> getKeyboardEve(void);
-
-			template<typename funcTy>
-			inline void _mutexSafeWrapper(funcTy func)
-			{
-				SDL_LockMutex(_locker);
-				func();
-				SDL_UnlockMutex(_locker);
-			}
-			template<typename funcTy, typename retTy>
-			inline retTy getVar(retTy typeExampleValue, funcTy func)
-			{
-				SDL_LockMutex(_locker);
-				retTy ret = func();
-				SDL_UnlockMutex(_locker);
-				return ret;
-			}
+			QUIEventThread(SDL_mutex* locker = SDL_CreateMutex()) { _locker = locker; };
 		};
+		/*QUIEventThread的线程
+		* mouse : 0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel
+		* keyboard : 直接返回std::pair<SDL_Keycode, clock_t>
+		*/
+		int _QUIEvent_checkAll(void* _s);
 		// TODO : 一个QUI拥有多个窗口，但构造QUI时在一个子线程中SDL_Init以及轮询事件，主线程可创建并管理多个窗口
 		class QUI : public BA_Base
 		{
 		public:
 			int sysSumRAM = SDL_GetSystemRAM();
 			int sysSumCPU = SDL_GetCPUCount();
-			QUIEventThread eveThread;
+			QUIEventThread* eveThread;
 			window* activeWin = NULL;
 			std::unordered_map<std::string, window*> windows;
 

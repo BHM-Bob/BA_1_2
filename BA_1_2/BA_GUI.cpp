@@ -377,8 +377,15 @@ SDL_Texture* ba::ui::button::getTex()
 	return tex;
 }
 
-int ba::ui::_windowState_checkAll(void* _s)
+int ba::ui::_QUIEvent_checkAll(void* _s)
 {
+	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
+	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
+	{
+		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
+		return -1;
+	}
+
 	ba::ui::windowState* s = (ba::ui::windowState*)_s;
 	SDL_Event* eveTmp = NULL;
 	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0, winW = 0, winH = 0;
@@ -547,7 +554,7 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	winState = new windowState();
 	winState->winW = re.w;
 	winState->winH = re.h;
-	SDL_CreateThread(ba::ui::_windowState_checkAll, "events server", (void*)winState);
+	winState->_locker = ui->eveThread->_locker;
 	
 	SDL_RenderCopy(rend, tex, NULL, NULL);
 	SDL_RenderPresent(rend);
@@ -660,20 +667,13 @@ int ba::ui::QUI_Quit(void* pui_, int code, ...)
 }
 ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color bgc)
 {
-	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
-	eveThread = QUIEventThread();
-	if (eveThread.isErr)
-	{
-		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
-	}
-	else
-	{
-		window* win = new window(this, titlepc, winw, winh, winflags, bgc);
-		windows[titlepc] = win;
-		activeWin = win;
+	eveThread = new QUIEventThread();
+	SDL_CreateThread(ba::ui::_QUIEvent_checkAll, "events server", (void*)eveThread);
+	window* win = new window(this, titlepc, winw, winh, winflags, bgc);
+	windows[titlepc] = win;
+	activeWin = win;
 
-		MyBA_AtQuit(QUI_Quit, (void*)this);
-	}
+	MyBA_AtQuit(QUI_Quit, (void*)this);
 }
 ba::ui::QUI& ba::ui::QUI::addWindow(const char* titlepc, int winw, int winh, int winflags, SDL_Color bgc)
 {
@@ -718,12 +718,6 @@ int ba::ui::QUI::Quit(int code, ...)
 	return 0;
 }
 
-ba::ui::QUIEventThread::QUIEventThread()
+ba::ui::QUIEventThread::QUIEventThread(SDL_mutex* locker)
 {
-	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
-	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
-	{
-		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
-		isErr = true;
-	}
 }
