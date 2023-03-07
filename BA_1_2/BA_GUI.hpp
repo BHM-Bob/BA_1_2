@@ -342,7 +342,7 @@ namespace ba
 			}
 		};
 		/*windowState的线程，单独在windowState所属的windowState初始化时，合适的时候launch
-		* mouse : 1:drag	 2:LEFT		 3:RIGHT
+		* mouse : 0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel
 		* keyboard : 直接返回std::pair<SDL_Keycode, clock_t>
 		*/
 		int _windowState_checkAll(void* _s);
@@ -398,7 +398,7 @@ namespace ba
 			bool pollQuit();
 			bool delButt(const char* _name);
 		};
-
+		// TODO : 一个QUI拥有多个窗口，但构造QUI时在一个子线程中SDL_Init以及轮询事件，主线程可创建并管理多个窗口
 		class QUI : public BA_Base
 		{
 		public:

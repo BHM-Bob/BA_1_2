@@ -663,7 +663,7 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
 	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
 	{
-		MyBA_Err("MyUI_Init: Can't Init SDL2", 1);
+		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
 	}
 	else
 	{
