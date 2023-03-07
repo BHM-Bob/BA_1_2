@@ -661,7 +661,8 @@ int ba::ui::QUI_Quit(void* pui_, int code, ...)
 ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Color bgc)
 {
 	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
-	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
+	eveThread = QUIEventThread();
+	if (eveThread.isErr)
 	{
 		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
 	}
@@ -715,4 +716,14 @@ int ba::ui::QUI::Quit(int code, ...)
 	//MyBA_Free_R(mem);
 	List_SetVar(pba->exitFunc, (void*)QUI_Quit, (void*)0x1);
 	return 0;
+}
+
+ba::ui::QUIEventThread::QUIEventThread()
+{
+	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
+	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
+	{
+		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
+		isErr = true;
+	}
 }
