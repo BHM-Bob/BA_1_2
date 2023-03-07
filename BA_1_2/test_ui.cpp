@@ -109,14 +109,13 @@ void ba::test::_ui::fileExplore(void)
 			paths = ba::glob(root);
 			reGenListA();
 		}
-		if (ui.activeWin->butts.events["return"] == 2)
+		if (ui.activeWin->butts.getMouseEveCode("return") == 2)
 		{
-			ui.activeWin->butts.events["return"] = 0;
 			nowPath = nowPath.parent_path();
 			if(nowPath == nowPath.parent_path())// is "D::\\"
 				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
 			else
-				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "*", NULL));
+				paths = ba::glob(ba::StrAdd(pba->STmem, nowPath.string().c_str(), "\\*", NULL));
 			reGenListA();
 		}
 		ui.checkEvent();

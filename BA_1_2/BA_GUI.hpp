@@ -161,7 +161,7 @@ namespace ba
 		{
 		public:
 			window* win = NULL;
-			std::map<std::string, int> events;//1 left ; 2 right
+			std::map<std::string, int> events;// 鼠标事件代码：0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel
 			std::map<std::string, int> statue;//占用 0不存在   1存在且显示   2存在不显示
 			std::map<std::string, baseItemTy> items;//列表
 			std::map<std::string, int (*)(window* _win, void* _self, int mouseEveCode, void* pData)> eveFunc;// int (*)(void* pData);
@@ -175,6 +175,7 @@ namespace ba
 				int (*_eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData) = NULL, void* _self = NULL, void* _eveFuncData = NULL);
 			bool del(const char* _name);
 			void check(void);
+			// will reset events to 0 if it has a event
 			int getMouseEveCode(const char* _name);
 			void update(void);
 			bool update(const char* _name, baseItemTy newItem, bool delOldOne = false);

@@ -12,7 +12,7 @@ namespace ba
 {
 	namespace ui
 	{
-		//底层级的window
+		//低层级的window
 		class layout : public virtual rect
 		{//虚基类，与子类共享一个基类rect对象。
 		public:
