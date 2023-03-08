@@ -57,7 +57,7 @@ void ba::ui::listView::clear(void)
 }
 SDL_Texture* ba::ui::listView::getTex(void)
 {
-	if (!data.refreshTex)
+	if (!data.refreshTex || data.pixel2idx.size()==0)
 		return tex;
 	data.refreshTex = false;
 	if (tex)
@@ -108,6 +108,7 @@ int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _
 			if(SDL_GetTicks() - _win->winState->wheelY.front().second < 300)
 				dy = _win->winState->wheelY.front().first;
 			_win->winState->wheelY.pop_front();
+			PPX(dy);
 		}
 		if (!_win->winState->wheelY.empty())
 			retMouseEveCode = 4;
@@ -124,7 +125,6 @@ int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _
 		_win->winState->getMousePos(NULL, &y);
 		ry = y - self->data.re.y + self->data.visPixelRange[0];
 		self->data.clickIdx = ry > self->data.pixel2idx.size() ? -1 : self->data.pixel2idx[ry];
-		PPX(self->data.clickIdx);
 	}
 	return retMouseEveCode;
 }

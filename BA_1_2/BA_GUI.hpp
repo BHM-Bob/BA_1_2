@@ -233,12 +233,10 @@ namespace ba
 					events[p->first] = win->winState->getMouseEveCode(&(p->second->re));
 					if (events[p->first] != 0)
 					{
-						if(eveFunc[p->first])
-						{
+						if(eveFunc[p->first])//如果槽函数执行过程中发生了事件更新，那么事件代码不再接受槽函数返回值的赋值
 							mouseEveCode = eveFunc[p->first](win, eveFuncSelfData[p->first], events[p->first], eveFuncData[p->first]);
-							events[p->first] = 0;
-						}
-						win->winState->_mutexSafeWrapper([&]() {win->winState->mouseEveCode = mouseEveCode; });
+						win->winState->_mutexSafeWrapper([&]() {
+							win->winState->mouseEveCode = win->winState->mouseEveCode == events[p->first] ? mouseEveCode : win->winState->mouseEveCode;});
 					}
 				}
 			}
@@ -417,7 +415,6 @@ namespace ba
 			std::mutex* condMutex = new std::mutex();
 			balist<winCreatePara>* winNeedSig = new balist<winCreatePara>();
 			balist<SDL_Window>* winPipline = new balist<SDL_Window>();
-			balist<bool>* winSuccSig = new balist<bool>();
 			std::unordered_map<_LL, window*> winId2Ptr;
 			QUIEventThread(SDL_mutex* locker = SDL_CreateMutex()) { _locker = locker; };
 

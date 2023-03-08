@@ -644,7 +644,7 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
 		if (eveTmp->type != SDL_MOUSEWHEEL)
-			s->_setMouseEve(eveTmp->motion.x, eveTmp->motion.y, eveTmp->motion.x, eveTmp->motion.y, 0, 0, 0);
+			s->_setMouseEve(eveTmp->motion.x, eveTmp->motion.y, eveTmp->motion.x, eveTmp->motion.y, 0, 0, INT16_MIN);
 		if (eveTmp->type == SDL_MOUSEBUTTONDOWN && eveTmp->wheel.timestamp != wheelTimestamp)
 		{//鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
 			wheelTimestamp = eveTmp->wheel.timestamp;
@@ -661,7 +661,7 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 			}
 			// 检测单击事件: 发送信号：2 for LEFT; 3 for RIGHT
 			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
-				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
+				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : INT16_MIN));
 		}
 		else if (eveTmp->type == SDL_MOUSEWHEEL && eveTmp->wheel.timestamp != wheelTimestamp)
 		{//鼠标滚轮 1027// will change eveTmp->motion.x to be same as eveTmp->wheel.y !!!
@@ -669,7 +669,7 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 			// 顺滑&加速滚轮操作，插帧
 			s->_mutexSafeWrapper([&]() {s->winId2Ptr[eveTmp->window.windowID]->winState->wheelY.insert(
 				s->winId2Ptr[eveTmp->window.windowID]->winState->wheelY.end(), 3, std::pair(eveTmp->wheel.y, wheelTimestamp));
-				s->winId2Ptr[eveTmp->window.windowID]->winState->mouseEveCode = 4; });
+				s->winId2Ptr[eveTmp->window.windowID]->winState->mouseEveCode = 4;});
 		}
 		else if (eveTmp->type == SDL_DROPFILE)
 		{//检测拖拽文件
@@ -730,6 +730,7 @@ void ba::ui::QUIEventThread::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint
 			ws->mouseEndPos[1] = emy;
 			ws->dMouseMove[0] = dx;
 			ws->dMouseMove[1] = dy;
-			ws->mouseEveCode = code;
+			if(code != INT16_MIN)
+				ws->mouseEveCode = code;
 		}});
 }
