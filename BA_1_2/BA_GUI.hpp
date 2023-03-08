@@ -281,7 +281,6 @@ namespace ba
 			//protect
 			SDL_mutex* _locker = nullptr;
 			SDL_Event* _eve = BALLOC_R(1, SDL_Event, mem);
-			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, Sint32 dx, Sint32 dy, int code);
 			//private
 			Sint32 winW = 0, winH = 0;
 			bool isQuit = false;
@@ -394,10 +393,35 @@ namespace ba
 			bool pollQuit();
 			bool delButt(const char* _name);
 		};
+		class winCreatePara
+		{
+		public:
+			const char* titlepc;
+			int winw;
+			int winh;
+			int winflags;
+			SDL_Color bgc;
+			winCreatePara(const char* _titlepc, int _winw, int _winh, int _winflags, SDL_Color _bgc)
+			{
+				titlepc = _titlepc;
+				winw = _winw;
+				winh = _winh;
+				winflags = _winflags;
+				bgc = _bgc;
+			}
+		};
 		class QUIEventThread : public windowState
 		{
 		public:
+			SDL_Window* winTmp = NULL;
+			std::mutex* condMutex = new std::mutex();
+			balist<winCreatePara>* winNeedSig = new balist<winCreatePara>();
+			balist<SDL_Window>* winPipline = new balist<SDL_Window>();
+			balist<bool>* winSuccSig = new balist<bool>();
+			std::unordered_map<_LL, window*> winId2Ptr;
 			QUIEventThread(SDL_mutex* locker = SDL_CreateMutex()) { _locker = locker; };
+
+			void _setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy, Sint32 dx, Sint32 dy, int code);
 		};
 		/*QUIEventThread的线程
 		* mouse : 0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel

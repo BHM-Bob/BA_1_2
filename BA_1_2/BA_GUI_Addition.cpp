@@ -120,9 +120,11 @@ int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _
 	// click
 	if (_win->winState->checkMouseIn(&(self->data.re)) && mouseEveCode == 2)
 	{
-		Sint32 y = 0;
+		Sint32 y = 0, ry = 0;
 		_win->winState->getMousePos(NULL, &y);
-		self->data.clickIdx = self->data.pixel2idx[y - self->data.re.y + self->data.visPixelRange[0]];
+		ry = y - self->data.re.y + self->data.visPixelRange[0];
+		self->data.clickIdx = ry > self->data.pixel2idx.size() ? -1 : self->data.pixel2idx[ry];
+		PPX(self->data.clickIdx);
 	}
 	return retMouseEveCode;
 }

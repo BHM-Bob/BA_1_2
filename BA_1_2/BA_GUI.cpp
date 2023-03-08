@@ -377,106 +377,6 @@ SDL_Texture* ba::ui::button::getTex()
 	return tex;
 }
 
-int ba::ui::_QUIEvent_checkAll(void* _s)
-{
-	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
-	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
-	{
-		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
-		return -1;
-	}
-
-	ba::ui::windowState* s = (ba::ui::windowState*)_s;
-	SDL_Event* eveTmp = NULL;
-	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0, winW = 0, winH = 0;
-	Uint32 keyTimestamp = SDL_GetTicks(), wheelTimestamp = 0;//This value wraps if the program runs for more than ~49 days.
-	for ( ; ! s->getVar(false, [=]() {return s->isQuit;}) ; SDL_Delay(20))
-	{
-		eveTmp = s->getUpdatedEveCopy(eveTmp);
-		if(eveTmp->type != SDL_MOUSEWHEEL)
-			s->_setMouseEve(eveTmp->motion.x, eveTmp->motion.y, eveTmp->motion.x, eveTmp->motion.y, 0, 0, 0);
-		if (eveTmp->type == SDL_MOUSEBUTTONDOWN && eveTmp->wheel.timestamp != wheelTimestamp)
-		{//鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
-			wheelTimestamp = eveTmp->wheel.timestamp;
-			// 检测拖动事件，一旦有鼠标按下后移动，进入循环不断检测，松开后退出循环
-			for (oriX = eveTmp->motion.x, oriY = eveTmp->motion.y; eveTmp->type != SDL_MOUSEBUTTONUP; )
-			{// loop quit: SDL_MOUSEBUTTONUP(1026)
-				eveTmp = s->getUpdatedEveCopy(eveTmp);
-				x = eveTmp->motion.x;		y = eveTmp->motion.y;
-				// 发送信号：1: 鼠标按下后移动; -1: 鼠标按下不移动
-				if (eveTmp->type == SDL_MOUSEMOTION || eveTmp->type == SDL_WINDOWEVENT)
-					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, 1);
-				else
-					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, -1);
-			}
-			// 检测单击事件: 发送信号：2 for LEFT; 3 for RIGHT
-			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
-				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
-		}
-		else if (eveTmp->type == SDL_MOUSEWHEEL && eveTmp->wheel.timestamp != wheelTimestamp)
-		{//鼠标滚轮 1027// will change eveTmp->motion.x to be same as eveTmp->wheel.y !!!
-			wheelTimestamp = eveTmp->wheel.timestamp;// TODO : 针对滚轮特别设置的时间戳校验能否去除或扩大化
-			// 顺滑&加速滚轮操作，插帧
-			s->_mutexSafeWrapper([&]() {s->wheelY.insert(s->wheelY.end(), 3, std::pair(eveTmp->wheel.y, wheelTimestamp));
-				s->mouseEveCode = 4; });
-		}
-		else if (eveTmp->type == SDL_DROPFILE)
-		{//检测拖拽文件
-			s->_mutexSafeWrapper([&]() {s->dropFilePath = mstrdup(eveTmp->drop.file, s->mem); });
-			SDL_free(eveTmp->drop.file);
-		}
-		else if (eveTmp->type == SDL_DROPTEXT)
-		{//检测拖拽文本
-			s->_mutexSafeWrapper([&]() {s->dropText = mstrdup(eveTmp->drop.file, s->mem); });
-			SDL_free(eveTmp->drop.file);
-		}
-		else if (eveTmp->key.state > 11 && eveTmp->key.timestamp - keyTimestamp > 30)//最快30ms捕捉一次
-		{//普通键盘事件,ASCII字母。11是因为鼠标在窗口外时state为11。TODO : SDL_KEYDOWN无效，是SDL_TEXTINPUT，但是也有问题
-			keyTimestamp = eveTmp->key.timestamp;
-			s->_mutexSafeWrapper([&]() {s->keys.emplace_back(std::pair<SDL_Keycode, Uint32>(eveTmp->key.state, keyTimestamp)); });
-		}
-		else if (eveTmp->key.keysym.sym == SDLK_ESCAPE || eveTmp->type == SDL_QUIT)
-		{//"退出"事件
-			s->_mutexSafeWrapper([&]() {s->isQuit = true; });
-		}
-		else if (eveTmp->type == SDL_FINGERDOWN)
-		{//触屏按压事件
-			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
-			winW = s->getVar(winW, [&]() {return s->winW; });
-			winH = s->getVar(winH, [&]() {return s->winH; });
-			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
-			for (oriX = (Sint32)(s->winW * eveTmp->tfinger.x), oriY = (Sint32)(s->winH * eveTmp->tfinger.y);
-				eveTmp->type != SDL_FINGERUP; )
-			{
-				eveTmp = s->getUpdatedEveCopy(eveTmp);
-				x = (Sint32)(s->winW * eveTmp->tfinger.x);
-				y = (Sint32)(s->winH * eveTmp->tfinger.y);
-				// 发送信号：1: 鼠标按下后移动; -1: 鼠标按下不移动
-				if (eveTmp->type == SDL_FINGERMOTION || eveTmp->type == SDL_WINDOWEVENT)
-					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, 1);
-				else
-					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, -1);
-			}
-			s->_setMouseEve(x, y, x, y, 0, 0, 2);
-		}
-	}
-	if (eveTmp)
-		free(eveTmp);
-	return 0;
-}
-
-void ba::ui::windowState::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
-	Sint32 dx, Sint32 dy, int code)
-{
-	_mutexSafeWrapper([&]() {
-		mousePos[0] = mx;
-		mousePos[1] = my;
-		mouseEndPos[0] = emx;
-		mouseEndPos[1] = emy;
-		dMouseMove[0] = dx;
-		dMouseMove[1] = dy;
-		mouseEveCode = code; });
-}
 void ba::ui::windowState::getMousePos(Sint32* x, Sint32* y, Sint32* orix, Sint32* oriy, Sint32* dx, Sint32* dy)
 {
 #define _ba_ui_windowState_getMousePos_assign_(p, v) if(p){*p=v;}
@@ -508,13 +408,12 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	win = this;
 	titlepc = mstrdup(_titlepc, mem);
 	FPS = 25.f;
-
 	if (winflags == 0)
 		winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE;
 	else if (winflags == 1)
 		winflags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-	pwin = SDL_CreateWindow(titlepc, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		re.w, re.h, winflags);
+	ui->eveThread->winNeedSig->ThrPut(new winCreatePara(titlepc, winw, winh, winflags, bgc), ui->eveThread->condMutex);
+	pwin = ui->eveThread->winPipline->ThrGet(ui->eveThread->condMutex);
 	SDL_GetWindowPosition(pwin, winPos, winPos+1);
 	rend = SDL_CreateRenderer(pwin, -1, SDL_RENDERER_ACCELERATED);
 	SDL_RenderClear(rend);
@@ -669,9 +568,7 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 {
 	eveThread = new QUIEventThread();
 	SDL_CreateThread(ba::ui::_QUIEvent_checkAll, "events server", (void*)eveThread);
-	window* win = new window(this, titlepc, winw, winh, winflags, bgc);
-	windows[titlepc] = win;
-	activeWin = win;
+	this->addWindow(titlepc, winw, winh, winflags, bgc);
 
 	MyBA_AtQuit(QUI_Quit, (void*)this);
 }
@@ -679,6 +576,9 @@ ba::ui::QUI& ba::ui::QUI::addWindow(const char* titlepc, int winw, int winh, int
 {
 	window* win = new window(this, titlepc, winw, winh, winflags, bgc);
 	windows[titlepc] = win;
+	if(! activeWin)
+		activeWin = win;
+	eveThread->_mutexSafeWrapper([&]() {eveThread->winId2Ptr[SDL_GetWindowID(win->pwin)] = win; });
 	return *this;
 }
 bool ba::ui::QUI::delWindow(const char* titlepc)
@@ -714,10 +614,122 @@ int ba::ui::QUI::Quit(int code, ...)
 	}
 	TTF_Quit();
 	//MyBA_Free_R(mem);
-	List_SetVar(pba->exitFunc, (void*)QUI_Quit, (void*)0x1);
+	List_SetVar(pba->exitFunc, (void*)QUI_Quit, BA_FREED_PTR);
 	return 0;
 }
 
-ba::ui::QUIEventThread::QUIEventThread(SDL_mutex* locker)
+int ba::ui::_QUIEvent_checkAll(void* _s)
 {
+	ba::ui::QUIEventThread* s = (ba::ui::QUIEventThread*)_s;
+	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
+	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
+	{
+		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
+		return -1;
+	}
+	winCreatePara* wcp = nullptr;
+	SDL_Event* eveTmp = NULL;
+	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0, winW = 0, winH = 0;
+	Uint32 keyTimestamp = SDL_GetTicks(), wheelTimestamp = 0;//This value wraps if the program runs for more than ~49 days.
+	for (; !s->getVar(false, [=]() {return s->isQuit; }); SDL_Delay(20))
+	{
+		if (s->winNeedSig->ThrSize(s->condMutex) > 0)
+		{
+			wcp = s->winNeedSig->ThrGet(s->condMutex);
+			s->winPipline->ThrPut(SDL_CreateWindow(wcp->titlepc, SDL_WINDOWPOS_CENTERED,
+				SDL_WINDOWPOS_CENTERED, wcp->winw, wcp->winh, wcp->winflags), s->condMutex);
+		}
+		if (s->getVar(0, [=]() {return s->winId2Ptr.size(); }) == 0)
+			continue;
+
+		eveTmp = s->getUpdatedEveCopy(eveTmp);
+		if (eveTmp->type != SDL_MOUSEWHEEL)
+			s->_setMouseEve(eveTmp->motion.x, eveTmp->motion.y, eveTmp->motion.x, eveTmp->motion.y, 0, 0, 0);
+		if (eveTmp->type == SDL_MOUSEBUTTONDOWN && eveTmp->wheel.timestamp != wheelTimestamp)
+		{//鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
+			wheelTimestamp = eveTmp->wheel.timestamp;
+			// 检测拖动事件，一旦有鼠标按下后移动，进入循环不断检测，松开后退出循环
+			for (oriX = eveTmp->motion.x, oriY = eveTmp->motion.y; eveTmp->type != SDL_MOUSEBUTTONUP; )
+			{// loop quit: SDL_MOUSEBUTTONUP(1026)
+				eveTmp = s->getUpdatedEveCopy(eveTmp);
+				x = eveTmp->motion.x;		y = eveTmp->motion.y;
+				// 发送信号：1: 鼠标按下后移动; -1: 鼠标按下不移动
+				if (eveTmp->type == SDL_MOUSEMOTION || eveTmp->type == SDL_WINDOWEVENT)
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, 1);
+				else
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, -1);
+			}
+			// 检测单击事件: 发送信号：2 for LEFT; 3 for RIGHT
+			s->_setMouseEve(oriX, oriY, x, y, 0, 0,
+				eveTmp->button.button == SDL_BUTTON_LEFT ? 2 : (eveTmp->button.button == SDL_BUTTON_RIGHT ? 3 : 0));
+		}
+		else if (eveTmp->type == SDL_MOUSEWHEEL && eveTmp->wheel.timestamp != wheelTimestamp)
+		{//鼠标滚轮 1027// will change eveTmp->motion.x to be same as eveTmp->wheel.y !!!
+			wheelTimestamp = eveTmp->wheel.timestamp;// TODO : 针对滚轮特别设置的时间戳校验能否去除或扩大化
+			// 顺滑&加速滚轮操作，插帧
+			s->_mutexSafeWrapper([&]() {s->winId2Ptr[eveTmp->window.windowID]->winState->wheelY.insert(
+				s->winId2Ptr[eveTmp->window.windowID]->winState->wheelY.end(), 3, std::pair(eveTmp->wheel.y, wheelTimestamp));
+				s->winId2Ptr[eveTmp->window.windowID]->winState->mouseEveCode = 4; });
+		}
+		else if (eveTmp->type == SDL_DROPFILE)
+		{//检测拖拽文件
+			s->_mutexSafeWrapper([&]() {s->winId2Ptr[eveTmp->window.windowID]->winState->dropFilePath = mstrdup(
+				eveTmp->drop.file, s->winId2Ptr[eveTmp->window.windowID]->winState->mem); });
+			SDL_free(eveTmp->drop.file);
+		}
+		else if (eveTmp->type == SDL_DROPTEXT)
+		{//检测拖拽文本
+			s->_mutexSafeWrapper([&]() {s->winId2Ptr[eveTmp->window.windowID]->winState->dropText = mstrdup(
+				eveTmp->drop.file, s->winId2Ptr[eveTmp->window.windowID]->winState->mem); });
+			SDL_free(eveTmp->drop.file);
+		}
+		else if (eveTmp->key.state > 11 && eveTmp->key.timestamp - keyTimestamp > 30)//最快30ms捕捉一次
+		{//普通键盘事件,ASCII字母。11是因为鼠标在窗口外时state为11。TODO : SDL_KEYDOWN无效，是SDL_TEXTINPUT，但是也有问题
+			keyTimestamp = eveTmp->key.timestamp;
+			s->_mutexSafeWrapper([&]() {s->winId2Ptr[eveTmp->window.windowID]->winState->keys.emplace_back(std::pair<SDL_Keycode, Uint32>(eveTmp->key.state, keyTimestamp)); });
+		}
+		else if (eveTmp->key.keysym.sym == SDLK_ESCAPE || eveTmp->type == SDL_QUIT)
+		{//"退出"事件
+			s->_mutexSafeWrapper([&]() {s->winId2Ptr[eveTmp->window.windowID]->winState->isQuit = true; });
+		}
+		else if (eveTmp->type == SDL_FINGERDOWN)
+		{//触屏按压事件
+			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
+			winW = s->getVar(winW, [&]() {return s->winW; });
+			winH = s->getVar(winH, [&]() {return s->winH; });
+			// 检测拖动事件，一旦有按下后移动，进入循环不断检测，松开后退出循环
+			for (oriX = (Sint32)(s->winW * eveTmp->tfinger.x), oriY = (Sint32)(s->winH * eveTmp->tfinger.y);
+				eveTmp->type != SDL_FINGERUP; )
+			{
+				eveTmp = s->getUpdatedEveCopy(eveTmp);
+				x = (Sint32)(s->winW * eveTmp->tfinger.x);
+				y = (Sint32)(s->winH * eveTmp->tfinger.y);
+				// 发送信号：1: 鼠标按下后移动; -1: 鼠标按下不移动
+				if (eveTmp->type == SDL_FINGERMOTION || eveTmp->type == SDL_WINDOWEVENT)
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, 1);
+				else
+					s->_setMouseEve(oriX, oriY, x, y, eveTmp->motion.xrel, eveTmp->motion.yrel, -1);
+			}
+			s->_setMouseEve(x, y, x, y, 0, 0, 2);
+		}
+	}
+	if (eveTmp)
+		free(eveTmp);
+	return 0;
+}
+void ba::ui::QUIEventThread::_setMouseEve(Sint32 mx, Sint32 my, Sint32 emx, Sint32 emy,
+	Sint32 dx, Sint32 dy, int code)
+{
+	_mutexSafeWrapper([&]() {
+		if (winId2Ptr.find(_eve->window.windowID) != winId2Ptr.end())
+		{
+			windowState* ws = winId2Ptr[_eve->window.windowID]->winState;
+			ws->mousePos[0] = mx;
+			ws->mousePos[1] = my;
+			ws->mouseEndPos[0] = emx;
+			ws->mouseEndPos[1] = emy;
+			ws->dMouseMove[0] = dx;
+			ws->dMouseMove[1] = dy;
+			ws->mouseEveCode = code;
+		}});
 }
