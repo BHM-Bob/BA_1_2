@@ -108,7 +108,6 @@ int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _
 			if(SDL_GetTicks() - _win->winState->wheelY.front().second < 300)
 				dy = _win->winState->wheelY.front().first;
 			_win->winState->wheelY.pop_front();
-			PPX(dy);
 		}
 		if (!_win->winState->wheelY.empty())
 			retMouseEveCode = 4;
