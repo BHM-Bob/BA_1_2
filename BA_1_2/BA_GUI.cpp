@@ -427,12 +427,6 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 		SDL_VERSION(&(info.version));
 		if (SDL_GetWindowWMInfo(pwin, &(info)))
 		{
-			hwnd = info.info.win.window;
-			/*设置窗口colorkey*/
-			SetWindowLongW(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-			SetLayeredWindowAttributes(hwnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
-			/*设置窗口为悬浮窗 */
-			SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 			sur = SDL_GetWindowSurface(pwin);
 			UINT32 keyColor = SDL_MapRGB(sur->format, 255, 255, 255);
 			SDL_SetSurfaceBlendMode(sur, SDL_BLENDMODE_NONE);
@@ -628,6 +622,9 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 		return -1;
 	}
 	winCreatePara* wcp = nullptr;
+	SDL_SysWMinfo info = SDL_SysWMinfo();
+	HWND hwnd = HWND();
+	SDL_Window* winTmp = NULL;
 	SDL_Event* eveTmp = NULL;
 	Sint32 x = -1, y = -1, oriX = -1, oriY = -1, wx = 0, wy = 0, winW = 0, winH = 0;
 	Uint32 keyTimestamp = SDL_GetTicks(), wheelTimestamp = 0;//This value wraps if the program runs for more than ~49 days.
@@ -636,8 +633,17 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 		if (s->winNeedSig->ThrSize(s->condMutex) > 0)
 		{
 			wcp = s->winNeedSig->ThrGet(s->condMutex);
-			s->winPipline->ThrPut(SDL_CreateWindow(wcp->titlepc, SDL_WINDOWPOS_CENTERED,
-				SDL_WINDOWPOS_CENTERED, wcp->winw, wcp->winh, wcp->winflags), s->condMutex);
+			winTmp = SDL_CreateWindow(wcp->titlepc, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, wcp->winw, wcp->winh, wcp->winflags);
+			if (wcp->bgc.r == 0 && wcp->bgc.g == 0 && wcp->bgc.b == 0 && wcp->bgc.a == 0 && SDL_GetWindowWMInfo(winTmp, &(info)))
+			{
+				hwnd = info.info.win.window;
+				/*设置窗口colorkey*/
+				SetWindowLongW(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+				SetLayeredWindowAttributes(hwnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
+				/*设置窗口为悬浮窗 */
+				SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+			}
+			s->winPipline->ThrPut(winTmp, s->condMutex);
 		}
 		if (s->getVar(0, [=]() {return s->winId2Ptr.size(); }) == 0)
 			continue;
