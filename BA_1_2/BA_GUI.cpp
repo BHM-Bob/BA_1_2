@@ -514,8 +514,8 @@ bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 		winState->getMousePos(&x, &y, &oriX, &oriY);
 		if (x != 0 && y != 0)
 		{
-			SDL_SetWindowPosition(pwin, winPos[0] + x - oriX, winPos[1] + y - oriY);
 			winPos[0] += (x - oriX);		winPos[1] += (y - oriY);
+			SDL_SetWindowPosition(pwin, winPos[0], winPos[1]);
 		}
 	}
 	return true;
