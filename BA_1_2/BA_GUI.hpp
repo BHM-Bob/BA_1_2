@@ -102,7 +102,7 @@ namespace ba
 			void rendRect(void);
 			bool checkMouseIn(Sint32 x, Sint32 y);
 			virtual SDL_Texture* getTex();
-			~rect();
+			virtual ~rect();
 		};
 		class colorSur : public rect
 		{
@@ -135,9 +135,12 @@ namespace ba
 		{
 		public:
 			std::string text;
+			SDL_Color cc;
+			SDL_Color bgc;
 			// TODO : can not rend a white font ???
 			label(window* _win, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
 				SDL_Rect pos = {  }, SDL_Color bgc = { });
+			bool blendText();
 		};
 		// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
 		// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur

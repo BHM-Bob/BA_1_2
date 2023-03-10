@@ -321,8 +321,10 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 	SDL_Rect pos, SDL_Color bgc)
 	: rect(pos, bgc)
 {
-	win = _win;
-	text = pc;
+	this->win = _win;
+	this->text = pc;
+	this->cc = charCol;
+	this->bgc = bgc;
 	if (pos.w <= 0 || pos.h <= 0)//自行根据字符串大小计算label大小
 	{
 		if (pos.w <= 0)
@@ -334,12 +336,16 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 			MyBA_Err("ba::ui::label::label: pos.w <= 0 || pos.h <= 0 and charSize == 0 || str.size() == 0, create a NULL rect", 1);
 		}
 	}
-
-	SDL_Surface* surText = TTF_RenderUTF8_Blended(win->defaultFont, text.c_str(), charCol);
+	blendText();
+}
+bool ba::ui::label::blendText()
+{
+	SDL_Surface* surText = TTF_RenderUTF8_Blended(win->defaultFont, this->text.c_str(), this->cc);
 	if (surText == NULL)
 	{
 		MyBA_Errs(1, "ba::ui::label::label: Can't blended Surface with text:",
 			text.c_str(), ", skip", NULL);
+		return false;
 	}
 	else
 	{
@@ -349,6 +355,7 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 		SDL_FreeSurface(surText);
 		tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	}
+	return true;
 }
 ba::ui::button::button(window* _win, const char* _name, const char* _showWords, int charSize,
 	SDL_Color charCol, SDL_Color bgc, SDL_Rect pos, const char* align, SDL_Surface* bg)
@@ -369,6 +376,16 @@ ba::ui::button::button(window* _win, const char* _name, const char* _showWords, 
 	}
 	if (bg == (SDL_Surface*)(0x1))//Use colorSur
 		this->cs = new colorSur(win, NULL, re);
+}
+bool ba::ui::button::changeButtShowWords(const char* _showWords, int charSize, SDL_Color* cc, SDL_Color* bgc, const char* fontName)
+{
+	if (cc)
+		this->cc = *cc;
+	if (bgc)
+		this->bgc = *bgc;
+	if (_showWords)
+		this->text = _showWords;
+	return blendText();
 }
 SDL_Texture* ba::ui::button::getTex()
 {//TODO : 优化cs的渲染逻辑（混合Surface可能有点消耗性能）
@@ -481,7 +498,7 @@ ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex, 
 bool ba::ui::window::checkTitle(bool rendclear, bool copyTex)
 {
 	// TODO : 速度不能太快：不能捕捉到窗口外的鼠标
-	if (title && winState->getMouseEveCode(&(title->re)) == 1 && winState->checkMouseIn(&(title->re)))
+	if (title && winState->getMouseEveCode(&(title->re)))
 	{
 		Sint32 x = 0, y = 0, oriX = 0, oriY = 0;
 		winState->getMousePos(&x, &y, &oriX, &oriY);
@@ -503,7 +520,7 @@ bool ba::ui::window::checkEvent()
 	void* eveFuncData = NULL;
 	if (winState->getMouseEveCode(&(this->re)) != 0)
 	{
-		if (title && winState->getMouseEveCode(&(title->re)) == 1 && winState->checkMouseIn(&(title->re)))
+		if (title && winState->getMouseEveCode(&(title->re)) == 1)
 			return this->checkTitle();
 		butts.check();
 		rects.check();
