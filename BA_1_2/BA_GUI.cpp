@@ -339,7 +339,7 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 	}
 	rendText();
 }
-bool ba::ui::label::rendText()
+bool ba::ui::label::rendText(bool getTex)
 {
 	SDL_Surface* surText = TTF_RenderUTF8_Blended(win->defaultFont, this->text.c_str(), this->cc);
 	if (surText == NULL)
@@ -354,7 +354,8 @@ bool ba::ui::label::rendText()
 		SDL_FillRect(sur, NULL, SDL_MapRGBA(sur->format, bgc.r, bgc.g, bgc.b, bgc.a));
 		SDL_BlitScaled(surText, NULL, sur, NULL);
 		SDL_FreeSurface(surText);
-		tex = SDL_CreateTextureFromSurface(win->rend, sur);
+		if(getTex)
+			tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	}
 	return true;
 }

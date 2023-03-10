@@ -58,6 +58,7 @@ namespace ba
 			SDL_Color ec = { .a = 255 };//edge color
 			std::string allText;
 			int visCharRange[2] = { 0 };
+			SDL_Rect realTextRe = { 0 };
 
 			inputBox(window* _win, SDL_Rect pos,
 				int charSize, int edgeWidth = 1,

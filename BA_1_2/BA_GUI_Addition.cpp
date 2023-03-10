@@ -135,7 +135,9 @@ ba::ui::inputBox::inputBox(window* _win, SDL_Rect pos, int charSize, int edgeWid
 	this->re = pos;
 	if (pos.h == 0)
 		this->re.h = charSize + 2 * edgeWidth;
+	realTextRe = { 0, 0, charSize * (visCharRange[1] - visCharRange[0]), re.h };
 	this->col = bgc;
+	this->bgc = bgc;
 	this->cc = cc;
 	this->ec = ec;
 	this->charSize = charSize;
@@ -144,10 +146,23 @@ ba::ui::inputBox::inputBox(window* _win, SDL_Rect pos, int charSize, int edgeWid
 }
 void ba::ui::inputBox::addChar(SDL_Keycode key)
 {
-	allText += (char)key;
-	visCharRange[1] ++;
-	if (charSize * (visCharRange[1] - visCharRange[0]) > re.w)
-		visCharRange[0] ++;
+	if (key == 8 && allText.size() >= 0)
+	{
+		if (allText.size() == 0)
+			return;
+		allText.pop_back();
+		if (visCharRange[0] > 0)//窗口已移动，直接窗口向前移动
+			visCharRange[0] --;
+		visCharRange[1] --;
+	}
+	else
+	{
+		allText += (char)key;
+		visCharRange[1] ++;
+		if (charSize * (visCharRange[1] - visCharRange[0]) > re.w)
+			visCharRange[0] ++;
+	}
+	realTextRe.w = charSize * (visCharRange[1] - visCharRange[0]);
 	text = allText.substr(visCharRange[0], visCharRange[1]);
 	if(sur)
 	{
@@ -159,7 +174,14 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 		SDL_DestroyTexture(tex);
 		tex = NULL;
 	}
-	rendText();
+	if(text.size() > 0)
+		rendText(false);
+	SDL_Surface* surTmp = SDL_CreateRGBASurface(re.w, re.h);
+	SDL_FillRect(surTmp, NULL, SDL_MapRGBA(surTmp->format, bgc.r, bgc.g, bgc.b, bgc.a));
+	if(sur)
+		SDL_BlitScaled(sur, NULL, surTmp, &realTextRe);
+	tex = SDL_CreateTextureFromSurface(win->rend, surTmp);
+	SDL_FreeSurface(surTmp);
 }
 SDL_Texture* ba::ui::inputBox::getTex(void)
 {

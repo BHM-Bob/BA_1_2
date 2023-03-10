@@ -137,13 +137,13 @@ namespace ba
 		public:
 			TTF_Font* pfont = NULL;
 			std::string text;
-			SDL_Color cc = { .a = 255 };;//char color
-			SDL_Color bgc = { 255 };
+			SDL_Color cc = { .a = 255 };//char color
+			SDL_Color bgc = {0};
 			label() {};
 			// TODO : can not rend a white font ???
 			label(window* _win, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
 				SDL_Rect pos = {  }, SDL_Color bgc = { }, TTF_Font* font = NULL);
-			bool rendText();
+			bool rendText(bool getTex = true);
 		};
 		// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
 		// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
