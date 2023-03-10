@@ -30,7 +30,6 @@ namespace ba
 			_LL clickIdx = -1;
 			_LL sumHeight = 0;
 			bool refreshTex = true;// enable first draw
-			SDL_Rect re;//listView.re
 			std::deque<_LL> eachHeight;
 			std::deque<_LL> pixel2idx;
 			std::deque< listView*> synListView;
