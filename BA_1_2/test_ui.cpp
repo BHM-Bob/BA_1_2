@@ -97,18 +97,18 @@ void ba::test::_ui::fileExplore(void)
 	auto reGenListA = [&]() {
 		list = reGenList(list);
 		list2 = reGenList(list2);
-		list->data.synListViewData.emplace_back(&(list2->data));
-		list2->data.synListViewData.emplace_back(&(list->data));};
+		list->synListView.emplace_back(list2);
+		list2->synListView.emplace_back(list);};
 	reGenListA();
 	ui.addRect("list", list, ba::ui::_listView_check, list);
 	ui.addRect("list2", list2, ba::ui::_listView_check, list2);
 
 	for (; !ui.pollQuit(); )
 	{
-		if (list->data.clickIdx != -1)
+		if (list->clickIdx != -1)
 		{
-			nowPath = paths[list->data.clickIdx];
-			root = ba::StrAdd(pba->STmem, labels[list->data.clickIdx]->text.c_str(), "\\*", NULL);
+			nowPath = paths[list->clickIdx];
+			root = ba::StrAdd(pba->STmem, labels[list->clickIdx]->text.c_str(), "\\*", NULL);
 			paths = ba::glob(root);
 			reGenListA();
 		}

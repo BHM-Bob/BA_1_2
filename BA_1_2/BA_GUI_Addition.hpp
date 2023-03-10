@@ -20,7 +20,10 @@ namespace ba
 			std::deque< int> events;
 			std::deque< int> statue;//0不存在   1存在且显示   2存在不显示
 		};
-		class listView_Data
+		// 列表视图，baseItemTy为ba::ui::rect子类的指针
+		// item需要new来申请，并在listView析构时于其析构函数调用baseItemTy的析构函数
+		// 一次性生成，支持不同高度，元素的re.y被修改为在列表总视图中的y
+		class listView : public layout
 		{
 		public:
 			_LL visPixelRange[2] = { 0 };//相对于所有列表元素拼起来
@@ -30,17 +33,7 @@ namespace ba
 			SDL_Rect re;//listView.re
 			std::deque<_LL> eachHeight;
 			std::deque<_LL> pixel2idx;
-			std::deque< listView_Data*> synListViewData;
-
-		};
-		_LL _listView_Data_ApplyDy(_LL dy, listView_Data* pData);
-		// 列表视图，baseItemTy为ba::ui::rect子类的指针
-		// item需要new来申请，并在listView析构时于其析构函数调用baseItemTy的析构函数
-		// 一次性生成，支持不同高度，元素的re.y被修改为在列表总视图中的y
-		class listView : public layout
-		{
-		public:
-			listView_Data data;
+			std::deque< listView*> synListView;
 
 			listView(window* _win, SDL_Rect pos, SDL_Color bgc,
 				std::deque< rect*> _items = std::deque< rect*>());
@@ -55,6 +48,7 @@ namespace ba
 			void clear(void);
 			SDL_Texture* getTex(void);
 		};
+		_LL _listView_Data_ApplyDy(_LL dy, listView* list);
 		int _listView_check(window* _win, void* _self, int mouseEveCode, void* _pData);
 	}
 }
