@@ -127,3 +127,58 @@ int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _
 	}
 	return retMouseEveCode;
 }
+
+ba::ui::inputBox::inputBox(window* _win, SDL_Rect pos, int charSize, int edgeWidth, SDL_Color ec, SDL_Color cc, SDL_Color bgc, const char* pc, TTF_Font* font)
+{
+	this->win = _win;
+	this->pfont = font ? font : win->defaultFont;
+	this->re = pos;
+	if (pos.h == 0)
+		this->re.h = charSize + 2 * edgeWidth;
+	this->col = bgc;
+	this->cc = cc;
+	this->ec = ec;
+	this->charSize = charSize;
+	this->edgeWidth = edgeWidth;
+	rendRect();
+}
+void ba::ui::inputBox::addChar(SDL_Keycode key)
+{
+	allText += (char)key;
+	visCharRange[1] ++;
+	if (charSize * (visCharRange[1] - visCharRange[0]) > re.w)
+		visCharRange[0] ++;
+	text = allText.substr(visCharRange[0], visCharRange[1]);
+	if(sur)
+	{
+		SDL_FreeSurface(sur);
+		sur = NULL;
+	}
+	if (tex)
+	{
+		SDL_DestroyTexture(tex);
+		tex = NULL;
+	}
+	rendText();
+}
+SDL_Texture* ba::ui::inputBox::getTex(void)
+{
+	return tex;
+}
+int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _pData)
+{
+	inputBox* self = (inputBox*)_self;
+	if (self->win->winState->getMouseEveCode(&(self->win->re)) != 0 && self->win->winState->getMouseEveCode(&(self->re)) == 0)
+		self->keepEveAlive = false;//窗口内有点击事件并且不再本输入框内
+	else
+		self->keepEveAlive = true;
+	if (self->win->winState->isQuit)
+		self->keepEveAlive = false;//按下ESC
+	if (self->keepEveAlive)
+	{
+		std::pair<SDL_Keycode, clock_t> key = self->win->winState->getKeyboardEve();
+		if (key.second && SDL_GetTicks() - key.second < 100)
+			self->addChar(key.first);
+	}
+	return 0;
+}

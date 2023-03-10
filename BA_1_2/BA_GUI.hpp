@@ -70,6 +70,7 @@ namespace ba
 		class rect : public BA_Base
 		{
 		public:
+			bool keepEveAlive = false;//即使没有激活条件也依然保持信号活性，由自身_X_check激灭活
 			SDL_Rect re = { 0 };
 			SDL_Color col = { 0 };
 			SDL_Surface* sur = nullptr;
@@ -134,13 +135,15 @@ namespace ba
 		class label : public rect
 		{
 		public:
+			TTF_Font* pfont = NULL;
 			std::string text;
-			SDL_Color cc;
-			SDL_Color bgc;
+			SDL_Color cc = { .a = 255 };;//char color
+			SDL_Color bgc = { 255 };
+			label() {};
 			// TODO : can not rend a white font ???
 			label(window* _win, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
-				SDL_Rect pos = {  }, SDL_Color bgc = { });
-			bool blendText();
+				SDL_Rect pos = {  }, SDL_Color bgc = { }, TTF_Font* font = NULL);
+			bool rendText();
 		};
 		// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
 		// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur
@@ -234,7 +237,7 @@ namespace ba
 				if (statue[p->first])
 				{
 					events[p->first] = win->winState->getMouseEveCode(&(p->second->re));
-					if (events[p->first] != 0)
+					if (events[p->first] != 0 || p->second->keepEveAlive)
 					{
 						if(eveFunc[p->first])//如果槽函数执行过程中发生了事件更新，那么事件代码不再接受槽函数返回值的赋值
 							mouseEveCode = eveFunc[p->first](win, eveFuncSelfData[p->first], events[p->first], eveFuncData[p->first]);
@@ -370,8 +373,10 @@ namespace ba
 
 			namedItems<button*> butts = namedItems<button*>(this);
 			namedItems<rect*> rects = namedItems<rect*>(this);
-			// will be abandoned
+			// light and fast
 			std::unordered_map<std::string, std::pair<SDL_Texture*, SDL_Rect*>*> otherTex;
+			// light and fast
+			std::deque<std::pair<SDL_Texture*, SDL_Rect*>*> otherTex2;
 			std::deque<int (*)(window* _win, void* pData)> checkEventFunc;
 			std::deque<void*> checkEventFuncData;
 
@@ -381,6 +386,7 @@ namespace ba
 			~window();
 
 			QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re);
+			QUI& addOtherTex2(SDL_Texture* tex, SDL_Rect* re);
 			//colorSur::getTex has SDL_DestroyTexture builtin
 			QUI& updateOtherTex(std::string name, SDL_Texture* tex, bool destroyOld = false);
 			bool checkTitle(bool rendclear = true, bool copyTex = true);
@@ -456,6 +462,10 @@ namespace ba
 			inline QUI& addOtherTex(std::string name, SDL_Texture* tex, SDL_Rect* re, const char* win = NULL)
 			{
 				return getWindow(win)->addOtherTex(name, tex, re);
+			}
+			inline QUI& addOtherTex2(SDL_Texture* tex, SDL_Rect* re, const char* win = NULL)
+			{
+				return getWindow(win)->addOtherTex2(tex, re);
 			}
 			inline QUI& updateOtherTex(std::string name, SDL_Texture* tex, const char* win = NULL)
 			{

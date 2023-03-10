@@ -48,6 +48,8 @@ void ba::test::_ui::paint(void)
 	ui.addButt("exit", "><", 15,
 		{ 0, 0,0,0 }, { 0,0,0, 255 }, {}, "tr");
 	ui.activeWin->exitButtName = "exit";
+	ba::ui::inputBox* inputBox = new ba::ui::inputBox(ui.activeWin, { 200, 0, 200, 15 }, 15, 1);
+	ui.addRect("input", inputBox, ba::ui::_inputBox_check, inputBox);
 
 	ba::ui::rect brush = ba::ui::rect({ 0, 0, 2, 2 }, {});
 	brush.win = ui.activeWin;
@@ -57,11 +59,11 @@ void ba::test::_ui::paint(void)
 		if(ui.activeWin->winState->getMouseEveCode(&(ui.activeWin->re)) ==1)
 		{
 			ui.activeWin->winState->getMousePos(&(brush.re.x), &(brush.re.y));
-			SDL_RenderCopy(ui.activeWin->rend, brush.tex, NULL, &(brush.re));
+			ui.addOtherTex2(brush.tex, new SDL_Rect(brush.re.x, brush.re.y, brush.re.w, brush.re.h));
 		}
 
 		ui.checkEvent();
-		ui.update(0, 0, 0, 0);
+		ui.update(0, 1, 1, 0);
 	}
 	ui.delWindow("paint");
 }

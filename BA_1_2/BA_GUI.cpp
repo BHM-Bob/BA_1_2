@@ -318,13 +318,14 @@ ba::ui::colorText::colorText(window* _win, const char* pc)
 }
 
 ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charCol,
-	SDL_Rect pos, SDL_Color bgc)
+	SDL_Rect pos, SDL_Color bgc, TTF_Font* font)
 	: rect(pos, bgc)
 {
 	this->win = _win;
 	this->text = pc;
 	this->cc = charCol;
 	this->bgc = bgc;
+	pfont = font ? font : win->defaultFont;
 	if (pos.w <= 0 || pos.h <= 0)//自行根据字符串大小计算label大小
 	{
 		if (pos.w <= 0)
@@ -336,9 +337,9 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 			MyBA_Err("ba::ui::label::label: pos.w <= 0 || pos.h <= 0 and charSize == 0 || str.size() == 0, create a NULL rect", 1);
 		}
 	}
-	blendText();
+	rendText();
 }
-bool ba::ui::label::blendText()
+bool ba::ui::label::rendText()
 {
 	SDL_Surface* surText = TTF_RenderUTF8_Blended(win->defaultFont, this->text.c_str(), this->cc);
 	if (surText == NULL)
@@ -387,7 +388,7 @@ bool ba::ui::button::changeButtShowWords(const char* _showWords, int charSize, S
 		this->text = _showWords;
 	SDL_FreeSurface(sur);
 	SDL_DestroyTexture(tex);
-	return blendText();
+	return rendText();
 }
 SDL_Texture* ba::ui::button::getTex()
 {//TODO : 优化cs的渲染逻辑（混合Surface可能有点消耗性能）
@@ -490,6 +491,12 @@ ba::ui::QUI& ba::ui::window::addOtherTex(std::string name, SDL_Texture* tex, SDL
 	otherTex[name] = p;
 	return *ui;
 }
+ba::ui::QUI& ba::ui::window::addOtherTex2(SDL_Texture* tex, SDL_Rect* re)
+{
+	std::pair<SDL_Texture*, SDL_Rect*>* p = new std::pair<SDL_Texture*, SDL_Rect*>(tex, re);
+	otherTex2.emplace_back(p);
+	return *ui;
+}
 ba::ui::QUI& ba::ui::window::updateOtherTex(std::string name, SDL_Texture* tex, bool destroyOld)
 {
 	if (destroyOld)
@@ -525,8 +532,8 @@ bool ba::ui::window::checkEvent()
 		if (title && winState->getMouseEveCode(&(title->re)) == 1)
 			return this->checkTitle();
 		butts.check();
-		rects.check();
 	}
+	rects.check();
 	// check registered func
 	for (_ULL i = 0; i<checkEventFunc.size(); i++)
 		checkEventFunc[i](this, checkEventFuncData[i]);
@@ -543,8 +550,9 @@ bool ba::ui::window::update(bool rendclear, bool copyTex, bool limitFPS)
 	if (copyTex)
 		SDL_RenderCopy(rend, tex, NULL, NULL);
 	for (auto p = otherTex.begin(); p != otherTex.end(); p++)
-		SDL_RenderCopy(rend, p->second->first,
-			NULL, p->second->second);
+		SDL_RenderCopy(rend, p->second->first, NULL, p->second->second);
+	for (auto p  : otherTex2)
+		SDL_RenderCopy(rend, p->first, NULL, p->second);
 	butts.update();
 	rects.update();
 	if (title && title->tex)
@@ -706,10 +714,11 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 				eveTmp->drop.file, s->winId2Ptr[eveTmp->window.windowID]->winState->mem); });
 			SDL_free(eveTmp->drop.file);
 		}
-		else if (eveTmp->key.state > 11 && eveTmp->key.timestamp - keyTimestamp > 30)//最快30ms捕捉一次
-		{//普通键盘事件,ASCII字母。11是因为鼠标在窗口外时state为11。TODO : SDL_KEYDOWN无效，是SDL_TEXTINPUT，但是也有问题
+		else if (eveTmp->type == SDL_KEYDOWN && eveTmp->key.timestamp - keyTimestamp > 30)//最快30ms捕捉一次
+		{//普通键盘事件,ASCII字母。TODO : SDL更新至2.26.4后SDL_KEYDOWN有效（考虑SDL_TEXTINPUT）
 			keyTimestamp = eveTmp->key.timestamp;
-			s->_mutexSafeWrapper([&]() {s->winId2Ptr[eveTmp->window.windowID]->winState->keys.emplace_back(std::pair<SDL_Keycode, Uint32>(eveTmp->key.state, keyTimestamp)); });
+			s->_mutexSafeWrapper([&]() {s->winId2Ptr[eveTmp->window.windowID]->winState->keys.emplace_back(\
+				std::pair<SDL_Keycode, Uint32>(eveTmp->key.keysym.sym, keyTimestamp)); });
 		}
 		else if (eveTmp->key.keysym.sym == SDLK_ESCAPE || eveTmp->type == SDL_QUIT)
 		{//"退出"事件

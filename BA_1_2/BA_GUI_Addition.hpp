@@ -49,6 +49,24 @@ namespace ba
 		};
 		_LL _listView_Data_ApplyDy(_LL dy, listView* list);
 		int _listView_check(window* _win, void* _self, int mouseEveCode, void* _pData);
+
+		class inputBox : public label
+		{
+		public:
+			int edgeWidth = 1;
+			int charSize = 12;
+			SDL_Color ec = { .a = 255 };//edge color
+			std::string allText;
+			int visCharRange[2] = { 0 };
+
+			inputBox(window* _win, SDL_Rect pos,
+				int charSize, int edgeWidth = 1,
+				SDL_Color ec = { .a = 255 }, SDL_Color cc = { .a = 255 }, SDL_Color bgc = { 255 , 255 , 255 , 255 },
+				const char* pc = NULL, TTF_Font* font = NULL);
+			void addChar(SDL_Keycode key);
+			SDL_Texture* getTex(void);
+		};
+		int _inputBox_check(window* _win, void* _self, int mouseEveCode, void* _pData);
 	}
 }
 
