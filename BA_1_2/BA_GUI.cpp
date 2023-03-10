@@ -385,6 +385,8 @@ bool ba::ui::button::changeButtShowWords(const char* _showWords, int charSize, S
 		this->bgc = *bgc;
 	if (_showWords)
 		this->text = _showWords;
+	SDL_FreeSurface(sur);
+	SDL_DestroyTexture(tex);
 	return blendText();
 }
 SDL_Texture* ba::ui::button::getTex()
