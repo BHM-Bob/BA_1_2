@@ -5,9 +5,6 @@
 #include"BA_GUI.hpp"
 #include"BA_GUI_Addition.hpp"
 
-// TODO : 增加输入框、拖动条等
-
-
 ba::ui::listView::listView(window* _win, SDL_Rect pos, SDL_Color bgc,
 	std::deque< rect*> _items)
 	: rect(pos, bgc)
@@ -183,10 +180,6 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 	tex = SDL_CreateTextureFromSurface(win->rend, surTmp);
 	SDL_FreeSurface(surTmp);
 }
-SDL_Texture* ba::ui::inputBox::getTex(void)
-{
-	return tex;
-}
 int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _pData)
 {
 	inputBox* self = (inputBox*)_self;
@@ -203,4 +196,53 @@ int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _
 			self->addChar(key.first);
 	}
 	return 0;
+}
+
+int ba::ui::_dragBar_check(window* _win, void* _self, int mouseEveCode, void* _pData)
+{
+	dragBar* self = (dragBar*)_self;
+	if (_win->winState->getMouseEveCode(&(self->re)) == 1)
+	{
+		Sint32 x = 0, y = 0, oriX = 0, oriY = 0;
+		_win->winState->getMousePos(&x, &y, &oriX, &oriY);
+		if (x != 0 && y != 0)
+		{
+			if(self->handle.re.x + self->handle.re.w + x - oriX >= self->re.x + self->re.w)
+				self->handle.re.x += (self->re.x + self->re.w - self->handle.re.x - self->handle.re.w);
+			else
+				self->handle.re.x += (x - oriX);
+		}
+	}
+	return mouseEveCode;
+}
+
+ba::ui::dragBar::dragBar(window* _win, SDL_Rect pos, SDL_Rect handleShape, float per,
+	SDL_Color bgc, SDL_Color hc)
+	: rect(pos, bgc)
+{
+	this->win = _win;
+	rendRect();
+	this->per = per;
+	handleShape.x = pos.x + (int)(per*pos.w);
+	handleShape.y = pos.y;
+	handleShape.h = pos.h;
+	handle = rect(handleShape, hc);
+	handle.win = _win;
+	handle.rendRect();
+	getTex();
+}
+SDL_Texture* ba::ui::dragBar::getTex()
+{
+	if (tex)
+	{
+		SDL_DestroyTexture(tex);
+		tex = NULL;
+	}
+	SDL_Surface* surTmp = SDL_CreateRGBASurface(re.w, re.h);
+	SDL_FillRect(surTmp, NULL, SDL_MapRGBA(surTmp->format, col.r, col.g, col.b, col.a));
+	SDL_Rect reTmp = { (int)(per*re.w), handle.re.y, handle.re.w, handle.re.h };
+	SDL_BlitScaled(handle.sur, NULL, surTmp, &reTmp);
+	tex = SDL_CreateTextureFromSurface(win->rend, surTmp);
+	SDL_FreeSurface(surTmp);
+	return tex;
 }

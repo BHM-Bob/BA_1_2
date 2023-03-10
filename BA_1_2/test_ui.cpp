@@ -50,6 +50,8 @@ void ba::test::_ui::paint(void)
 	ui.activeWin->exitButtName = "exit";
 	ba::ui::inputBox* inputBox = new ba::ui::inputBox(ui.activeWin, { 200, 0, 200, 15 }, 15, 1);
 	ui.addRect("input", inputBox, ba::ui::_inputBox_check, inputBox);
+	ba::ui::dragBar* dragBar = new ba::ui::dragBar(ui.activeWin, { 500, 0, 200, 15 }, {.w = 10});
+	ui.addRect("dragBar", dragBar, ba::ui::_dragBar_check, dragBar);
 
 	ba::ui::rect brush = ba::ui::rect({ 0, 0, 2, 2 }, {});
 	brush.win = ui.activeWin;

@@ -65,9 +65,19 @@ namespace ba
 				SDL_Color ec = { .a = 255 }, SDL_Color cc = { .a = 255 }, SDL_Color bgc = { 255 , 255 , 255 , 255 },
 				const char* pc = NULL, TTF_Font* font = NULL);
 			void addChar(SDL_Keycode key);
-			SDL_Texture* getTex(void);
 		};
 		int _inputBox_check(window* _win, void* _self, int mouseEveCode, void* _pData);
+		// TODO : 多向
+		class dragBar : public rect
+		{
+		public:
+			rect handle;
+			float per = 0.f;
+			dragBar(window* _win, SDL_Rect pos, SDL_Rect handleShape, float per = 0.f,
+				SDL_Color bgc = { 255 , 255 , 255 , 255 }, SDL_Color hc = { .a = 255 });
+			SDL_Texture* getTex();
+		};
+		int _dragBar_check(window* _win, void* _self, int mouseEveCode, void* _pData);
 	}
 }
 
