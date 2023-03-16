@@ -78,7 +78,7 @@ typedef long long _LL;
 #define PPWs(p,q) printf("\nWarning : In %s\n, %s at line %lu ,<%s %s>!!!,\n",__FILE__,__func__,__LINE__,(p),(q))
 
 /*STOP_IF_SCANF*/
-#define _SIS_ {printf("\nStopping Now,Enter Anykey To Continue\nAt %s in line %lu  ",__func__,__LINE__);fflush(stdin);int c = _getch();printf("   Scanfed\n");fflush(stdin);}
+#define _SIS_ {printf("\nStopping Now,Enter Any Key To Continue\nAt %s in line %lu  ",__func__,__LINE__);fflush(stdin);int c = _getch();printf("   Scanfed\n");fflush(stdin);}
 
 #define MCALLOC(num,type) (type*)calloc((size_t)(num),sizeof(type))
 
@@ -89,6 +89,8 @@ typedef long long _LL;
 #define BALLOCS_S(type,ret,num,err_ret,err_opts) type* ret = (type*)MyBA_CALLOC_S((size_t)(num),sizeof(type));if((ret) == NULL){err_opts;return err_ret;}
 
 #define BALLOC_R(num,type,pli) (type*)MyBA_CALLOC_R((size_t)(num),sizeof(type),pli)
+
+#define _BA_ERR_(pc) MyBA_Errs(1, __FILE__, " : ", __func__, " : ", __LINE__, "\n: ", pc, NULL)
 
 #define LIST_FORG(type,p,pli) for(type* p = (type*)List_Get(pli); p; p = (type*)List_Get(pli))
 #define FORI(start, end) for(_LL i = start; i < end; i++)

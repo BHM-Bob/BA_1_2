@@ -339,8 +339,18 @@ ba::ui::label::label(window* _win, const char* pc, int charSize, SDL_Color charC
 	}
 	rendText();
 }
-bool ba::ui::label::rendText(bool getTex)
+bool ba::ui::label::rendText(bool getTex, bool freeSur, bool freeTex)
 {
+	if (sur && freeSur)
+	{
+		SDL_FreeSurface(sur);
+		sur = NULL;
+	}
+	if (tex && freeTex)
+	{
+		SDL_DestroyTexture(tex);
+		tex = NULL;
+	}
 	SDL_Surface* surText = TTF_RenderUTF8_Blended(win->defaultFont, this->text.c_str(), this->cc);
 	if (surText == NULL)
 	{
@@ -646,7 +656,7 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 	int img_f = IMG_INIT_JPG;// | IMG_INIT_PNG;
 	if ((SDL_Init(SDL_INIT_EVERYTHING) == -1) || (TTF_Init() == -1) || (IMG_Init(img_f) != (img_f)))/*|| Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG | MIX_INIT_MID)==0)*/
 	{
-		MyBA_Err("ba::ui::QUI::QUI: Can't Init SDL2", 1);
+		MyBA_Err("ba::ui::_QUIEvent_checkAll: Can't Init SDL2", 1);
 		return -1;
 	}
 	winCreatePara* wcp = nullptr;
@@ -677,6 +687,8 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 			continue;
 
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
+		if (s->getVar(0, [=]() {return s->mouseEveCode; }) == 0)
+			s->_setMouseEve(eveTmp->motion.x, eveTmp->motion.y, eveTmp->motion.x, eveTmp->motion.y, 0,0, 0);
 		if (eveTmp->type == SDL_MOUSEBUTTONDOWN && eveTmp->wheel.timestamp != wheelTimestamp)
 		{//鼠标按下后的一些事件（按下后移动/不移动，按下后松开）
 			wheelTimestamp = eveTmp->wheel.timestamp;

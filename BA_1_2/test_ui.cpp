@@ -52,6 +52,8 @@ void ba::test::_ui::paint(void)
 	ui.addRect("input", inputBox, ba::ui::_inputBox_check, inputBox);
 	ba::ui::dragBar* dragBar = new ba::ui::dragBar(ui.activeWin, { 500, 0, 200, 15 }, { .w = 10 });
 	ui.addRect("dragBar", dragBar, ba::ui::_dragBar_check, dragBar);
+	ba::ui::label* per = new ba::ui::label(ui.activeWin, " ", 20, { 0,0,0,255 }, { 700, 0, 20, 20 });
+	ui.addRect("per", per);
 
 	ba::ui::rect brush = ba::ui::rect({ 0, 0, 2, 2 }, {});
 	brush.win = ui.activeWin;
@@ -66,9 +68,8 @@ void ba::test::_ui::paint(void)
 				ui.addOtherTex2(brush.tex, new SDL_Rect(brush.re.x, brush.re.y, brush.re.w, brush.re.h));
 		}
 
-		ui.delButt("per");
 		pc = ba::Num2Str((int)(dragBar->per * 100));
-		ui.addButt("per", pc, 20, {700, 0, 20, 20}, {255, 255, 255, 255}, {0});
+		per->changeText(pc);
 		free(pc);
 
 		ui.checkEvent();

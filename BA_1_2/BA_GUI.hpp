@@ -143,7 +143,16 @@ namespace ba
 			// TODO : can not rend a white font ???
 			label(window* _win, const char* pc, int charSize, SDL_Color charCol = { 0,0,0,255 },
 				SDL_Rect pos = {  }, SDL_Color bgc = { }, TTF_Font* font = NULL);
-			bool rendText(bool getTex = true);
+			bool rendText(bool getTex = true, bool freeSur = true, bool freeTex = true);
+			inline void changeText(std::string newText, bool rend = true)
+			{
+				if (newText.size() > 0 && text != newText)
+				{
+					text = newText;
+					if (rend)
+						rendText();
+				}
+			}
 		};
 		// name, _showWords 会mstrdup, 其余实参指针直接利用，外部代码申请内存时需要使用QUI的mem
 		// bg == (SDL_Surface*)(0x1)), Use MyUI_ColorSur

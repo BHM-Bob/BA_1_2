@@ -161,16 +161,6 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 	}
 	realTextRe.w = charSize * (visCharRange[1] - visCharRange[0]);
 	text = allText.substr(visCharRange[0], visCharRange[1]);
-	if(sur)
-	{
-		SDL_FreeSurface(sur);
-		sur = NULL;
-	}
-	if (tex)
-	{
-		SDL_DestroyTexture(tex);
-		tex = NULL;
-	}
 	if(text.size() > 0)
 		rendText(false);
 	SDL_Surface* surTmp = SDL_CreateRGBASurface(re.w, re.h);
