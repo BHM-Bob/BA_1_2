@@ -62,6 +62,12 @@ void ba::test::_comprehensive::array(void)
 	a.map([=](std::vector<_LL> axis, int j) {PPX(axis); });
 }
 
+void ba::test::_comprehensive::range(void)
+{
+	for (auto i : ba::range(3, 90, 2))
+		PPX(i);
+}
+
 void ba::test::_comprehensive::jiebaThreads_SubThr(_LL id, balist<char>& getQ,
 	balist<std::pair<char*, std::vector<int>*>>& putQ, balist<float>& proc, balist<bool>& sig, void* data)
 {

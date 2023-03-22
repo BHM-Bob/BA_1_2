@@ -59,6 +59,7 @@ namespace ba
         {
             void tensor(void);
             void array(void);
+            void range(void);
 
             // or use std::tuple for more var to deliver
             void jiebaThreads_SubThr(_LL id, balist<char>& getQ,

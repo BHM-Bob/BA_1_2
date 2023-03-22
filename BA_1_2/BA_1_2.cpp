@@ -8,6 +8,16 @@
 #include"BA_Base.hpp"
 // if BA_CMD moudle is needless, put #undef BA_USE_CMD in a new line just before line of #include "BA_1_2.cpp"
 
+/*
+* C++ Goal
+* 
+* std::bind & std::function
+* std::shared_ptr
+* 原子变量
+* std::to_string
+* std::codecvt
+*/
+
 MyBA* pba;
 
 float MyBA_Ver(void)

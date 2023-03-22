@@ -17,7 +17,54 @@
 
 namespace ba
 {
-
+	template<typename IdxTy>
+	class iterator
+	{
+	private:
+		IdxTy step;
+		IdxTy end;
+		bool stateFlag;
+	public:
+		IdxTy now;
+		iterator(IdxTy _start, IdxTy _end, IdxTy _step, bool _stateFlag)
+			: now(_start), end(_end), step(_step), stateFlag(_stateFlag) {}
+		IdxTy operator*() { return now; }
+		bool operator!=(const iterator l) { return now != l.now; }
+		iterator& operator++(void)
+		{
+			now = (stateFlag == (now + step < end)) ? (now + step) : (end);
+			return *this;
+		}
+		inline friend std::ostream& operator<<(std::ostream& output, const iterator& i)
+		{
+			output << i.now;
+			return output;
+		}
+	};
+	template<typename IdxTy>
+	class range
+	{
+	private:
+		IdxTy _start;
+		IdxTy _end;
+		IdxTy _step;
+	public:
+		range(IdxTy start, IdxTy end, IdxTy step = IdxTy(1))
+			:_start(start), _end(end), _step(step)
+		{
+			if ((_start < _end && _step < 0) || (_start > _end && _step > 0))
+			{
+				_step = -_step;
+				throw std::logic_error("(_start < _end && _step < 0) || (_start > _end && _step > 0), _step = -_step");
+			}
+		}
+		range(IdxTy end)
+			:range(IdxTy(), end) {}
+		range(IdxTy start, IdxTy end)
+			:range(start, end) {}
+		const iterator<IdxTy> begin() { return { _start, _end, _step, _start < _end }; }
+		const iterator<IdxTy> end() { return { _end, _end, _step, _start < _end }; }
+	};
 
 	//shape as [n, m] mean first(top) axis is n, last(bottom) is m
 	template<typename Ty>
@@ -401,8 +448,40 @@ namespace ba
 
 		array(std::vector<_LL> _shape = { 0 });
 		array(LessPtrTy* _data, std::vector<_LL> _shape);
-		~array();
-
+		//array(const array& l)//拷贝构造
+		//{
+		//	shape = l.shape;
+		//	nowAxis = l.nowAxis;
+		//	axis = l.axis;
+		//	data = ba::allocNDArray<LessPtrTy, BaseTy>(shape, mem);
+		//	this->map([&](std::vector<_LL> axis, BaseTy& i) {});
+		//}
+		array(array&& l)//移动构造
+		{
+			if(this != &l)
+			{
+				shape = l.shape;
+				nowAxis = l.nowAxis;
+				axis = l.axis;
+				data = l.data;
+				l.data = BA_FREED_PTR;
+			}
+		}
+		array& operator=(array&& l)//移动构造
+		{
+			if (this != &l)
+			{
+				shape = l.shape;
+				nowAxis = l.nowAxis;
+				axis = l.axis;
+				data = l.data;
+				l.data = BA_FREED_PTR;
+			}
+		}
+		~array()
+		{
+			MyBA_Free_R(mem, true);
+		}
 		// func should be a lambda with tow para : std::vector<_LL> axis, BaseTy dataElement
 		// if want to change the value of data, switch to  BaseTy& dataElement
 		template<typename FuncTy>
@@ -423,10 +502,6 @@ namespace ba
 		data = _data;
 		shape = _shape;
 		axis.resize(shape.size());
-	}
-	template<typename LessPtrTy, typename BaseTy>
-	inline array<LessPtrTy, BaseTy>::~array()
-	{
 	}
 
 	template<typename Ty, typename BaseTy, typename FuncTy>
