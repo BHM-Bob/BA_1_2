@@ -389,6 +389,8 @@ ba::ui::button::button(window* _win, const char* _name, const char* _showWords, 
 	if (bg == (SDL_Surface*)(0x1))//Use colorSur
 		this->cs = new colorSur(win, NULL, re);
 }
+//目前label等其子类仅在构造时与charsize有关，故此处保留charSize参数而无实际作用
+//目前不支持更换字体，故此处保留fontName参数而无实际作用
 bool ba::ui::button::changeButtShowWords(const char* _showWords, int charSize, SDL_Color* cc, SDL_Color* bgc, const char* fontName)
 {
 	if (cc)

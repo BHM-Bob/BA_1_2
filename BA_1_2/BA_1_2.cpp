@@ -14,7 +14,6 @@
 * std::bind & std::function
 * std::shared_ptr
 * 原子变量
-* std::to_string
 * std::codecvt
 */
 
