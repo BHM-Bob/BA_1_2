@@ -9,10 +9,10 @@ int main(int argc, char** argvs)
 	//ba::test::_cmd::openlog();
 	//ba::test::_comprehensive::jiebaThreads();
 	//ba::test::_comprehensive::glob();
-	//ba::test::_ui::initSDL2();
+	ba::test::_ui::initSDL2();
 	//ba::test::_ui::paint();
 	//ba::test::_ui::fileExplore();
-	ba::test::_comprehensive::range();
+	//ba::test::_comprehensive::range();
 
 	return MyBA_Quit();
 }

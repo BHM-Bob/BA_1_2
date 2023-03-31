@@ -35,8 +35,7 @@ void ba::test::_ui::initSDL2(void)
 		ui.update();
 
 
-	}		
-	ui.addWindow("tmp");
+	}
 	ui.delWindow("win1");
 }
 

@@ -625,6 +625,7 @@ bool ba::ui::QUI::delWindow(const char* titlepc)
 		}
 		window* pwin = windows[titlepc];
 		pwin->winState->_mutexSafeWrapper([&]() {pwin->winState->isQuit = true; });
+		pwin->winState->_mutexSafeWrapper([&]() {this->eveThread->winId2Ptr.erase(SDL_GetWindowID(pwin->pwin)); });
 		delete windows[titlepc];
 		windows.erase(titlepc);
 	}
