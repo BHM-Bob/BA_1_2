@@ -20,6 +20,7 @@ namespace ba
 			std::deque< int> events;
 			std::deque< int> statue;//0不存在   1存在且显示   2存在不显示
 		};
+
 		// 列表视图，baseItemTy为ba::ui::rect子类的指针
 		// item需要new来申请，并在listView析构时于其析构函数调用baseItemTy的析构函数
 		// 一次性生成，支持不同高度，元素的re.y被修改为在列表总视图中的y
@@ -53,12 +54,14 @@ namespace ba
 		class inputBox : public label
 		{
 		public:
+			int cursorChrPos = 0;//在cursor的后面插入字符或删除处于cursor的字符
 			int edgeWidth = 1;
 			int charSize = 12;
 			SDL_Color ec = { .a = 255 };//edge color
 			std::string allText;
-			int visCharRange[2] = { 0 };
-			SDL_Rect realTextRe = { 0 };
+			int visCharRange[2] = { 0 };//字符级别
+			SDL_Rect realTextRe = { 0 };//像素级别
+			rect* cursor = nullptr;
 
 			inputBox(window* _win, SDL_Rect pos,
 				int charSize, int edgeWidth = 1,
@@ -67,6 +70,7 @@ namespace ba
 			void addChar(SDL_Keycode key);
 		};
 		int _inputBox_check(window* _win, void* _self, int mouseEveCode, void* _pData);
+		
 		// TODO : 多向
 		class dragBar : public rect
 		{

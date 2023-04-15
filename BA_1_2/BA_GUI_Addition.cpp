@@ -139,34 +139,50 @@ ba::ui::inputBox::inputBox(window* _win, SDL_Rect pos, int charSize, int edgeWid
 	this->ec = ec;
 	this->charSize = charSize;
 	this->edgeWidth = edgeWidth;
+	this->cursor = new rect(0, 0, 1, re.h, cc.r, cc.g, cc.b, cc.a);
+	this->cursor->win = win;
+	this->cursor->rendRect();
 	rendRect();
 }
 void ba::ui::inputBox::addChar(SDL_Keycode key)
 {
-	if (key == 8 && allText.size() >= 0)
+	if (key == 8 && cursorChrPos >= 0)
 	{
-		if (allText.size() == 0)
+		if (cursorChrPos == 0)
 			return;
-		allText.pop_back();
-		if (visCharRange[0] > 0)//窗口已移动，直接窗口向前移动
-			visCharRange[0] --;
-		visCharRange[1] --;
+		allText.erase(cursorChrPos -1);
+		//[.| ] pass
+		if (visCharRange[0] > 0 && cursorChrPos <= visCharRange[1])//...[..|] || ...[.|..]
+		{
+			visCharRange[0]--;
+			visCharRange[1]--;
+		}
+		else if (visCharRange[0] == 0 && cursorChrPos <= visCharRange[1])//[.|..]
+		{
+			visCharRange[1]--;
+		}
+		cursorChrPos--;
+	}
+	else if (key == -1)
+	{//无字符更新，仅根据参数刷新画面
 	}
 	else
 	{
-		allText += (char)key;
+		allText.insert(cursorChrPos, 1, (char)key);
 		visCharRange[1] ++;
+		cursorChrPos++;
 		if (charSize * (visCharRange[1] - visCharRange[0]) > re.w)
 			visCharRange[0] ++;
 	}
 	realTextRe.w = charSize * (visCharRange[1] - visCharRange[0]);
 	text = allText.substr(visCharRange[0], visCharRange[1]);
-	if(text.size() > 0)
-		rendText(false);
+	rendText(false);
 	SDL_Surface* surTmp = SDL_CreateRGBASurface(re.w, re.h);
 	SDL_FillRect(surTmp, NULL, SDL_MapRGBA(surTmp->format, bgc.r, bgc.g, bgc.b, bgc.a));
 	if(sur)
 		SDL_BlitScaled(sur, NULL, surTmp, &realTextRe);
+	cursor->re.x = charSize * (cursorChrPos - visCharRange[0]);
+	SDL_BlitScaled(cursor->sur, NULL, surTmp, &cursor->re);
 	tex = SDL_CreateTextureFromSurface(win->rend, surTmp);
 	SDL_FreeSurface(surTmp);
 }
@@ -174,7 +190,7 @@ int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _
 {
 	inputBox* self = (inputBox*)_self;
 	if (self->win->winState->getMouseEveCode(&(self->win->re)) != 0 && self->win->winState->getMouseEveCode(&(self->re)) == 0)
-		self->keepEveAlive = false;//窗口内有点击事件并且不再本输入框内
+		self->keepEveAlive = false;//窗口内有点击事件并且不在本输入框内
 	else
 		self->keepEveAlive = true;
 	if (self->win->winState->isQuit)
@@ -184,6 +200,17 @@ int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _
 		std::pair<SDL_Keycode, clock_t> key = self->win->winState->getKeyboardEve();
 		if (key.second && SDL_GetTicks() - key.second < 100)
 			self->addChar(key.first);
+		if (self->win->winState->getMouseEveCode(&(self->win->re)) == 2)
+		{// 鼠标点击改变光标位置
+			Sint32 x = 0;
+			self->win->winState->getMousePos(&x);
+			if ((x - self->re.x) / self->charSize <= self->visCharRange[1])
+			{
+				self->cursorChrPos = (x - self->re.x) / self->charSize;
+				self->cursor->re.x = self->cursorChrPos * self->charSize;
+				self->addChar(-1);//无字符更新，仅根据参数刷新画面
+			}
+		}
 	}
 	return 0;
 }

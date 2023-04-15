@@ -354,8 +354,8 @@ bool ba::ui::label::rendText(bool getTex, bool freeSur, bool freeTex)
 	SDL_Surface* surText = TTF_RenderUTF8_Blended(win->defaultFont, this->text.c_str(), this->cc);
 	if (surText == NULL)
 	{
-		MyBA_Errs(1, "ba::ui::label::label: Can't blended Surface with text:",
-			text.c_str(), ", skip", NULL);
+		//MyBA_Errs(1, "ba::ui::label::label: Can't blended Surface with text:",
+		//	text.c_str(), ", skip", NULL);
 		return false;
 	}
 	else

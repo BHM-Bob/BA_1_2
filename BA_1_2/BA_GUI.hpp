@@ -329,6 +329,7 @@ namespace ba
 				return getVar(false, [&]() {
 					return checkDotInRect(mouseEndPos[0], mouseEndPos[1], re) && checkDotInRect(mousePos[0], mousePos[1], re); });
 			}
+			// 鼠标事件代码：0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel
 			inline int getMouseEveCode(SDL_Rect* re)
 			{
 				if (this->checkMouseIn(re))
