@@ -163,6 +163,10 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 		}
 		cursorChrPos--;
 	}
+	else if (key == 13)
+	{// Enter
+		keepEveAlive = false;//按下Enter
+	}
 	else if (key == -1)
 	{//无字符更新，仅根据参数刷新画面
 	}
