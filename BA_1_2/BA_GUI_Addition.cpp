@@ -150,14 +150,14 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 	{
 		if (cursorChrPos == 0)
 			return;
-		allText.erase(cursorChrPos -1);
-		//[.| ] pass
+		allText.erase(cursorChrPos -1, 1);
+		//if [.| ] pass
 		if (visCharRange[0] > 0 && cursorChrPos <= visCharRange[1])//...[..|] || ...[.|..]
 		{
 			visCharRange[0]--;
 			visCharRange[1]--;
 		}
-		else if (visCharRange[0] == 0 && cursorChrPos <= visCharRange[1])//[.|..]
+		else if (visCharRange[0] == 0 && cursorChrPos <= visCharRange[1])//[.|..] || [.|. ]
 		{
 			visCharRange[1]--;
 		}
