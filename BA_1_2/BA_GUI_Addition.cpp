@@ -147,7 +147,7 @@ ba::ui::inputBox::inputBox(window* _win, SDL_Rect pos, int charSize, int edgeWid
 void ba::ui::inputBox::addChar(SDL_Keycode key)
 {
 	if (key == 8 && cursorChrPos >= 0)
-	{
+	{//Backspace
 		if (cursorChrPos == 0)
 			return;
 		allText.erase(cursorChrPos -1, 1);
@@ -163,15 +163,25 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 		}
 		cursorChrPos--;
 	}
+	else if (key == 127)
+	{//Delete
+		if (cursorChrPos == visCharRange[1])
+			return;
+		allText.erase(cursorChrPos, 1);
+		if (visCharRange[0] > 0)//...[.|..]
+			visCharRange[0]--;
+		if (cursorChrPos <= visCharRange[1])//[.|..] || [.|. ]
+			visCharRange[1]--;
+	}
 	else if (key == 13)
 	{// Enter
-		keepEveAlive = false;//按下Enter
+		keepEveAlive = false;//按下Enter，退出输入模式
 	}
 	else if (key == -1)
-	{//无字符更新，仅根据参数刷新画面
+	{// 无字符更新，仅根据参数刷新画面
 	}
 	else
-	{
+	{// 正常插入字符
 		allText.insert(cursorChrPos, 1, (char)key);
 		visCharRange[1] ++;
 		cursorChrPos++;
