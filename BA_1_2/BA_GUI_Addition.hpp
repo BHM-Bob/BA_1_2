@@ -54,14 +54,14 @@ namespace ba
 		class inputBox : public label
 		{
 		public:
-			int cursorChrPos = 0;//在cursor的后面插入字符或删除处于cursor的字符
+			int cursorChrPos = 0;//在cursor的后面插入字符或删除处于cursor的字符，相对于第0个字符的位置
 			int edgeWidth = 1;
 			int charSize = 12;
 			SDL_Color ec = { .a = 255 };//edge color
 			std::string allText;
 			int visCharRange[2] = { 0 };//字符级别
 			SDL_Rect realTextRe = { 0 };//像素级别
-			rect* cursor = nullptr;
+			rect* cursor = nullptr;//光标的图形表示，re相对于inputBox
 
 			inputBox(window* _win, SDL_Rect pos,
 				int charSize, int edgeWidth = 1,

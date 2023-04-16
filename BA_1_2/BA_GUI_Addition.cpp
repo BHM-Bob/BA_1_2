@@ -146,32 +146,18 @@ ba::ui::inputBox::inputBox(window* _win, SDL_Rect pos, int charSize, int edgeWid
 }
 void ba::ui::inputBox::addChar(SDL_Keycode key)
 {
-	if (key == 8 && cursorChrPos >= 0)
-	{//Backspace
-		if (cursorChrPos == 0)
+	if (key == 8 || key == 127)
+	{//Backspace or Delete
+		if ((cursorChrPos == 0 && key == 8) || (cursorChrPos == visCharRange[1] && key == 127))
 			return;
-		allText.erase(cursorChrPos -1, 1);
+		allText.erase(key == 8 ? cursorChrPos -1 : cursorChrPos, 1);
 		//if [.| ] pass
-		if (visCharRange[0] > 0 && cursorChrPos <= visCharRange[1])//...[..|] || ...[.|..]
-		{
-			visCharRange[0]--;
-			visCharRange[1]--;
-		}
-		else if (visCharRange[0] == 0 && cursorChrPos <= visCharRange[1])//[.|..] || [.|. ]
-		{
-			visCharRange[1]--;
-		}
-		cursorChrPos--;
-	}
-	else if (key == 127)
-	{//Delete
-		if (cursorChrPos == visCharRange[1])
-			return;
-		allText.erase(cursorChrPos, 1);
-		if (visCharRange[0] > 0)//...[.|..]
+		if (visCharRange[0] > 0)//...[..|] || ...[.|..]
 			visCharRange[0]--;
 		if (cursorChrPos <= visCharRange[1])//[.|..] || [.|. ]
 			visCharRange[1]--;
+		if(key == 8)
+			cursorChrPos--;
 	}
 	else if (key == 13)
 	{// Enter
@@ -196,6 +182,7 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 	if(sur)
 		SDL_BlitScaled(sur, NULL, surTmp, &realTextRe);
 	cursor->re.x = charSize * (cursorChrPos - visCharRange[0]);
+	std::cout << cursorChrPos << " | " << visCharRange[0] << std::endl;
 	SDL_BlitScaled(cursor->sur, NULL, surTmp, &cursor->re);
 	tex = SDL_CreateTextureFromSurface(win->rend, surTmp);
 	SDL_FreeSurface(surTmp);
@@ -220,8 +207,8 @@ int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _
 			self->win->winState->getMousePos(&x);
 			if ((x - self->re.x) / self->charSize <= self->visCharRange[1])
 			{
-				self->cursorChrPos = (x - self->re.x) / self->charSize;
-				self->cursor->re.x = self->cursorChrPos * self->charSize;
+				self->cursorChrPos = (x - self->re.x) / self->charSize + self->visCharRange[0];
+				self->cursor->re.x = (self->cursorChrPos - self->visCharRange[0]) * self->charSize;
 				self->addChar(-1);//无字符更新，仅根据参数刷新画面
 			}
 		}
