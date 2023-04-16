@@ -159,6 +159,14 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 		if(key == 8)
 			cursorChrPos--;
 	}
+	else if (key == SDLK_RIGHT && cursorChrPos < visCharRange[1])
+	{// SDLK_RIGHT
+		cursorChrPos++;
+	}
+	else if (key == SDLK_LEFT && cursorChrPos > visCharRange[0])
+	{// SDLK_LEFT
+		cursorChrPos--;
+	}
 	else if (key == 13)
 	{// Enter
 		keepEveAlive = false;//按下Enter，退出输入模式
