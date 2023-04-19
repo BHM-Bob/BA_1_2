@@ -62,6 +62,8 @@ namespace ba
 			int visCharRange[2] = { 0 };//字符级别
 			SDL_Rect realTextRe = { 0 };//像素级别
 			rect* cursor = nullptr;//光标的图形表示，re相对于inputBox
+			int showCursor = 1;
+			clock_t showCursorClock = clock();
 
 			inputBox(window* _win, SDL_Rect pos,
 				int charSize, int edgeWidth = 1,
