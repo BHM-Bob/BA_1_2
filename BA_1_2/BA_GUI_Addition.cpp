@@ -218,6 +218,7 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 	if(key != -1)
 		std::cout << cursorChrPos << " | " << visCharRange[0] << " | " << visCharRange[1] << " | " << text << std::endl;
 }
+
 int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _pData)
 {
 	inputBox* self = (inputBox*)_self;
@@ -253,32 +254,18 @@ int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _
 	return 0;
 }
 
-int ba::ui::_dragBar_check(window* _win, void* _self, int mouseEveCode, void* _pData)
-{
-	dragBar* self = (dragBar*)_self;
-	if (_win->winState->getMouseEveCode(&(self->re)) == 1)
-	{
-		Sint32 x = 0;
-		_win->winState->getMousePos(&x);
-		if(x > self->re.x && x < self->re.x + self->re.w)
-		{
-			self->handle.re.x = x;
-			self->per = (float)(self->handle.re.x - self->re.x) / self->re.w;
-		}
-	}
-	return mouseEveCode;
-}
-
-ba::ui::dragBar::dragBar(window* _win, SDL_Rect pos, SDL_Rect handleShape, float per,
+ba::ui::dragBar::dragBar(window* _win, SDL_Rect pos, SDL_Rect handleShape, float per[2],
 	SDL_Color bgc, SDL_Color hc)
 	: rect(pos, bgc)
 {
 	this->win = _win;
 	rendRect();
-	this->per = per;
-	handleShape.x = pos.x + (int)(per*pos.w);
-	handleShape.y = pos.y;
-	handleShape.h = pos.h;
+	this->per[0] = per ? per[0] : 0.f;
+	this->per[1] = per ? per[1] : 0.f;
+	handleShape.x = pos.x + (int)(this->per[0] * pos.w);
+	handleShape.y = pos.y + (int)(this->per[1] * pos.h);
+	handleShape.w = handleShape.w == 0 ? pos.w : handleShape.w;
+	handleShape.h = handleShape.h == 0 ? pos.h : handleShape.h;
 	handle = rect(handleShape, hc);
 	handle.win = _win;
 	handle.rendRect();
@@ -293,9 +280,50 @@ SDL_Texture* ba::ui::dragBar::getTex()
 	}
 	SDL_Surface* surTmp = SDL_CreateRGBASurface(re.w, re.h);
 	SDL_FillRect(surTmp, NULL, SDL_MapRGBA(surTmp->format, col.r, col.g, col.b, col.a));
-	SDL_Rect reTmp = { (int)(per*(float)re.w), handle.re.y, handle.re.w, handle.re.h };
+	SDL_Rect reTmp = { (int)(per[0]*(float)re.w), (int)(per[1]*(float)re.h), handle.re.w, handle.re.h };
 	SDL_BlitScaled(handle.sur, NULL, surTmp, &reTmp);
 	tex = SDL_CreateTextureFromSurface(win->rend, surTmp);
 	SDL_FreeSurface(surTmp);
 	return tex;
+}
+
+int ba::ui::_dragBar_check(window* _win, void* _self, int mouseEveCode, void* _pData)
+{
+	dragBar* self = (dragBar*)_self;
+	if (_win->winState->getMouseEveCode(&(self->re)) == 1)
+	{// drag
+		Sint32 x = 0, y = 0;
+		_win->winState->getMousePos(&x, &y);
+		if (x >= self->re.x && x + self->handle.re.w < self->re.x + self->re.w)
+		{
+			self->handle.re.x = x;
+			self->per[0] = (float)(self->handle.re.x - self->re.x) / (self->re.w - self->handle.re.w);
+		}
+		if (y >= self->re.y && y + self->handle.re.h < self->re.y + self->re.h)
+		{
+			self->handle.re.y = y;
+			self->per[1] = (float)(self->handle.re.y - self->re.y) / (self->re.h - self->handle.re.h);
+		}
+	}
+	if (_win->winState->getMouseEveCode(&(self->re)) == 4)
+	{// scroll
+		_LL d = _win->winState->getVar((_LL)0, [&]() {
+			Sint32 dy = 0;
+			if (!_win->winState->wheelY.empty())
+			{
+				if (SDL_GetTicks() - _win->winState->wheelY.front().second < 300)
+					dy = _win->winState->wheelY.front().first;
+				_win->winState->wheelY.pop_front();
+			}
+			if (!_win->winState->wheelY.empty())
+				mouseEveCode = 4;
+			else
+				mouseEveCode = 0;
+			return dy; });
+		if (self->handle.re.w > self->handle.re.h)
+			self->per[1] += d / 100.f;
+		else
+			self->per[0] += d / 100.f;
+	}
+	return mouseEveCode;
 }

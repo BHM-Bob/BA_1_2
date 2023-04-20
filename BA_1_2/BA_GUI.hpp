@@ -88,7 +88,7 @@ namespace ba
 			}
 			template<typename numTyPos, typename numTyCol>
 			rect(numTyPos x, numTyPos y, numTyPos w, numTyPos h,
-				numTyCol r, numTyCol g, numTyCol b, numTyCol a)
+				numTyCol r = 0, numTyCol g = 0, numTyCol b = 0, numTyCol a = 0)
 			{
 				re.x = (int)x;
 				re.y = (int)y;

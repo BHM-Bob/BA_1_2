@@ -53,11 +53,13 @@ void ba::test::_ui::paint(void)
 	ui.addRect("dragBar", dragBar, ba::ui::_dragBar_check, dragBar);
 	ba::ui::label* per = new ba::ui::label(ui.activeWin, " ", 20, { 0,0,0,255 }, { 700, 0, 20, 20 });
 	ui.addRect("per", per);
+	ba::ui::dragBar* dragBar2 = new ba::ui::dragBar(ui.activeWin, { 500, 50, 15, 200 }, { .h = 10 });
+	ui.addRect("dragBar2", dragBar2, ba::ui::_dragBar_check, dragBar2);
 
 	ba::ui::rect brush = ba::ui::rect({ 0, 0, 2, 2 }, {});
 	brush.win = ui.activeWin;
 	brush.rendRect();
-	char* pc = NULL;
+	std::string pc;
 	for ( ; !ui.pollQuit(); )
 	{
 		if(ui.activeWin->winState->getMouseEveCode(&(ui.activeWin->re)) ==1)
@@ -67,9 +69,8 @@ void ba::test::_ui::paint(void)
 				ui.addOtherTex2(brush.tex, new SDL_Rect(brush.re.x, brush.re.y, brush.re.w, brush.re.h));
 		}
 
-		pc = ba::Num2Str((int)(dragBar->per * 100));
-		per->changeText(pc);
-		free(pc);
+		pc = std::to_string(dragBar2->per[1] * 100);
+		per->changeText(pc.substr(0, pc.find(".")).c_str());
 
 		ui.checkEvent();
 		ui.update(0, 1, 1, 0);

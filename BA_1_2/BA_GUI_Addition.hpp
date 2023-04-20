@@ -78,8 +78,8 @@ namespace ba
 		{
 		public:
 			rect handle;
-			float per = 0.f;
-			dragBar(window* _win, SDL_Rect pos, SDL_Rect handleShape, float per = 0.f,
+			float per[2] = { 0.f, 0.f };
+			dragBar(window* _win, SDL_Rect pos, SDL_Rect handleShape, float per[2] = {},
 				SDL_Color bgc = { 255 , 255 , 255 , 255 }, SDL_Color hc = { .a = 255 });
 			SDL_Texture* getTex();
 		};

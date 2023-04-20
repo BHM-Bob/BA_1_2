@@ -686,7 +686,7 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 			}
 			s->winPipline->ThrPut(winTmp, s->condMutex);
 		}
-		if (s->getVar(0, [=]() {return s->winId2Ptr.size(); }) == 0)
+		if (s->getVar(0ULL, [=]() {return s->winId2Ptr.size(); }) == 0ULL)
 			continue;
 
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
