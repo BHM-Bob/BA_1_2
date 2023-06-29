@@ -215,8 +215,8 @@ void ba::ui::inputBox::addChar(SDL_Keycode key)
 	}
 	tex = SDL_CreateTextureFromSurface(win->rend, surTmp);
 	SDL_FreeSurface(surTmp);
-	if(key != -1)
-		std::cout << cursorChrPos << " | " << visCharRange[0] << " | " << visCharRange[1] << " | " << text << std::endl;
+	//if(key != -1)
+	//	std::cout << cursorChrPos << " | " << visCharRange[0] << " | " << visCharRange[1] << " | " << text << std::endl;
 }
 
 int ba::ui::_inputBox_check(window* _win, void* _self, int mouseEveCode, void* _pData)

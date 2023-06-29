@@ -50,6 +50,19 @@ namespace ba
 			SDL_RenderCopyEx(rend, tex, NULL, &Box, angel, &center, SDL_FLIP_NONE);
 		}
 
+		inline void setPixel2Surface(SDL_Surface* surface, SDL_Color* color, int x, int y)
+		{
+			SDL_LockSurface(surface);
+			Uint32* pixels = (Uint32*)surface->pixels;
+			// 计算像素在数组中的索引
+			int index = y * surface->w + x;
+			// 将颜色转换为表面的像素格式
+			Uint32 pixel = SDL_MapRGB(surface->format, color->r, color->g, color->b);
+			// 修改像素值
+			pixels[index] = pixel;
+			SDL_UnlockSurface(surface);
+		}
+
 		bool checkDotInRect(Sint32 x, Sint32 y, SDL_Rect* re);
 
 		typedef struct colorSurDot colorSurDot;
@@ -66,6 +79,9 @@ namespace ba
 		// 前置声明
 		class QUI;
 		class window;
+		class rect;
+
+		void _convertArray2Rect(const ba::array<SDL_Color**, SDL_Color*>& arr, ba::ui::rect& rect);
 
 		class rect : public BA_Base
 		{
@@ -80,15 +96,20 @@ namespace ba
 			int mouseHistory = 0;
 			clock_t mouseHistoryTime = 0;
 
-			rect() {}
-			rect(SDL_Rect _re, SDL_Color _col)
+			rect(window* _win = nullptr, bool rend = false) { win = _win; }
+			rect(SDL_Rect _re, SDL_Color _col,
+				window* _win = nullptr, bool rend = false)
 			{
 				re = _re;
 				col = _col;
+				win = _win;
+				if (rend)
+					rendRect();
 			}
 			template<typename numTyPos, typename numTyCol>
 			rect(numTyPos x, numTyPos y, numTyPos w, numTyPos h,
-				numTyCol r = 0, numTyCol g = 0, numTyCol b = 0, numTyCol a = 0)
+				numTyCol r = 0, numTyCol g = 0, numTyCol b = 0, numTyCol a = 0,
+				window* _win = nullptr, bool rend = false)
 			{
 				re.x = (int)x;
 				re.y = (int)y;
@@ -98,6 +119,24 @@ namespace ba
 				col.g = (int)g;
 				col.b = (int)b;
 				col.a = (int)a;
+				win = _win;
+				if (rend)
+					rendRect();
+			}
+			rect(const array<SDL_Color**, SDL_Color*>& l, window* _win = nullptr)
+			{
+				win = _win;
+				_convertArray2Rect(l, *this);
+			}
+			rect& operator=(array<SDL_Color**, SDL_Color*>& l)//左值引用
+			{
+				_convertArray2Rect(l, *this);
+				return *this;
+			}
+			rect& operator=(array<SDL_Color**, SDL_Color*>&& l)//右值引用
+			{
+				_convertArray2Rect(l, *this);
+				return *this;
 			}
 			//must use after ui is assigned
 			void rendRect(void);
@@ -493,7 +532,9 @@ namespace ba
 			{
 				return getWindow(win)->delButt(_name);
 			}
-			inline bool addRect(const char* name, rect* re, int (*eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData) = NULL, void* eveFuncSelfData = NULL, void* eveFuncData = NULL, const char* win = NULL)
+			inline bool addRect(const char* name, rect* re,
+				int (*eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData) = NULL,
+				void* eveFuncSelfData = NULL, void* eveFuncData = NULL, const char* win = NULL)
 			{
 				return getWindow(win)->rects.add(name, re, eveFunc, eveFuncSelfData, eveFuncData);
 			}

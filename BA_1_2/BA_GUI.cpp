@@ -1,7 +1,7 @@
 ﻿#include"BA_Base.hpp"
 #include"BA_Mem.hpp"
-#include"BA_String.hpp"
 #include"BA_GUI.hpp"
+#include "BA_Math.hpp"
 
 // TODO : 有什么更优雅的方法简化windowState中各方法函数中的加解锁
 	// lambda似乎有点性能损耗，宏似乎不方便
@@ -45,7 +45,11 @@ SDL_Color* ba::ui::SetSDLCol(SDL_Color* col, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 SDL_Color* ba::ui::MakeSDLCol(List* mem, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 	SDL_Color* col = NULL;
-	if (mem)
+	if (mem == BA_LIST_PTR)
+	{
+		col = MCALLOC(1, SDL_Color);
+	}
+	else if (mem)
 	{
 		col = BALLOC_R(1, SDL_Color, mem);
 	}
@@ -146,12 +150,36 @@ bool ba::ui::checkDotInRect(Sint32 x, Sint32 y, SDL_Rect* re)
 	return false;
 }
 
+void ba::ui::_convertArray2Rect(const ba::array<SDL_Color**, SDL_Color*>& arr, ba::ui::rect& rect)
+{
+	rect.re.w = static_cast<int>(arr.shape[1]);
+	rect.re.h = static_cast<int>(arr.shape[0]);
+	rect.rendRect();
+	for (SDL_Rect reTmp = { 0, 0, 1, 1 }; reTmp.y < arr.shape[0]; reTmp.y++)
+	{
+		for (reTmp.x = 0; reTmp.x < arr.shape[1]; reTmp.x++)
+		{
+			SDL_FillRect(rect.sur, &reTmp,
+				SDL_MapRGB(rect.sur->format,
+					arr.data[reTmp.y][reTmp.x]->r,
+					arr.data[reTmp.y][reTmp.x]->g,
+					arr.data[reTmp.y][reTmp.x]->b));
+		}
+	}
+	rect.rendRect();
+}
+
 void ba::ui::rect::rendRect(void)
 {
 	if (win)
 	{
-		sur = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
-		SDL_FillRect(sur, NULL, SDL_MapRGBA(sur->format, col.r, col.g, col.b, col.a));
+		if(!sur)
+		{
+			sur = SDL_CreateRGBSurface(0, re.w, re.h, 32, 0, 0, 0, 0);
+			SDL_FillRect(sur, NULL, SDL_MapRGBA(sur->format, col.r, col.g, col.b, col.a));
+		}
+		if (tex)
+			SDL_DestroyTexture(tex);
 		tex = SDL_CreateTextureFromSurface(win->rend, sur);
 	}
 	else
@@ -159,6 +187,7 @@ void ba::ui::rect::rendRect(void)
 		MyBA_Err("ba::ui::rect::rendRect: win is not assigned", 1);
 	}
 }
+
 bool ba::ui::rect::checkMouseIn(Sint32 x, Sint32 y)
 {
 	return checkDotInRect(x, y, &re);
@@ -683,6 +712,7 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 				SetLayeredWindowAttributes(hwnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
 				/*设置窗口为悬浮窗 */
 				SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+				SDL_SetWindowSize(winTmp, wcp->winw, wcp->winh);
 			}
 			s->winPipline->ThrPut(winTmp, s->condMutex);
 		}

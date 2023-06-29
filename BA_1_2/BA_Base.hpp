@@ -143,6 +143,8 @@ List* List_Put(List* plist, void* pdata);
 void List_SetVar(List* plist, void* pdata, void* newVar);
 List* List_Destroy(List* plist);
 
+#define BA_LIST_PTR (List*)0x1
+
 // func that use List
 //******************************************************************
 
@@ -345,6 +347,8 @@ struct MyBA
 	clock_t JDT_t;
 
 	std::default_random_engine randomEngine;
+	std::random_device randomDevice;
+	std::mt19937 fastRandom = std::mt19937(randomDevice);
 
 	bool isSAFEMODE;
 
