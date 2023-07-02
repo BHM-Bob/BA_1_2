@@ -144,6 +144,9 @@ ba::ui::inputBox::inputBox(window* _win, SDL_Rect pos, int charSize, int edgeWid
 	this->cursor->rendRect();
 	rendRect();
 }
+ba::ui::inputBox::~inputBox()
+{
+}
 void ba::ui::inputBox::addChar(SDL_Keycode key)
 {
 	if (key == 8 || key == 127)
@@ -270,6 +273,9 @@ ba::ui::dragBar::dragBar(window* _win, SDL_Rect pos, SDL_Rect handleShape, float
 	handle.win = _win;
 	handle.rendRect();
 	getTex();
+}
+ba::ui::dragBar::~dragBar()
+{
 }
 SDL_Texture* ba::ui::dragBar::getTex()
 {

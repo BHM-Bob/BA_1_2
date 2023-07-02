@@ -786,6 +786,10 @@ BA_Base::BA_Base(_ULL idx, const char* name)
 		__name__ = mstrdup(name, mem);
 }
 
+BA_Base::~BA_Base()
+{
+}
+
 //***********************************************************************************************************************
 
 int StrCmpById(const char* ptr1, const char* ptr2)

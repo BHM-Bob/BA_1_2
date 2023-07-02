@@ -162,7 +162,7 @@ public:
 	_ULL __idx__ = 0;
 
 	BA_Base(_ULL idx = 0, const char* name = NULL);
-
+	virtual ~BA_Base();
 };
 
  

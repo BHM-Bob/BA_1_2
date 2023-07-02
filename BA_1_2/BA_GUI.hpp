@@ -215,6 +215,7 @@ namespace ba
 		{
 		public:
 			window* win = NULL;
+			bool freeAllOnDestroy = true;//析构时是否调用所有items的析构函数
 			std::map<std::string, int> events;// 鼠标事件代码：0=None；-1=Push；1=Drag；2=LEFT；3=RIGHT; 4=wheel
 			std::map<std::string, int> statue;//占用 0不存在   1存在且显示   2存在不显示
 			std::map<std::string, baseItemTy> items;//列表
@@ -227,7 +228,7 @@ namespace ba
 			~namedItems();
 			bool add(const char* _name, baseItemTy item,
 				int (*_eveFunc)(window* _win, void* _self, int mouseEveCode, void* pData) = NULL, void* _self = NULL, void* _eveFuncData = NULL);
-			bool del(const char* _name);
+			bool del(const char* _name, bool freeItem = true);
 			void check(void);
 			// will reset events to 0 if it has a event
 			int getMouseEveCode(const char* _name);
@@ -237,6 +238,7 @@ namespace ba
 		template<typename baseItemTy>
 		inline namedItems<baseItemTy>::~namedItems()
 		{
+			if(freeAllOnDestroy)
 				for (auto p : items)
 					delete p.second;
 		}
@@ -257,7 +259,7 @@ namespace ba
 			return true;
 		}
 		template<typename baseItemTy>
-		inline bool namedItems<baseItemTy>::del(const char* _name)
+		inline bool namedItems<baseItemTy>::del(const char* _name, bool freeItem)
 		{
 			if (items.contains(_name))
 			{
@@ -270,7 +272,8 @@ namespace ba
 					eveFunc.erase(_name);
 					eveFuncData.erase(_name);
 				}
-				delete item;
+				if(freeItem)
+					delete item;
 				return true;
 			}
 			return false;

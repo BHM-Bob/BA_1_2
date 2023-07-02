@@ -13,6 +13,7 @@ namespace ba
 	namespace ui
 	{
 		//低层级的window
+		//加virtual是为了衍生类可以直接用rect初始化
 		class layout : public virtual rect
 		{//虚基类，与子类共享一个基类rect对象。
 		public:
@@ -69,6 +70,7 @@ namespace ba
 				int charSize, int edgeWidth = 1,
 				SDL_Color ec = { .a = 255 }, SDL_Color cc = { .a = 255 }, SDL_Color bgc = { 255 , 255 , 255 , 255 },
 				const char* pc = NULL, TTF_Font* font = NULL);
+			~inputBox();
 			void addChar(SDL_Keycode key);
 		};
 		int _inputBox_check(window* _win, void* _self, int mouseEveCode, void* _pData);
@@ -81,6 +83,7 @@ namespace ba
 			float per[2] = { 0.f, 0.f };
 			dragBar(window* _win, SDL_Rect pos, SDL_Rect handleShape, float per[2] = {},
 				SDL_Color bgc = { 255 , 255 , 255 , 255 }, SDL_Color hc = { .a = 255 });
+			~dragBar();
 			SDL_Texture* getTex();
 		};
 		int _dragBar_check(window* _win, void* _self, int mouseEveCode, void* _pData);

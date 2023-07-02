@@ -200,11 +200,12 @@ SDL_Texture* ba::ui::rect::getTex()
 
 ba::ui::rect::~rect()
 {
-	//mem = MyBA_Free_R(mem, true);
 	if(sur)
 		SDL_FreeSurface(sur);
+	sur = nullptr;
 	if (tex)
 		SDL_DestroyTexture(tex);
+	tex = nullptr;
 }
 
 
