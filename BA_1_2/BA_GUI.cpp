@@ -200,7 +200,7 @@ SDL_Texture* ba::ui::rect::getTex()
 
 ba::ui::rect::~rect()
 {
-	mem = MyBA_Free_R(mem, true);
+	//mem = MyBA_Free_R(mem, true);
 	if(sur)
 		SDL_FreeSurface(sur);
 	if (tex)
@@ -656,18 +656,21 @@ bool ba::ui::QUI::delWindow(const char* titlepc)
 {
 	if (windows.contains(titlepc))
 	{
+		bool hasValidActiveWin = false;
 		if (activeWin == windows[titlepc])
 		{
 			if (windows.size() == 1)
 				activeWin = nullptr;//设置为nullptr
 			else
-				activeWin = windows.begin()->second;//回到第一个窗口
+				hasValidActiveWin = true;
 		}
 		window* pwin = windows[titlepc];
 		pwin->winState->_mutexSafeWrapper([&]() {
 			pwin->winState->isQuit = true; });
 		delete windows[titlepc];
 		windows.erase(titlepc);
+		if(hasValidActiveWin)
+			activeWin = windows.begin()->second;//回到第一个窗口
 	}
 	return false;
 }
