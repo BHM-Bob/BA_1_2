@@ -379,7 +379,7 @@ List* MyBA_Free_R(List* pli, bool destoryList)
 {
 	if (pba->isSAFEMODE)
 		return pli;// do not free mem manually
-	if (pli != NULL && pli != (List*)BA_FREED_PTR)
+	if (pli && pli != BA_LIST_PTR)
 	{
 		for (void* pm = List_Get(pli); pm != NULL; pm = List_Get(pli))
 			if (pm != (void*)0x1)
@@ -388,13 +388,17 @@ List* MyBA_Free_R(List* pli, bool destoryList)
 		if (destoryList)
 		{
 			free(pli);
-			pli = (List*)BA_FREED_PTR;
+			pli = BA_LIST_PTR;
 		}
 	}
-	else
+	else if(!pli)
 	{
-		PPW("MyBA_Free_R: pli==NULL,return");
+		PPW("MyBA_Free_R: pli==NULL, return");
 	}
+	//else if (pli == BA_LIST_PTR)
+	//{
+	//	// DO NOT REPORT
+	//}
 	return pli;
 }
 
