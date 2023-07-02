@@ -466,6 +466,12 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	int winflags, SDL_Color bgc)
 	: rect(SDL_Rect(0, 0, winw, winh), bgc)
 {
+	// 需要在events server线程创建SDL_Window并对winState提供服务前创建winState
+	winState = new windowState();
+	winState->winW = re.w;
+	winState->winH = re.h;
+	winState->_locker = _ui->eveThread->_locker;
+
 	ui = _ui;
 	win = this;
 	titlepc = mstrdup(_titlepc, mem);
@@ -505,11 +511,6 @@ ba::ui::window::window(QUI* _ui, const char* _titlepc, int winw, int winh,
 	{
 		rendRect();
 	}
-
-	winState = new windowState();
-	winState->winW = re.w;
-	winState->winH = re.h;
-	winState->_locker = ui->eveThread->_locker;
 	
 	SDL_RenderCopy(rend, tex, NULL, NULL);
 	SDL_RenderPresent(rend);
@@ -521,9 +522,10 @@ ba::ui::window::~window()
 		delete title;
 	TTF_CloseFont(defaultFont);
 	SDL_DestroyRenderer(rend);
-	SDL_DestroyWindow(pwin);
 	sur = nullptr;
-	//tex = nullptr;
+	tex = nullptr;
+	while (! winState->getVar(-1, [=]() {return winState->isDestroyed; }))
+		SDL_Delay(10);
 	SDL_DestroyMutex(winState->_locker);
 	delete winState;
 }
@@ -635,13 +637,19 @@ ba::ui::QUI::QUI(const char* titlepc, int winw, int winh, int winflags, SDL_Colo
 
 	MyBA_AtQuit(QUI_Quit, (void*)this);
 }
-ba::ui::QUI& ba::ui::QUI::addWindow(const char* titlepc, int winw, int winh, int winflags, SDL_Color bgc)
+ba::ui::QUI::~QUI()
+{
+	eveThread->_mutexSafeWrapper([&]() {eveThread->isQuit = true; });
+}
+ba::ui::QUI& ba::ui::QUI::addWindow(const char* titlepc, int winw, int winh,
+	int winflags, SDL_Color bgc)
 {
 	window* win = new window(this, titlepc, winw, winh, winflags, bgc);
 	windows[titlepc] = win;
 	if(! activeWin)
 		activeWin = win;
-	eveThread->_mutexSafeWrapper([&]() {eveThread->winId2Ptr[SDL_GetWindowID(win->pwin)] = win; });
+	eveThread->_mutexSafeWrapper([&]() {
+		eveThread->winId2Ptr[SDL_GetWindowID(win->pwin)] = win; });
 	return *this;
 }
 bool ba::ui::QUI::delWindow(const char* titlepc)
@@ -651,12 +659,13 @@ bool ba::ui::QUI::delWindow(const char* titlepc)
 		if (activeWin == windows[titlepc])
 		{
 			if (windows.size() == 1)
-				return false;//在只有一个窗口时禁止销毁该窗口
-			activeWin = windows.begin()->second;//回到第一个窗口
+				activeWin = nullptr;//设置为nullptr
+			else
+				activeWin = windows.begin()->second;//回到第一个窗口
 		}
 		window* pwin = windows[titlepc];
-		pwin->winState->_mutexSafeWrapper([&]() {pwin->winState->isQuit = true; });
-		pwin->winState->_mutexSafeWrapper([&]() {this->eveThread->winId2Ptr.erase(SDL_GetWindowID(pwin->pwin)); });
+		pwin->winState->_mutexSafeWrapper([&]() {
+			pwin->winState->isQuit = true; });
 		delete windows[titlepc];
 		windows.erase(titlepc);
 	}
@@ -670,7 +679,7 @@ ba::ui::QUI& ba::ui::QUI::setActiveWindow(const char* title)
 }
 int ba::ui::QUI::Quit(int code, ...)
 {
-	window* win = activeWin;
+	window* win = nullptr;
 	for (auto p : windows)
 	{
 		win = p.second;
@@ -717,7 +726,24 @@ int ba::ui::_QUIEvent_checkAll(void* _s)
 			s->winPipline->ThrPut(winTmp, s->condMutex);
 		}
 		if (s->getVar(0ULL, [=]() {return s->winId2Ptr.size(); }) == 0ULL)
+		{// 当前窗口管理器内无窗口
 			continue;
+		}
+		else
+		{// 有窗口
+			for (auto& win : s->winId2Ptr)
+			{
+				if (win.second->winState && //因为winState建立与SDL_Window不同步，所以对于新窗口可能是nullptr
+					s->getVar(false, [=]() {return win.second->winState->isQuit; }))
+				{//接收到销毁信号，销毁窗口，发出结束销毁信号
+					SDL_DestroyWindow(win.second->pwin);
+					s->_mutexSafeWrapper([&]() {
+						auto id = SDL_GetWindowID(win.second->pwin);
+						s->winId2Ptr.erase(id); });
+					s->_mutexSafeWrapper([&]() { win.second->winState->isDestroyed = true; });
+				}
+			}
+		}
 
 		eveTmp = s->getUpdatedEveCopy(eveTmp);
 		if (s->getVar(0, [=]() {return s->mouseEveCode; }) == 0)

@@ -336,6 +336,7 @@ namespace ba
 			//private
 			Sint32 winW = 0, winH = 0;
 			bool isQuit = false;
+			bool isDestroyed = false;
 			char* dropFilePath = nullptr;
 			char* dropText = nullptr;
 			Sint32 mousePos[2] = { 0 };// 按下鼠标时光标位置			
@@ -496,6 +497,7 @@ namespace ba
 
 			QUI(const char* titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color bgc = {});
+			~QUI();
 
 			QUI& addWindow(const char* titlepc = "QUI", int winw = 800, int winh = 500,
 				int winflags = 0, SDL_Color bgc = {});

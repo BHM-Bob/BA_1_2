@@ -119,7 +119,7 @@ int ba::ui::_listView_check(window* _win, void* _self, int mouseEveCode, void* _
 	{
 		Sint32 y = 0, ry = 0;
 		_win->winState->getMousePos(NULL, &y);
-		ry = y - self->re.y + self->visPixelRange[0];
+		ry = (Sint32)(y - self->re.y + self->visPixelRange[0]);
 		self->clickIdx = ry > self->pixel2idx.size() ? -1 : self->pixel2idx[ry];
 	}
 	return retMouseEveCode;

@@ -33,8 +33,6 @@ void ba::test::_ui::initSDL2(void)
 		ui.updateOtherTex("ctt", ct->getTex());
 		ui.checkEvent();
 		ui.update();
-
-
 	}
 	ui.delWindow("win1");
 }
