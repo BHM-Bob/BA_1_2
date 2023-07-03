@@ -27,8 +27,11 @@ namespace ba
 {
 	namespace ui
 	{
+#define _ShowFPS_() printf("\rFPS %5.3f", 1.f / pba->GUT(0))
+
 		int* ProduceRainbowCol(int* col, float* i, float* di);
 		int* ProduceRainbowCol(int* col, float* i, float di = 0.05f);
+		SDL_Color* ProduceRainbowCol(SDL_Color* col, float* i, float di = 0.05f);
 		SDL_Color* SetSDLCol(SDL_Color* col, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 		SDL_Color* MakeSDLCol(List* mem, Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255);
 		SDL_Rect* SetSDLRect(SDL_Rect* pos, int w, int h, int x, int y);
@@ -70,7 +73,7 @@ namespace ba
 		{
 			int x = 0;
 			int y = 0;
-			int col[4] = { 0 };
+			SDL_Color col;
 			float fx = 0.f;
 			float fy = 0.f;
 			float b = 0.f;
@@ -152,12 +155,10 @@ namespace ba
 			tensor<float>* len = NULL;
 			tensor<float>* lv = NULL;
 			bool** mask = 0;
-			int col[4] = { 0 };
 			SDL_Rect re_paint = { 0, 0, 1, 1 };
 
 			colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos = { 0,0,0,0 },
 				bool alloc0Mask = false, int _sumdot = 4);
-			colorSur* cacu(void);
 			colorSur* update(void);
 			SDL_Texture* getTex(void);
 			~colorSur();

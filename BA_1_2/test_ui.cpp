@@ -6,7 +6,7 @@
 
 void ba::test::_ui::initSDL2(void)
 {
-	ba::ui::QUI ui = ba::ui::QUI("win1");
+	ba::ui::QUI ui = ba::ui::QUI("corlor surface");
 
 	ba::ui::colorSur* cs = new ba::ui::colorSur(ui.activeWin, NULL, ui.activeWin->re);
 	ui.addOtherTex("cst", NULL, &cs->re);
@@ -20,7 +20,7 @@ void ba::test::_ui::initSDL2(void)
 	char* pc = mstrdup("w");
 	for (SDL_Keycode keyboard = ui.activeWin->winState->getKeyboardEve().first; ! ui.pollQuit(); )
 	{
-		//PPX(pba->GUT(0));
+		_ShowFPS_();
 		keyboard = ui.activeWin->winState->getKeyboardEve().first;
 		if (keyboard != 0)
 		{
@@ -32,9 +32,9 @@ void ba::test::_ui::initSDL2(void)
 		ui.updateOtherTex("cst", cs->getTex());
 		ui.updateOtherTex("ctt", ct->getTex());
 		ui.checkEvent();
-		ui.update();
+		ui.update(NULL, true, true, false);
 	}
-	ui.delWindow("win1");
+	ui.delWindow("corlor surface");
 }
 
 void ba::test::_ui::paint(void)

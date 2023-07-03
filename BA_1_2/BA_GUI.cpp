@@ -7,30 +7,31 @@
 	// lambda似乎有点性能损耗，宏似乎不方便
 // TODO : 削减内存消耗
 
+#define _ProduceRainbowCol_Update_(i, di) (*i > -5000.f || *i < 5000.f) ? (*i + di) : 0.f;
+#define _ProduceRainbowCol_R_(i) (int)(127.f * sin(*i)) + 127
+#define _ProduceRainbowCol_G_(i) (int)(127.f * cos(*i)) + 127
+#define _ProduceRainbowCol_B_(i) (int)(127.f * sin(0.8f * (*i))) + 127
+#define _ProduceRainbowCol_RGB_(i, r, g, b) {r = _ProduceRainbowCol_R_(i);g = _ProduceRainbowCol_G_(i);b = _ProduceRainbowCol_B_(i);}
+
 int* ba::ui::ProduceRainbowCol(int* col, float* i, float* di)// r g b
 {
-	*i += *di;
-	float sh = 5000.f;
-	if (*i > sh || *i < -sh)
-	{
-		*di = -*di;
-	}
-	col[0] = (int)(127.f * sin(*i)) + 127;
-	col[1] = (int)(127.f * cos(*i)) + 127;
-	col[2] = (int)(127.f * sin(0.8f * (*i))) + 127;
+	*i = _ProduceRainbowCol_Update_(i, *di);
+	_ProduceRainbowCol_RGB_(i, col[0], col[1], col[2]);
 	return col;
 }
 int* ba::ui::ProduceRainbowCol(int* col, float* i, float di)// r g b
 {
-	*i += di;
-	float sh = 5000.f;
-	if (*i > sh || *i < -sh)
-		*i = 0;
-	col[0] = (int)(127.f * sin(*i)) + 127;
-	col[1] = (int)(127.f * cos(*i)) + 127;
-	col[2] = (int)(127.f * sin(0.8f * (*i))) + 127;
+	*i = _ProduceRainbowCol_Update_(i, di);
+	_ProduceRainbowCol_RGB_(i, col[0], col[1], col[2]);
 	return col;
 }
+SDL_Color* ba::ui::ProduceRainbowCol(SDL_Color* col, float* i, float di)
+{
+	*i = _ProduceRainbowCol_Update_(i, di);
+	_ProduceRainbowCol_RGB_(i, col->r, col->g, col->b);
+	return col;
+}
+
 SDL_Color* ba::ui::SetSDLCol(SDL_Color* col, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
 	if (col)
@@ -233,38 +234,18 @@ ba::ui::colorSur::colorSur(window* _win, SDL_Surface* _distSur, SDL_Rect pos,
 		r->x = 1 + rand() % (re.w - 1);
 		r->y = 1 + rand() % (re.h - 1);
 		r->fx = r->fy = 1.f;
-		ProduceRainbowCol(r->col, &(r->b));
+		ProduceRainbowCol(&(r->col), &(r->b));
 		//r->col[3] = (int)(127.f * sin(0.8f * r->b)) + 0;
 		});
 	if (alloc0Mask)
 		mask = ba::allocNDArray<bool*, bool>({ re.h, re.w }, mem);
-}
-ba::ui::colorSur* ba::ui::colorSur::cacu(void)
-{
-	float sumlen = 0.f;
-	for (long i = 0, dx = 0, dy = 0; i < sumdot; i++)
-	{
-		dx = re_paint.x - dots->data[i].x;
-		dy = re_paint.y - dots->data[i].y;
-		len->data[i] = (float)(dx * dx + dy * dy);
-		if (len->data[i] == 0)
-			len->data[i] = 1;
-		sumlen += len->data[i];
-	}
-	for (long i = 0; i < sumdot; i++)
-		lv->data[i] = len->data[i] / sumlen;
-	col[0] = (int)(lv->data[0] * dots->data[0].col[0]) + (int)(lv->data[1] * dots->data[1].col[0]) + (int)(lv->data[2] * dots->data[2].col[0]) + (int)(lv->data[3] * dots->data[3].col[0]);
-	col[1] = (int)(lv->data[0] * dots->data[0].col[1]) + (int)(lv->data[1] * dots->data[1].col[1]) + (int)(lv->data[2] * dots->data[2].col[1]) + (int)(lv->data[3] * dots->data[3].col[1]);
-	col[2] = (int)(lv->data[0] * dots->data[0].col[2]) + (int)(lv->data[1] * dots->data[1].col[2]) + (int)(lv->data[2] * dots->data[2].col[2]) + (int)(lv->data[3] * dots->data[3].col[2]);
-	//col[3] = (int)(lv->data[0] * dots->data[0].col[3]) + (int)(lv->data[1] * dots->data[1].col[3]) + (int)(lv->data[2] * dots->data[2].col[3]) + (int)(lv->data[3] * dots->data[3].col[3]);
-	return this;
 }
 ba::ui::colorSur* ba::ui::colorSur::update(void)
 {
 	for (colorSurDot* pd = dots->data; pd != dots->lastAddress; pd++)
 	{
 		pd->b += 0.01f;
-		ProduceRainbowCol(pd->col, &(pd->b));
+		ProduceRainbowCol(&(pd->col), &(pd->b));
 		pd->x += (int)(2.0f * (pd->fx));
 		if (pd->x < 1)
 			pd->fx = -pd->fx;
@@ -283,9 +264,29 @@ ba::ui::colorSur* ba::ui::colorSur::update(void)
 		{
 			if(!mask || mask[re_paint.y][re_paint.x])
 			{
-				cacu();
-				SDL_FillRect(sur, &(re_paint),
-					SDL_MapRGB(sur->format, col[0], col[1], col[2]));
+				float sumlen = 0.f;
+				for (long i = 0, dx = 0, dy = 0; i < sumdot; i++)
+				{
+					dx = re_paint.x - dots->data[i].x;
+					dy = re_paint.y - dots->data[i].y;
+					len->data[i] = (float)(dx * dx + dy * dy);
+					if (len->data[i] == 0)
+						len->data[i] = 1;
+					sumlen += len->data[i];
+				}
+				for (long i = 0; i < sumdot; i++)
+					lv->data[i] = len->data[i] / sumlen;
+				col.r = (int)(lv->data[0] * dots->data[0].col.r) + (int)(lv->data[1] * dots->data[1].col.r) + (int)(lv->data[2] * dots->data[2].col.r) + (int)(lv->data[3] * dots->data[3].col.r);
+				col.g = (int)(lv->data[0] * dots->data[0].col.g) + (int)(lv->data[1] * dots->data[1].col.g) + (int)(lv->data[2] * dots->data[2].col.g) + (int)(lv->data[3] * dots->data[3].col.g);
+				col.b = (int)(lv->data[0] * dots->data[0].col.b) + (int)(lv->data[1] * dots->data[1].col.b) + (int)(lv->data[2] * dots->data[2].col.b) + (int)(lv->data[3] * dots->data[3].col.b);
+
+				// setPixel2Surface的代码，性能比调用inline的setPixel2Surface好
+				SDL_LockSurface(sur);
+				Uint32* pixels = (Uint32*)sur->pixels;
+				int index = re_paint.y * sur->w + re_paint.x;
+				Uint32 pixel = SDL_MapRGB(sur->format, col.r, col.g, col.b);
+				pixels[index] = pixel;
+				SDL_UnlockSurface(sur);
 			}
 		}
 	}
