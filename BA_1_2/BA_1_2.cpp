@@ -477,14 +477,16 @@ float* floatDup(List* mem, _ULL num, ...)
 	return pret;
 }
 
-//https://blog.csdn.net/radjedef/article/details/79028329
+#ifdef _WIN32
+// Windows 平台下
+#include <windows.h>
+// https://blog.csdn.net/radjedef/article/details/79028329
 void SetConsoleCursor(int x, int y)
 {
 	COORD pos = { (SHORT)x, (SHORT)y };
-	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);// 获取标准输出设备句柄
-	SetConsoleCursorPosition(hOut, pos);//两个参数分别是指定哪个窗体，具体位置
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleCursorPosition(hOut, pos);
 }
-
 //https://blog.csdn.net/m0_51819222/article/details/118099067
 COORD GetConsoleCursor(void)
 {
@@ -496,6 +498,34 @@ COORD GetConsoleCursor(void)
 	}
 	return coordScreen; //光标位置
 }
+#else
+// 其他平台下(Linux)
+#include <unistd.h>
+#include <string.h>
+void SetConsoleCursor(int x, int y)
+{
+	char buf[30];
+	sprintf(buf, "\033[%d;%dH", y, x);
+	write(1, buf, strlen(buf));
+}
+#include <termios.h>
+COORD GetConsoleCursor(void)
+{
+	COORD coordScreen = { 0, 0 };
+	struct termios term;
+	if (tcgetattr(STDOUT_FILENO, &term) == 0) {
+		char buf[32];
+		if (write(STDOUT_FILENO, "\033[6n", 4) == 4 &&
+			read(STDIN_FILENO, buf, sizeof(buf)) > 0) {
+			int x, y;
+			sscanf(buf, "\033[%d;%dR", &y, &x);
+			coordScreen.X = x - 1;
+			coordScreen.Y = y - 1;
+		}
+	}
+	return coordScreen;
+}
+#endif
 
 char* ba::StrAdd(List* mem, const char* pstr, ...)
 {

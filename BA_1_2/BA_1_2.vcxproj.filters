@@ -488,6 +488,9 @@
     <ClInclude Include="BA_GUI_Addition.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BA_PYDLL.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL2\SDL_config.h.cmake" />

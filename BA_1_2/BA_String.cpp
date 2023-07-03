@@ -588,6 +588,9 @@ char* ba::strdup(const char* p, ba::memRecord* mem, _LL toBeFreedInStack)
 	return pret;
 }
 
+#ifdef _WIN32
+
+#include <windows.h>
 char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 {
 	if (strcmp(ori, to) == 0)
@@ -659,6 +662,53 @@ char* ba::transferStrCode(const char* pc, const char* ori, const char* to)
 	PPWs(ori, to);
 	return (char*)1;
 }
+
+#else
+
+#include <errno.h>
+#include <iconv.h>
+#include <string.h>
+#include <stdlib.h>
+char* transferStrCode(const char* pc, const char* ori, const char* to)
+{
+	if (strcmp(ori, to) == 0)
+	{
+		return strdup(pc);
+	}
+	size_t in_len = strlen(pc);
+	size_t out_len = in_len * 4; // 估计输出字符串的最大长度
+	char* out_buf = (char*)malloc(out_len);
+	memset(out_buf, 0, out_len);
+	iconv_t cd = iconv_open(to, ori);
+	if (cd == (iconv_t)-1)
+	{
+		free(out_buf);
+		return NULL;
+	}
+	char* in_ptr = (char*)pc;
+	char* out_ptr = out_buf;
+	if (iconv(cd, &in_ptr, &in_len, &out_ptr, &out_len) == (size_t)-1)
+	{
+		if (errno == EILSEQ)
+		{
+			// 输入字符串包含无效的字符
+			free(out_buf);
+			iconv_close(cd);
+			return NULL;
+		}
+		else if (errno == EINVAL)
+		{
+			// 输入字符串不完整
+			free(out_buf);
+			iconv_close(cd);
+			return NULL;
+		}
+	}
+	iconv_close(cd);
+	return out_buf;
+}
+
+#endif
 
 char* ba::transferStrCode(const char* pc, int ori, int to)
 {
