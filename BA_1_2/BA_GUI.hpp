@@ -73,7 +73,7 @@ namespace ba
 		{
 			int x = 0;
 			int y = 0;
-			SDL_Color col;
+			SDL_Color col = {};
 			float fx = 0.f;
 			float fy = 0.f;
 			float b = 0.f;
