@@ -10,10 +10,20 @@
 
 #define __STDC_WANT_LIB_EXT1__ 1
 
+#ifdef _WIN32
+#include <direct.h>
+#include <conio.h>
+#include <io.h>
+#include <wincontypes.h>
+#elif
+// linux
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 // C
 #include <assert.h>
 #include <ctype.h>
-#include <direct.h>
 #include <locale.h>
 #include <limits.h>
 #include <setjmp.h>
@@ -40,18 +50,12 @@
 #include <string>
 #include <sys/types.h>
 // IO
-#include <conio.h>
-#include <io.h>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 // thread
 #include <mutex>
 #include <thread>
-// windows platform for console cursor OP and string code transfer
-#include <Windows.h>
-#include <WinBase.h>
-
 /*
 D:\soft\opencv\opencv\build\include\opencv2
 D:\soft\opencv\opencv\build\x64\vc15\lib\opencv_world454d.lib

@@ -177,6 +177,7 @@
     <ClInclude Include="BA_JSON.hpp" />
     <ClInclude Include="BA_Math.hpp" />
     <ClInclude Include="BA_Mem.hpp" />
+    <ClInclude Include="BA_PYDLL.hpp" />
     <ClInclude Include="BA_String.hpp" />
     <ClInclude Include="BA_Test.hpp" />
     <ClInclude Include="BA_Thread.hpp" />
